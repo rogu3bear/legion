@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 *.pyc
 venv/
+.venv/
 .env
 .env.*
 
@@ -24,6 +25,9 @@ memory/db/
 *.test
 *.out
 
+go.sum
+go.mod
+
 # OS
 .DS_Store
 Thumbs.db
@@ -37,3 +41,15 @@ coverage/
 .vscode/
 .idea/
 *.swp
+
+# Logs
+*.log
+memory/logs/
+
+# Artifacts
+artifacts/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -3,3 +3,10 @@
 - Stubbed scripts/init_memory.sh to create memory/db/legion.db if missing
 - Stubbed scripts/verify_discord.sh with a placeholder echo
 - Ensured all scripts in scripts/ are executable 
+- Added health_check() to core/utils/network.py for HTTP status checks
+- Implemented DoctorAgent in legion/agents/python/doctor.py with handle_request parsing and health check logic
+- Appended tests for DoctorAgent to tests/agents/test_agents.py (monkeypatching requests.get for up/down/usage)
+- Imported and registered DoctorAgent in legion/orchestrator.py as 'doctor_agent'
+- Added PingAgent, EchoAgent, HealthcheckAgent stubs
+- Registered new agents in orchestrator 
+- Discord integration is now fully functional. Bot logs in, posts 'Legion bot is online!' to the general channel, and self-assessment messages appear in configured channels. All environment variable and token issues resolved. 
