@@ -10,3 +10,4 @@
 - Added PingAgent, EchoAgent, HealthcheckAgent stubs
 - Registered new agents in orchestrator 
 - Discord integration is now fully functional. Bot logs in, posts 'Legion bot is online!' to the general channel, and self-assessment messages appear in configured channels. All environment variable and token issues resolved. 
+- Local LLM Studio integration complete: OpenAI client now routes to http://127.0.0.1:1234/v1 when LLM_API_BASE_URL is set in .env. All agents and tests use local inference. Passing test_llm_connector.py confirms end-to-end local LLM connectivity. 
