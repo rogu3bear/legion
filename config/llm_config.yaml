@@ -1,0 +1,8 @@
+openai_api_key: "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"
+openai_api_base_url: "https://api.openai.com/v1"
+openai_model: "gpt-4.1-nano"
+openai_temperature: 0.5
+openai_max_tokens: 1000
+openai_top_p: 1
+openai_frequency_penalty: 0
+openai_presence_penalty: 0 

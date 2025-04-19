@@ -1,0 +1,21 @@
+# Test Agents YAML
+# Each agent must specify:
+# - persona: short description
+# - discord_channel_id: numeric Discord channel ID
+# - self_assessment_prompt: for self-assessment
+# - agent-specific fields as needed
+
+ping_agent:
+  persona: "Test Agent: Ping"
+  discord_channel_id: 123456789012345678
+  self_assessment_prompt: "Report your uptime."
+
+echo_agent:
+  persona: "Test Agent: Echo"
+  discord_channel_id: 234567890123456789
+  echo_prefix: "[echo]"
+
+healthcheck_agent:
+  persona: "Test Agent: Health"
+  discord_channel_id: 345678901234567890
+  check_interval_minutes: 5 

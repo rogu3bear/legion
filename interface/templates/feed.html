@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Legion Feed</title>
+    <style>
+        body { font-family: sans-serif; background: #181a20; color: #eee; margin: 0; }
+        #feed { max-width: 600px; margin: 2rem auto; }
+        .event-card { background: #23272f; margin: 1rem 0; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px #0002; }
+    </style>
+</head>
+<body>
+    <div id="feed"></div>
+    <script>
+    function renderEvent(event) {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.textContent = JSON.stringify(event);
+        return card;
+    }
+    function appendEvent(event) {
+        document.getElementById('feed').appendChild(renderEvent(event));
+    }
+    function pollFeed() {
+        fetch('/api/feed').then(r => r.json()).then(events => {
+            document.getElementById('feed').innerHTML = '';
+            events.forEach(appendEvent);
+        });
+    }
+    function startWebSocket() {
+        let ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/events');
+        ws.onmessage = (msg) => {
+            try { appendEvent(JSON.parse(msg.data)); } catch {}
+        };
+        ws.onerror = ws.onclose = () => { setTimeout(pollFeed, 1000); };
+    }
+    if (window.WebSocket) {
+        startWebSocket();
+    } else {
+        pollFeed();
+        setInterval(pollFeed, 2000);
+    }
+    </script>
+    <script src="/static/js/feed.js"></script>
+</body>
+</html> 

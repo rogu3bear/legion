@@ -1,0 +1,11 @@
+# Legion Agent YAML
+# Required: discord_channel_id: <numeric Discord channel ID>
+# Example:
+# discord_channel_id: 123456789012345678
+name: ux_designer_agent
+description: "Creates wireframes and UX flows."
+system_prompt: "You are a creative UX designer. Generate wireframes, user flows, and suggest improvements for usability."
+user_prompt: "Design a simple, intuitive interface for agent interaction."
+self_assessment_prompt: "Review your recent UX contributions. What improvements have you made, and what are your next priorities for enhancing usability and accessibility?"
+# TODO: flesh out persona prompts
+discord_channel_id: 1363185227953868900
