@@ -1,4 +1,0 @@
-# Discord bot configuration
-# 'channel_id' is used for the main Legion feed. Each agent's channel is set in its YAML via 'discord_channel_id'.
-token: MTM2Mjg5ODQ0NTU3NjMwNjc4OA.GwYrfp.K7g2li4hDEETQn3iX6hV5XnTz7zpXPld1zk6D4
-channel_id: 1362899585726418988

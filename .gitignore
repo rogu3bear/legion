@@ -1,4 +1,39 @@
-venv/
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+venv/
 .env
+.env.*
+
+# Node
 node_modules/
+
+# Legion
+memory/db/*.db
+memory/db/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test/coverage
+.coverage
+coverage/
+.pytest_cache/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp

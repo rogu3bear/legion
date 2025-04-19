@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Legion Structure & Stub Rules
+
+This document defines the canonical scaffold for the Legion repository, mapping every file and directory to one of eight logic layers. Any deviation will fail CI and block merges.
+
+## Logic Layers
+
+1. **Configuration Layer**
+   - YAML agent definitions and `.env` variables (prompts, schedules, channel IDs)
+   - Must include: `legion/configs/`, `.env`
+2. **Orchestration Layer**
+   - The "brain" that loads configs, spins up agents, routes messages, and schedules tasks
+   - Must include: `legion/orchestrator.py`
+3. **Agent Layer**
+   - Persona runtime code (Architect, Doctor, Researcher, Ping, Echo, Healthcheck, etc.)
+   - Must include: `legion/agents/`
+4. **Skill & Utility Layer**
+   - Reusable helpers: search engines, summarizers, networking, indexing, retry logic
+   - Must include: `skills/`, `core/utils/`
+5. **Persistence Layer**
+   - Persistent state: SQLite DB, memory API, JSONL logs
+   - Must include: `memory/`
+6. **Integration Layer**
+   - Discord-bot glue: cogs, settings, bot bootstrap
+   - Must include: `integration/discord/`
+7. **Presentation Layer**
+   - Web UI: FastAPI endpoints, front-end scripts, templates
+   - Must include: `interface/`
+8. **Infrastructure Layer**
+   - Ops-focused tooling: scripts, CI workflows, migrations, changelog, docs
+   - Must include: `scripts/`, `.github/`, `docs/`, `changelog.md`, etc.
+
+## Directory & File Structure
+
+Required directories (all must exist):
+
+legion/
+legion/agents/
+legion/agents/python/
+legion/agents/go/
+legion/configs/
+core/
+core/utils/
+core/db/
+core/db/migrations/ (at least one migration script)
+skills/
+memory/
+memory/db/
+memory/logs/
+artifacts/
+artifacts/reports/
+artifacts/code/
+integration/discord/
+integration/discord/cogs/
+interface/
+interface/static/
+interface/templates/ (must contain index.html)
+tests/
+tests/agents/
+tests/core/
+docs/
+scripts/
+
+Required files (exact names & extensions):
+
+Root:
+.env (contains DISCORD_TOKEN=)
+.gitignore
+requirements.txt
+package.json
+go.mod
+
+Legion package:
+legion/__init__.py
+legion/orchestrator.py
+
+Agents:
+legion/agents/__init__.py
+legion/agents/python/__init__.py
+legion/agents/python/doctor.py
+legion/agents/python/researcher.py
+legion/agents/go/__init__.py
+legion/agents/go/developer.go
+
+Configs:
+legion/configs/doctor.yaml
+legion/configs/researcher.yaml
+legion/configs/developer.yaml
+
+Core module:
+core/web_api.js
+core/utils/network.py
+core/utils/indexing.py
+core/db/schema.sql
+
+Skills:
+skills/search.py
+skills/summarize.py
+
+Memory:
+memory/legion_memory.py
+memory/db/legion.db
+memory/logs/task_log.jsonl
+
+Discord integration:
+integration/discord/__init__.py
+integration/discord/settings.py
+integration/discord/bot.py
+integration/discord/cogs/__init__.py
+integration/discord/cogs/orchestrator.py
+integration/discord/cogs/ux_feed.py
+integration/discord/cogs/health.py
+
+Interface:
+interface/main.py
+interface/static/js_feed.js
+interface/templates/index.html
+
+Tests:
+tests/agents/test_agents.py
+tests/core/test_network.py
+tests/test_orchestrator.py
+
+Documentation:
+docs/README.md
+docs/architecture.md
+
+Scripts:
+scripts/deploy.sh
+scripts/init_memory.sh
+scripts/verify_discord.sh
+
+## Content & Syntax Requirements
+
+Python files: module docstring, at least one class or function stub.
+Go files: package declaration, comment, and/or a `func main() {}` stub.
+JS files: module comment and at least one stubbed export or function.
+YAML files: valid YAML (e.g., an empty object `{}` is acceptable).
+SQL files: begin with a comment or a `CREATE TABLE` statement.
+Shell scripts: start with `#!/usr/bin/env bash` and a top-level comment.
+Database file (`memory/db/legion.db`): must exist (content may be empty).
+Log file (`memory/logs/task_log.jsonl`): must exist; if non-empty, each line must be valid JSON.
+Templates directory: must contain at least one HTML file (e.g., `interface/templates/index.html`).
+Environment file (`.env`): must include the line `DISCORD_TOKEN=` (value may be a placeholder).
+Artifacts directories (`artifacts/reports/`, `artifacts/code/`): must exist (may be empty).
+
+## Import & Reference Sanity
+
+- `legion/orchestrator.py` must import agent classes from `legion/agents/python/`.
+- `tests/agents/test_agents.py` must import and instantiate all agent classes.
+- `tests/core/test_network.py` must import from `core/utils/network.py`.
+- `tests/test_orchestrator.py` must import from `legion/orchestrator.py`.
+
+## CI Failure Conditions
+
+CI must fail if:
+- Any required file or directory is missing, misnamed, or misplaced.
+- Any stub file is missing its minimal scaffold or contains syntax errors.
+- Any import path is broken due to structural drift.
+- Any empty artifacts or templates directory is missing.
+- `.env` is missing or does not contain `DISCORD_TOKEN=`.
+
+---
+
+> This rule enforces both the canonical Legion structure and the eight-layer logic model. Any deviation will result in a failed check and a grim, dyslexia-friendly warning.

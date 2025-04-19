@@ -1,2 +1,0 @@
-{"timestamp": "2025-04-19T18:37:56.024703", "type": "message_received", "from": "architect_agent", "payload": {"title": "ping", "body": "hello", "timestamp": "2025-04-19T18:37:56.024575", "from": "architect_agent"}}
-{"timestamp": "2025-04-19T18:37:56.024754", "type": "message_received", "payload": {"title": "ping", "body": "hello", "timestamp": "2025-04-19T18:37:56.024575", "from": "architect_agent"}}

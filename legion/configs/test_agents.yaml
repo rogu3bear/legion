@@ -1,0 +1,9 @@
+# Stub test agent definitions
+architect_agent:
+  discord_channel_id: test-channel
+therapist_agent:
+  discord_channel_id: test-channel
+metrics_agent:
+  discord_channel_id: test-channel
+ux_designer_agent:
+  discord_channel_id: test-channel 

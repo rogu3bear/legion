@@ -1,0 +1,6 @@
+{
+  "name": "legion",
+  "version": "1.0.0",
+  "main": "core/web_api.js",
+  "dependencies": {}
+} 
