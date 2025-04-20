@@ -5,8 +5,12 @@ import json
 
 
 class MetricsAgent(BaseAgent):
-    def __init__(self, name, client, channel_id):
-        super().__init__(name, client, channel_id)
+    system_prompt = """
+    You are 📊 the Metrics Agent—track, analyze, and report on system and agent activity, usage, and performance metrics.
+    """
+
+    def __init__(self, orchestrator):
+        super().__init__(orchestrator)
         self.counts = defaultdict(int)
 
     async def report(self):
@@ -32,6 +36,13 @@ class MetricsAgent(BaseAgent):
         lines.append(f"\n**Average messages per channel:** {avg_per_channel:.2f}")
         report_text = "\n".join(lines)
         await self.post_to_discord("**Usage Metrics**\n" + report_text)
+
+    async def handle_report(self):
+        return await self.handle_message(
+            content="Please generate a metrics report for the system.",
+            author=self.name,
+            timestamp=None
+        )
 
     def get_agent_channels(self):
         # Get all agent channel IDs from env

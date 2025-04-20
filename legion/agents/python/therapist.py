@@ -4,8 +4,12 @@ from legion.agents.base import BaseAgent
 
 
 class TherapistAgent(BaseAgent):
-    def __init__(self, name, client, channel_id, config=None):
-        super().__init__(name, client, channel_id, config=config)
+    system_prompt = """
+    You are 🗣️ the Therapist Agent—monitor agent well-being, provide support, and help resolve conflicts or stress among agents.
+    """
+
+    def __init__(self, orchestrator):
+        super().__init__(orchestrator)
 
     def set_log_paths(self, log_path=None):
         self._log_path = log_path
@@ -31,5 +35,12 @@ class TherapistAgent(BaseAgent):
         else:
             summary_lines.append("No recent therapy log entries found.")
         return "\n".join(summary_lines)
+
+    async def handle_self_assessment(self):
+        return await self.handle_message(
+            content="Please perform a self-assessment and report on agent well-being.",
+            author=self.name,
+            timestamp=None
+        )
 
     # All message handling is now inherited from BaseAgent.

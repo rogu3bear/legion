@@ -6,6 +6,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from discord import app_commands
+from discord.ext import commands
 
 from legion.orchestrator import Orchestrator
 
@@ -18,6 +19,10 @@ intents.messages = True
 intents.guilds = True
 intents.message_content = True  # Needed for message content access
 
+logger = logging.getLogger(__name__)
+
+message_processing_lock = asyncio.Lock()
+processed_message_ids = set()
 
 async def fetch_thread_history(channel, thread, limit):
     """
@@ -36,82 +41,103 @@ async def fetch_thread_history(channel, thread, limit):
         return []
 
 
-class LegionBot(discord.Client):
+class LegionBot(commands.Bot):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, intents=intents, **kwargs)
-        self.orchestrator = None
+        super().__init__(command_prefix="!", intents=intents, *args, **kwargs)
         self.agent_tasks = []
-        self.tree = app_commands.CommandTree(self)
+        # self.orchestrator will be set in setup_hook
 
     async def setup_hook(self):
-        # Register the /ask command
-        @self.tree.command(name="ask", description="Ask any Legion agent a question.")
-        @app_commands.describe(agent_name="Name of the agent to query", question="Your question for the agent")
-        async def ask(interaction: discord.Interaction, agent_name: str, question: str):
-            await interaction.response.defer(thinking=True)
-            if not self.orchestrator:
-                await interaction.followup.send("Orchestrator not initialized.")
-                return
-            context = {
-                "channel_id": interaction.channel.id,
-                "thread_id": getattr(interaction.channel, "id", interaction.channel.id),
-                "content": question,
-                "author": interaction.user.name,
-                "timestamp": interaction.created_at if hasattr(interaction, "created_at") else discord.utils.utcnow(),
-            }
-            response = await self.orchestrator.dispatch_message(agent_name, context)
-            await interaction.followup.send(str(response))
+        # Instantiate orchestrator before adding cogs
+        self.orchestrator = Orchestrator()
+        # override the placeholder with a real Discord sender
+        self.orchestrator._post_agent_message = lambda agent, payload: \
+            self.get_channel(self.orchestrator.agent_channel_ids[agent]).send(payload)
+        from integration.discord.cogs.orchestrator import OrchestratorCog
+        await self.add_cog(OrchestratorCog(self, self.orchestrator))
         await self.tree.sync()
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
         logging.info("ready")
-        # Announce in general channel
-        general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
-        channel = self.get_channel(general_channel_id)
+        # Announce in agent-feed or general channel with agent list
+        emoji_map = {
+            "architect_agent": "🏗️",
+            "metrics_agent": "📊",
+            "ux_designer_agent": "🎨",
+            "therapist_agent": "🗣️",
+            "ping_agent": "📶",
+            "echo_agent": "🔁",
+            "healthcheck_agent": "✅",
+        }
+        agent_names = list(self.orchestrator._agent_objects.keys())
+        agent_list = ", ".join(f"{emoji_map.get(name, '')} {name}" for name in agent_names)
+        announcement = f"🟢 Legion bot is online! Available agents:\n{agent_list}"
+        # Prefer agent-feed channel, fallback to general
+        feed_channel_id = self.orchestrator.agent_channel_ids.get("agent_feed_agent") or int(os.getenv("AGENT_FEED_CHANNEL_ID", 0))
+        general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID", 0))
+        channel = self.get_channel(feed_channel_id) or self.get_channel(general_channel_id)
         if channel:
-            await channel.send("Legion bot is online!")
+            await channel.send(announcement)
         else:
-            logging.warning(f"General channel {general_channel_id} not found.")
-        # Instantiate orchestrator with this Discord client
-        self.orchestrator = Orchestrator()
+            logging.warning(f"Agent-feed/general channel not found for announcement.")
         # Patch all agent objects with the live client and correct channel IDs
         for name, agent_obj in self.orchestrator._agent_objects.items():
             if hasattr(agent_obj, "client"):
                 agent_obj.client = self
             if hasattr(agent_obj, "channel_id"):
                 agent_obj.channel_id = self.orchestrator.agent_channel_ids.get(name, 0)
-        # Schedule self-assessment for each agent (interval = 60s for test)
-        interval = 60
-        for name, agent_obj in self.orchestrator._agent_objects.items():
-            if hasattr(agent_obj, "self_assess"):
-                async def schedule_self_assess(agent, interval):
-                    # Immediate self-assess on startup
-                    await agent.self_assess()
-                    while True:
-                        await asyncio.sleep(interval)
-                        await agent.self_assess()
-                task = asyncio.create_task(schedule_self_assess(agent_obj, interval))
-                self.agent_tasks.append(task)
+        # Schedule a one-off self-assess for all agents after 10 minutes
+        async def delayed_self_assess():
+            await asyncio.sleep(600)
+            await run_self_assess_all(self.orchestrator)
+        asyncio.create_task(delayed_self_assess())
+
+        # Schedule a repeating hourly self-assess for all agents
+        async def hourly_loop():
+            while True:
+                await asyncio.sleep(3600)
+                await run_self_assess_all(self.orchestrator)
+        asyncio.create_task(hourly_loop())
+
+        # Schedule a repeating hourly prune of processed_message_ids
+        async def prune_processed_message_ids():
+            while True:
+                await asyncio.sleep(3600)
+                processed_message_ids.clear()
+        asyncio.create_task(prune_processed_message_ids())
 
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author == self.user:
             return
-        channel_id = message.channel.id
-        if self.orchestrator and hasattr(self.orchestrator, "channel_to_agent"):
-            agent = self.orchestrator.channel_to_agent.get(channel_id)
-            if agent and hasattr(agent, "handle_message"):
-                context = {
-                    "channel_id": message.channel.id,
-                    "thread_id": getattr(message, "thread", message.channel.id),
-                    "content": message.content,
-                    "author": message.author.name,
-                    "timestamp": message.created_at,
-                }
-                await self.orchestrator.dispatch_message(agent.name, context)
-                return
-        await self.process_commands(message)
 
+        # Only handle each message once
+        if message.id in processed_message_ids:
+            return
+        processed_message_ids.add(message.id)
+
+        # Enforce one-at-a-time handling
+        async with message_processing_lock:
+            # Map channel name to agent name (1:1)
+            channel_to_agent = {v: k for k, v in self.orchestrator.agent_channel_ids.items()}
+            agent_name = channel_to_agent.get(message.channel.name)
+            if not agent_name:
+                return  # Not an agent channel
+            response = await self.orchestrator.dispatch_to_agent(
+                agent_name=agent_name,
+                message=message
+            )
+            if response:
+                await message.channel.send(response)
+
+# New helper for self-assessment rounds
+async def run_self_assess_all(orchestrator):
+    logger.info("Self-assessment round starting...")
+    for agent in orchestrator.agents.values():
+        try:
+            await agent.self_assess()
+        except Exception as e:
+            logger.error(f"Self-assess failed for {agent.name}: {e}")
 
 async def main():
     token = os.getenv("DISCORD_TOKEN")

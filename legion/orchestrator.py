@@ -7,6 +7,7 @@ import logging.config
 from memory.legion_memory import LegionAgentMemory
 from dotenv import load_dotenv
 import openai
+logging.getLogger("openai").setLevel(logging.ERROR)
 from core.utils.llm_client import LLMClient
 import asyncio
 import re
@@ -15,7 +16,15 @@ from legion.agents.python.doctor import DoctorAgent
 from legion.agents.python.ping import PingAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
+from legion.agents.python.metrics import MetricsAgent
+from legion.agents.python.ux_designer import UxDesignerAgent
+from legion.agents.python.therapist import TherapistAgent
+from legion.agents.python.architect import ArchitectAgent
 import datetime
+from pathlib import Path
+import atexit
+import signal
+import sys
 
 # Configure logging if a YAML config exists
 LOGGING_CONFIG_PATH = os.path.join("config", "logging.yaml")
@@ -28,14 +37,14 @@ logger = logging.getLogger(__name__)
 # Only load .env if OpenAI config is used
 try:
     load_dotenv(dotenv_path=".env")
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    # LM Studio override
-    llm_api_base = os.getenv("LLM_API_BASE_URL")
-    if llm_api_base:
-        openai.api_base = llm_api_base
+    # LM Studio override: read OPENAI_API_BASE and ensure /v1 prefix
+    llm_base = os.getenv("OPENAI_API_BASE")
+    if llm_base:
+        # Ensure base URL includes /v1 prefix
+        if not llm_base.rstrip("/").endswith("/v1"):
+            llm_base = llm_base.rstrip("/") + "/v1"
+        openai.api_base = llm_base
         openai.api_type = "openai"
-    else:
-        openai.api_base = os.getenv("OPENAI_API_BASE_URL")
     model = os.getenv("OPENAI_MODEL")
     temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.5))
     max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", 1000))
@@ -65,66 +74,98 @@ CHANNEL_ID_MAP = {
     "healthcheck_agent": GENERAL_CHANNEL_ID,
 }
 
+# Map agent names to their classes
+CLASS_MAP = {
+    "architect_agent": ArchitectAgent,
+    "metrics_agent": MetricsAgent,
+    "ux_designer_agent": UxDesignerAgent,
+    "therapist_agent": TherapistAgent,
+    "ping_agent": PingAgent,
+    "echo_agent": EchoAgent,
+    "healthcheck_agent": HealthcheckAgent,
+}
+
+PID_FILE = "/tmp/legion_orchestrator.pid"
 
 class Orchestrator:
     """Stub orchestrator (AutoGen code removed)."""
 
-    def __init__(self, post_agent_message=None):
-        self.memory = {}
-        self.agent_configs = self.load_agent_configs()
+    def __init__(self, post_agent_message=None, pid_file=None):
+        self._pid_file = pid_file or PID_FILE
+        self._lock_acquired = False
+        self._acquire_lock()
+        self._setup_signal_handlers()
+        # Populate agent_channel_ids from agent_configs (YAML), fallback to env/channel map
         self.agent_channel_ids = {}
-        self.agent_classes = {}
-        # Register Python agent classes
-        self.agent_classes = {
-            "doctor_agent": DoctorAgent,
-            "ping_agent": PingAgent,
-            "echo_agent": EchoAgent,
-            "healthcheck_agent": HealthcheckAgent,
-        }
-        self.register_test_agents()
-        self._agent_objects = {}
-        self._post_agent_message = post_agent_message  # Discord posting helper
-        # Update agent_channel_ids after registering test agents
-        self.agent_channel_ids = {
-            name: self._get_channel_id(name) for name in self.agent_configs
-        }
-        self.channel_to_agent = {}
-        for name, agent_def in self.agent_configs.items():
-            self.memory[name] = LegionAgentMemory(name)
-            try:
-                # Load agent class from registry
-                agent_cls = self.agent_classes.get(name)
-                # Pass name, client (None), channel_id and apply config
-                channel_id = self.agent_channel_ids.get(name, 0)
-                agent_instance = agent_cls(name, None, channel_id)
-                # Apply loaded configuration to the instance
-                agent_instance.config = agent_def or {}
-                # Reinitialize the LLM client based on config
-                agent_instance.llm = LLMClient(
-                    api_key=agent_instance.config.get("llm_api_key"),
-                    model=agent_instance.config.get("llm_model"),
-                    api_base=agent_instance.config.get("llm_api_base"),
-                    **agent_instance.config.get("default_kwargs", {}),
-                )
-                # Set dynamic rules
-                agent_instance.dynamic_rules = agent_instance.config.get(
-                    "dynamic_rules", {}
-                )
-                self._agent_objects[name] = agent_instance
-                self.channel_to_agent[self.agent_channel_ids.get(name, 0)] = (
-                    agent_instance
-                )
-            except Exception:
-                self._agent_objects[name] = object()
+        for name in CLASS_MAP.keys():
+            config = self.load_agent_configs().get(name, {})
+            chan = config.get('discord_channel_id')
+            if not chan:
+                chan = CHANNEL_ID_MAP.get(name, 0)
+            self.agent_channel_ids[name] = int(chan) if chan else 0
+        self._post_agent_message = lambda agent, payload: None
+        # Load agent configs and instantiate agents
+        self.agent_configs = self.load_agent_configs()
+        self.agents = {name: CLASS_MAP[name](self) for name in self.agent_configs.keys()}
+        self._agent_objects = self.agents  # Backward compatibility for legacy tests
+
+        self.agent_classes = CLASS_MAP
+        self.memory = {name: LegionAgentMemory(name) for name in self.agent_classes}
+        # Only use self.agents for all agent lookups and dispatches
+        for name, agent in self.agents.items():
+            agent.config = self.agent_configs.get(name, {})
+            agent.llm = LLMClient(
+                api_key=agent.config.get("llm_api_key"),
+                model=agent.config.get("llm_model"),
+                api_base=agent.config.get("llm_api_base"),
+                **agent.config.get("default_kwargs", {}),
+            )
+            agent.dynamic_rules = agent.config.get("dynamic_rules", {})
         logger.info(
             "Orchestrator initialized with agents: %s", list(self.agent_configs.keys())
         )
-        test_payload = {
-            "title": "ping",
-            "body": "hello",
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        }
-        self.send_message("architect_agent", "metrics_agent", test_payload)
+
+    def _acquire_lock(self):
+        if os.path.exists(self._pid_file):
+            try:
+                with open(self._pid_file, "r") as f:
+                    pid = int(f.read().strip())
+                # Check if process is alive (cross-platform best effort)
+                if pid and pid != os.getpid():
+                    try:
+                        os.kill(pid, 0)
+                        logger.info(f"Another orchestrator instance (PID {pid}) is already running. Exiting.")
+                        sys.exit(1)
+                        return
+                        import builtins
+                        if getattr(sys.exit, "__module__", None) == "sys":
+                            os._exit(1)
+                    except OSError:
+                        logger.info(f"Stale PID file found. Overwriting lock.")
+            except Exception:
+                logger.info("Corrupt PID file. Overwriting lock.")
+        with open(self._pid_file, "w") as f:
+            f.write(str(os.getpid()))
+        self._lock_acquired = True
+        atexit.register(self._release_lock)
+        logger.info(f"Acquired orchestrator lock (PID {os.getpid()}).")
+
+    def _release_lock(self):
+        if self._lock_acquired and os.path.exists(self._pid_file):
+            try:
+                os.remove(self._pid_file)
+                logger.info("Released orchestrator lock and cleaned up PID file.")
+            except Exception as e:
+                logger.error(f"Failed to remove PID file: {e}")
+        self._lock_acquired = False
+
+    def _setup_signal_handlers(self):
+        def handle_signal(signum, frame):
+            logger.info(f"Received signal {signum}. Initiating graceful shutdown.")
+            self._release_lock()
+            sys.exit(0)
+        signal.signal(signal.SIGINT, handle_signal)
+        signal.signal(signal.SIGTERM, handle_signal)
 
     def _get_channel_id(self, agent_name):
         return CHANNEL_ID_MAP.get(agent_name, GENERAL_CHANNEL_ID)
@@ -132,7 +173,10 @@ class Orchestrator:
     def load_agent_configs(self):
         """Loads agent configurations from YAML files."""
         registry = {}
-        for agent_file in glob.glob(os.path.join("agent-definitions", "*.yaml")):
+        agent_config_dir = Path(__file__).parent / "configs"
+        print(f"[DEBUG] Scanning agent config dir: {agent_config_dir}")
+        print(f"[DEBUG] Found YAML files: {[p.name for p in agent_config_dir.glob('*.yaml')]}")
+        for agent_file in agent_config_dir.glob('*.yaml'):
             with open(agent_file, "r") as f:
                 data = yaml.safe_load(f)
                 # If multi-agent YAML, add all top-level keys
@@ -324,7 +368,7 @@ class Orchestrator:
 
     def deliver_message(self, to_agent: str, payload: dict):
         """Delivers a message to an agent object and logs it."""
-        agent_obj = self._agent_objects.get(to_agent)
+        agent_obj = self.agents.get(to_agent)
         if agent_obj and hasattr(agent_obj, "receive_message"):
             logger.info(f"Delivering message to live agent instance: {to_agent}")
             agent_obj.receive_message(payload)
@@ -363,23 +407,25 @@ class Orchestrator:
         with open(path, "r") as f:
             return yaml.safe_load(f)
 
-    async def dispatch_message(self, agent_name, context):
-        """
-        Dispatches a message to the agent, passing a context dict with keys:
-        channel_id, thread_id, content, author, timestamp
-        Now passes the entire context object to the agent's handle_message method.
-        """
-        agent = self._agent_objects.get(agent_name)
-        if agent and hasattr(agent, "handle_message"):
-            try:
-                return await agent.handle_message(context)
-            except Exception as e:
-                logger.error(
-                    f"[Orchestrator] Error in {agent_name}.handle_message: {e}"
-                )
-                return f"[Error: {agent_name} failed to handle message]"
-        else:
-            logger.warning(
-                f"[Orchestrator] Agent {agent_name} missing or lacks handle_message."
-            )
-            return f"[Error: {agent_name} not available]"
+    async def dispatch_message(
+        self,
+        agent_name: str,
+        content: str,
+        author: str = None,
+        timestamp: str = None,
+    ):
+        """Routes a message to the appropriate agent by name."""
+        agent_name = agent_name.lower()
+        if agent_name not in self.agents:
+            return f"[Error: '{agent_name}' not available. Valid: {', '.join(self.agents.keys())}]"
+        agent = self.agents[agent_name]
+        return await agent.handle_message(content, author=author, timestamp=timestamp)
+
+    async def run_self_assess_all(self):
+        """Run self_assess() on all agents, logging exceptions."""
+        for name, agent in self.agents.items():
+            if hasattr(agent, "self_assess"):
+                try:
+                    await agent.self_assess()
+                except Exception as e:
+                    logger.error(f"[self_assess] Agent {name} failed: {e}")

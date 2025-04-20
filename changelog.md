@@ -26,3 +26,8 @@
 - Updated tests/test_architect_agent.py: A3 now asserts summary content. All A1–A3 tests pass green. 
 - Added test coverage for ArchitectAgent posting summary to Discord (A4) and fallback when no logs exist (A5). All A1–A5 tests pass green. 
 - Added .github/workflows/ci.yml: runs pytest on ArchitectAgent tests, uploads logs and reports on failure. CI step complete. 
+
+## 2024-06-11
+- Ensured LLM API calls route to the correct `/v1/chat/completions` path by normalizing `OPENAI_API_BASE` in `.env`, `core/utils/llm_client.py`, and `legion/orchestrator.py`.
+- Updated orchestrator to load agent configs from `legion/configs` instead of `legion/agents`, fixing missing agent YAML loading.
+- Patched `scripts/test_lm_studio.py` to dynamically select endpoint and avoid double `/v1` prefix. 

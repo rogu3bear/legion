@@ -8,6 +8,15 @@ from unittest import mock
 from legion.orchestrator import Orchestrator
 from legion.agents.python.architect import ArchitectAgent
 
+# Dummy orchestrator and client for instantiating metrics and therapist agents
+class DummyOrchestrator:
+    agent_channel_ids = {"metrics_agent": 1, "therapist_agent": 1}
+    client = None
+
+class DummyClient:
+    def get_channel(self, channel_id):
+        return None
+
 @pytest.fixture(scope="module")
 def test_env(tmp_path_factory):
     # 1. Environment Setup
@@ -54,7 +63,7 @@ async def test_A1_architect_reads_task_log(test_env, monkeypatch):
         for entry in entries:
             f.write(json.dumps(entry) + "\n")
     # Patch ArchitectAgent to use this log path
-    agent = ArchitectAgent("architect", None, 1)
+    agent = ArchitectAgent(DummyOrchestrator())
     agent.set_log_paths(log_path=test_env["log_path"])
     logs = agent.read_logs()
     assert logs == entries
@@ -64,7 +73,7 @@ async def test_A2_architect_extracts_llm_metrics(test_env, monkeypatch):
     # Seed llm_connector_test.log
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent("architect", None, 1)
+    agent = ArchitectAgent(DummyOrchestrator())
     agent.set_log_paths(report_path=test_env["report_path"])
     metrics = agent.extract_llm_metrics()
     assert metrics == {"latency": 123.0, "errors": 2}
@@ -81,7 +90,7 @@ async def test_A3_architect_composes_summary(test_env, monkeypatch):
             f.write(json.dumps(entry) + "\n")
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent("architect", None, 1)
+    agent = ArchitectAgent(DummyOrchestrator())
     agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
     summary = agent.compose_summary()
     assert "**Recent Task Log:**" in summary
@@ -108,7 +117,7 @@ async def test_A4_architect_posts_summary(test_env, monkeypatch):
             f.write(json.dumps(entry) + "\n")
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent("architect", None, 1)
+    agent = ArchitectAgent(DummyOrchestrator())
     agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
     # Simulate posting summary
     summary = agent.compose_summary()
@@ -125,7 +134,7 @@ async def test_A5_architect_no_logs_fallback(test_env, monkeypatch):
         pass
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent("architect", None, 1)
+    agent = ArchitectAgent(DummyOrchestrator())
     agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
     summary = agent.compose_summary()
     assert "No recent log entries found." in summary
@@ -140,7 +149,11 @@ async def test_B1_architect_tags_metrics(monkeypatch):
     async def fake_post_to_discord(self, message):
         captured['msg'] = message
     monkeypatch.setattr("legion.agents.python.metrics.MetricsAgent.post_to_discord", fake_post_to_discord)
-    metrics_agent = __import__('legion.agents.python.metrics', fromlist=['MetricsAgent']).MetricsAgent("metrics", None, 1)
+    metrics_agent = __import__('legion.agents.python.metrics', fromlist=['MetricsAgent']).MetricsAgent(DummyOrchestrator())
+    metrics_agent.name = "metrics"
+    metrics_agent.client = DummyClient()
+    metrics_agent.channel_id = 1
+    metrics_agent.config = {}
     # Architect triggers metrics agent (simulate tagging)
     await metrics_agent.post_to_discord("@metrics_agent please review logs")
     assert "@metrics_agent" in captured['msg']
@@ -152,7 +165,11 @@ async def test_B2_architect_triggers_therapist(monkeypatch):
     async def fake_post_to_discord(self, message):
         captured['msg'] = message
     monkeypatch.setattr("legion.agents.python.therapist.TherapistAgent.post_to_discord", fake_post_to_discord)
-    therapist_agent = __import__('legion.agents.python.therapist', fromlist=['TherapistAgent']).TherapistAgent("therapist", None, 1)
+    therapist_agent = __import__('legion.agents.python.therapist', fromlist=['TherapistAgent']).TherapistAgent(DummyOrchestrator())
+    therapist_agent.name = "therapist"
+    therapist_agent.client = DummyClient()
+    therapist_agent.channel_id = 1
+    therapist_agent.config = {}
     # Architect triggers therapist agent (simulate error notification)
     await therapist_agent.post_to_discord("@therapist_agent error detected: LLM failure")
     assert "@therapist_agent" in captured['msg']

@@ -2,10 +2,24 @@
 LLMClient: Unified LLM interface wrapping OpenAI API.
 """
 
-import os
-import openai
+from dotenv import load_dotenv
+load_dotenv()  # now os.environ contains .env vars
+import os, openai
 from typing import Any, Dict, List, Optional
 
+# pick up our local LM Studio endpoint
+base = os.getenv("OPENAI_API_BASE")
+if base:
+    # Ensure base URL includes /v1 prefix
+    base = base.rstrip("/")
+    if not base.endswith("/v1"):
+        base = base + "/v1"
+    openai.api_base = base
+    print(f"DEBUG: openai.api_base = {openai.api_base}")
+else:
+    print("WARNING: OPENAI_API_BASE not set! LLM calls will fail.")
+openai.api_key = os.getenv("OPENAI_API_KEY", "")
+print(f"DEBUG: openai.api_key  = {openai.api_key}")
 
 class LLMClient:
     def __init__(
@@ -18,12 +32,6 @@ class LLMClient:
         """
         Initialize the LLM client with optional API key, model, base URL, and default parameters.
         """
-        # Set API credentials and endpoint
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        openai.api_key = self.api_key
-        if api_base:
-            openai.api_base = api_base
-            openai.api_type = "openai"
         # Model identifier
         self.model = model or os.getenv("OPENAI_MODEL")
         # Default parameters for all requests (e.g., temperature, max_tokens)
@@ -70,4 +78,16 @@ class LLMClient:
         # Perform the API call
         response = openai.ChatCompletion.create(**params)
         # Extract and return the assistant reply
-        return response.choices[0].message.content
+        try:
+            if hasattr(response, "choices"):
+                return response.choices[0].message.content
+            elif isinstance(response, dict) and "choices" in response:
+                return response["choices"][0]["message"]["content"]
+            elif isinstance(response, dict) and "generations" in response:
+                return response["generations"][0]["text"]
+            else:
+                print(f"[ERROR] Unrecognized LLM response: {response}")
+                raise RuntimeError(f"Unrecognized LLM response: {response}")
+        except Exception as e:
+            print(f"[ERROR] Exception parsing LLM response: {e}\nRaw response: {response}")
+            raise

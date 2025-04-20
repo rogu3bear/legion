@@ -4,8 +4,12 @@ from legion.agents.base import BaseAgent
 
 
 class ArchitectAgent(BaseAgent):
-    def __init__(self, name, client, channel_id):
-        super().__init__(name, client, channel_id)
+    system_prompt = """
+    You are 🏗️ the Architect Agent—plan high-level architecture, break features into steps, and foresee risks.
+    """
+
+    def __init__(self, orchestrator):
+        super().__init__(orchestrator)
 
     async def handle_review(self):
         # List the repo
