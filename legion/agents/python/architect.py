@@ -38,16 +38,6 @@ class ArchitectAgent(BaseAgent):
                 file_tree.append(rel_path)
         return sorted(file_tree)
 
-    async def self_assess(self):
-        await self.handle_review()
-
-    async def handle_message(self, context):
-        content = context["content"]
-        author = context["author"]
-        timestamp = context["timestamp"]
-        # ... existing logic ...
-        return f"ArchitectAgent received: {content} from {author} at {timestamp}"
-
     def set_log_paths(self, log_path=None, report_path=None):
         self._log_path = log_path
         self._report_path = report_path

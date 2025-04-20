@@ -48,20 +48,6 @@ class MetricsAgent(BaseAgent):
             self.client.get_channel(cid) for cid in ids if self.client.get_channel(cid)
         ]
 
-    async def self_assess(self):
-        await self.report()
-
-    async def handle_message(self, context):
-        content = context["content"]
-        author = context["author"]
-        timestamp = context["timestamp"]
-        self.counts[self.name] += 1
-        if self.counts[self.name] % 10 == 0:
-            await self.post_to_discord(
-                f"{self.name} has seen {self.counts[self.name]} messages so far."
-            )
-        return f"MetricsAgent received: {content} from {author} at {timestamp}"
-
     def set_log_paths(self, log_path=None):
         self._log_path = log_path
 

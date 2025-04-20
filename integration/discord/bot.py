@@ -5,6 +5,7 @@ import asyncio
 import logging
 import os
 from dotenv import load_dotenv
+from discord import app_commands
 
 from legion.orchestrator import Orchestrator
 
@@ -40,6 +41,27 @@ class LegionBot(discord.Client):
         super().__init__(*args, intents=intents, **kwargs)
         self.orchestrator = None
         self.agent_tasks = []
+        self.tree = app_commands.CommandTree(self)
+
+    async def setup_hook(self):
+        # Register the /ask command
+        @self.tree.command(name="ask", description="Ask any Legion agent a question.")
+        @app_commands.describe(agent_name="Name of the agent to query", question="Your question for the agent")
+        async def ask(interaction: discord.Interaction, agent_name: str, question: str):
+            await interaction.response.defer(thinking=True)
+            if not self.orchestrator:
+                await interaction.followup.send("Orchestrator not initialized.")
+                return
+            context = {
+                "channel_id": interaction.channel.id,
+                "thread_id": getattr(interaction.channel, "id", interaction.channel.id),
+                "content": question,
+                "author": interaction.user.name,
+                "timestamp": interaction.created_at if hasattr(interaction, "created_at") else discord.utils.utcnow(),
+            }
+            response = await self.orchestrator.dispatch_message(agent_name, context)
+            await interaction.followup.send(str(response))
+        await self.tree.sync()
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
@@ -63,14 +85,12 @@ class LegionBot(discord.Client):
         interval = 60
         for name, agent_obj in self.orchestrator._agent_objects.items():
             if hasattr(agent_obj, "self_assess"):
-
                 async def schedule_self_assess(agent, interval):
                     # Immediate self-assess on startup
                     await agent.self_assess()
                     while True:
                         await asyncio.sleep(interval)
                         await agent.self_assess()
-
                 task = asyncio.create_task(schedule_self_assess(agent_obj, interval))
                 self.agent_tasks.append(task)
 
@@ -93,7 +113,14 @@ class LegionBot(discord.Client):
         await self.process_commands(message)
 
 
-# To run the bot, you would do something like:
-# import os
-# bot = LegionBot()
-# bot.run(os.getenv('DISCORD_TOKEN'))
+async def main():
+    token = os.getenv("DISCORD_TOKEN")
+    if not token:
+        print("[FATAL] DISCORD_TOKEN not set in environment or .env file.")
+        exit(1)
+    bot = LegionBot()
+    await bot.start(token)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())

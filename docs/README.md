@@ -58,7 +58,7 @@ Legion reads all channel IDs from these vars—make sure they match your Discord
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 chmod +x scripts/*.sh && scripts/init_memory.sh
-scripts/start_bot.sh
+./scripts/start_bot.sh
 ```
 
 - If you see errors, check your `.env` and dependencies.

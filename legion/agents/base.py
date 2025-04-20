@@ -37,9 +37,13 @@ class BaseAgent:
 
     async def self_assess(self):
         logging.info(f"[BaseAgent] {self.name} running self_assess()")
-        await self.post_to_discord(
-            "[Assessment] This is a placeholder self-assessment."
-        )
+        prompt = "Please self-assess your current state and summarize your next actions."
+        assessment = await self.handle_message({
+            "content": prompt,
+            "author": self.name,
+            "timestamp": None
+        })
+        await self.post_to_discord(f"[Assessment] {assessment}")
 
     async def handle_message(self, context):
         """

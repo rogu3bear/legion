@@ -22,19 +22,4 @@ All agents in Legion now use a single, unified message handling pipeline inherit
 
 This eliminates all per-agent prompt orchestration and ensures robust, consistent behavior across all personas.
 
-## Message Dispatch Flow (Mermaid)
-
-```mermaid
-flowchart TD
-    subgraph Discord Integration
-        A[on_message(event)]
-        A -->|wraps event| B[context dict]
-    end
-    B -->|calls| C[orchestrator.dispatch_message(agent_name, context)]
-    C -->|calls| D[agent.handle_message(context)]
-    D -->|returns| E[response]
-```
-
-**Method signatures:**
-- `orchestrator.dispatch_message(agent_name: str, context: dict)`
-- `agent.handle_message(context: dict)` 
+## Message Dispatch Flow

@@ -13,7 +13,6 @@
 - Local LLM Studio integration complete: OpenAI client now routes to http://127.0.0.1:1234/v1 when LLM_API_BASE_URL is set in .env. All agents and tests use local inference. Passing test_llm_connector.py confirms end-to-end local LLM connectivity. 
 - Updated documentation to replace hard-coded file paths with generic module references.
 - Clarified that memory helpers are referenced via the memory module, not specific files.
-- Added a Mermaid diagram to architecture.md showing the actual method names and signatures for the unified message dispatch pipeline: orchestrator.dispatch_message(agent_name, context) → agent.handle_message(context). 
 - Added tests to ensure that exceptions raised by agent handlers are caught, logged, and do not crash the orchestrator. Confirmed that one agent failing does not affect others. 
 - Added MetricsAgent and TherapistAgent: log reading and summary composition methods, with pytest coverage. All new agent tests pass green.
 - Implemented log reading and summary composition for MetricsAgent and TherapistAgent. All related tests in tests/agents/test_agents.py pass green.

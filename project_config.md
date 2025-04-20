@@ -11,7 +11,6 @@ version_pins:
   - ruff: "^0.11"
   - discord.py: "^2.0"  # Assuming v2 based on common usage
   - fastapi: "^0.100" # Placeholder, check requirements.txt
-  - uvicorn: "^0.20"  # Placeholder, check requirements.txt
   - python-dotenv: "^1.0" # Placeholder, check requirements.txt
   - openai: "^1.0"    # Placeholder, check requirements.txt
   - pyyaml: "^6.0"    # Placeholder, check requirements.txt

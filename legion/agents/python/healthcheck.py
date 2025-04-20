@@ -10,3 +10,5 @@ class HealthcheckAgent(BaseAgent):
         self._memory_test = {}
 
     # All message handling is now inherited from BaseAgent.
+
+    # self_assess and handle_message removed; use BaseAgent defaults.

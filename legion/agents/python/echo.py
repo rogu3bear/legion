@@ -8,3 +8,5 @@ class EchoAgent(BaseAgent):
         super().__init__(name, client, channel_id, config=config)
 
     # All message handling is now inherited from BaseAgent.
+
+    # self_assess and handle_message removed; use BaseAgent defaults.
