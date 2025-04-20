@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def test_llm_local_smoke():
-    os.environ["OPENAI_API_BASE"] = os.getenv("LLM_API_BASE_URL", "http://127.0.0.1:1234")
+    os.environ["OPENAI_API_BASE"] = os.getenv(
+        "LLM_API_BASE_URL", "http://127.0.0.1:1234"
+    )
     openai.api_base = os.environ["OPENAI_API_BASE"]
     openai.api_type = "openai"
     openai.api_key = os.getenv("OPENAI_API_KEY", "sk-local-testing")
@@ -26,4 +29,4 @@ def test_llm_local_smoke():
         assert text and "error" not in text.lower()
     except Exception as e:
         print("LLM endpoint error:", e)
-        pytest.skip(f"LLM endpoint not available or failed: {e}") 
+        pytest.skip(f"LLM endpoint not available or failed: {e}")

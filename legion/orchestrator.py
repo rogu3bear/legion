@@ -1,6 +1,3 @@
-"""
-Core orchestrator for Legion agents powered by Microsoft Autogen.
-"""
 import os
 import glob
 import yaml
@@ -10,10 +7,15 @@ import logging.config
 from memory.legion_memory import LegionAgentMemory
 from dotenv import load_dotenv
 import openai
+from core.utils.llm_client import LLMClient
 import asyncio
 import re
-import importlib
 from integration.discord.cogs.ux_feed import render_feed_item
+from legion.agents.python.doctor import DoctorAgent
+from legion.agents.python.ping import PingAgent
+from legion.agents.python.echo import EchoAgent
+from legion.agents.python.healthcheck import HealthcheckAgent
+import datetime
 
 # Configure logging if a YAML config exists
 LOGGING_CONFIG_PATH = os.path.join("config", "logging.yaml")
@@ -27,7 +29,13 @@ logger = logging.getLogger(__name__)
 try:
     load_dotenv(dotenv_path=".env")
     openai.api_key = os.getenv("OPENAI_API_KEY")
-    openai.api_base = os.getenv("OPENAI_API_BASE_URL")
+    # LM Studio override
+    llm_api_base = os.getenv("LLM_API_BASE_URL")
+    if llm_api_base:
+        openai.api_base = llm_api_base
+        openai.api_type = "openai"
+    else:
+        openai.api_base = os.getenv("OPENAI_API_BASE_URL")
     model = os.getenv("OPENAI_MODEL")
     temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.5))
     max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", 1000))
@@ -57,6 +65,7 @@ CHANNEL_ID_MAP = {
     "healthcheck_agent": GENERAL_CHANNEL_ID,
 }
 
+
 class Orchestrator:
     """Stub orchestrator (AutoGen code removed)."""
 
@@ -64,23 +73,57 @@ class Orchestrator:
         self.memory = {}
         self.agent_configs = self.load_agent_configs()
         self.agent_channel_ids = {}
+        self.agent_classes = {}
+        # Register Python agent classes
+        self.agent_classes = {
+            "doctor_agent": DoctorAgent,
+            "ping_agent": PingAgent,
+            "echo_agent": EchoAgent,
+            "healthcheck_agent": HealthcheckAgent,
+        }
         self.register_test_agents()
         self._agent_objects = {}
         self._post_agent_message = post_agent_message  # Discord posting helper
         # Update agent_channel_ids after registering test agents
-        self.agent_channel_ids = {name: self._get_channel_id(name) for name in self.agent_configs}
+        self.agent_channel_ids = {
+            name: self._get_channel_id(name) for name in self.agent_configs
+        }
+        self.channel_to_agent = {}
         for name, agent_def in self.agent_configs.items():
             self.memory[name] = LegionAgentMemory(name)
-            class_name = ''.join([part.capitalize() for part in name.split('_')])
             try:
-                module = importlib.import_module(f"legion.agents.python.{name}")
-                agent_cls = getattr(module, class_name)
-                self._agent_objects[name] = agent_cls(name)
+                # Load agent class from registry
+                agent_cls = self.agent_classes.get(name)
+                # Pass name, client (None), channel_id and apply config
+                channel_id = self.agent_channel_ids.get(name, 0)
+                agent_instance = agent_cls(name, None, channel_id)
+                # Apply loaded configuration to the instance
+                agent_instance.config = agent_def or {}
+                # Reinitialize the LLM client based on config
+                agent_instance.llm = LLMClient(
+                    api_key=agent_instance.config.get("llm_api_key"),
+                    model=agent_instance.config.get("llm_model"),
+                    api_base=agent_instance.config.get("llm_api_base"),
+                    **agent_instance.config.get("default_kwargs", {}),
+                )
+                # Set dynamic rules
+                agent_instance.dynamic_rules = agent_instance.config.get(
+                    "dynamic_rules", {}
+                )
+                self._agent_objects[name] = agent_instance
+                self.channel_to_agent[self.agent_channel_ids.get(name, 0)] = (
+                    agent_instance
+                )
             except Exception:
                 self._agent_objects[name] = object()
-        logger.info("Orchestrator initialized with agents: %s", list(self.agent_configs.keys()))
-        import datetime
-        test_payload = {"title": "ping", "body": "hello", "timestamp": datetime.datetime.utcnow().isoformat()}
+        logger.info(
+            "Orchestrator initialized with agents: %s", list(self.agent_configs.keys())
+        )
+        test_payload = {
+            "title": "ping",
+            "body": "hello",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }
         self.send_message("architect_agent", "metrics_agent", test_payload)
 
     def _get_channel_id(self, agent_name):
@@ -144,7 +187,12 @@ class Orchestrator:
         event = {"from": "user", "content": prompt}
         messages = [
             {"role": "system", "content": agent["system_prompt"]},
-            {"role": "user",   "content": agent["user_prompt"].format(event_content=prompt, event=event)}
+            {
+                "role": "user",
+                "content": agent["user_prompt"].format(
+                    event_content=prompt, event=event
+                ),
+            },
         ]
         if context:
             messages.extend(context)
@@ -155,10 +203,12 @@ class Orchestrator:
             max_tokens=max_tokens,
             top_p=top_p,
             frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty
+            presence_penalty=presence_penalty,
         )
         reply = response.choices[0].message.content
-        self.memory[agent_name].log_task({"type": "ask", "prompt": prompt, "response": reply})
+        self.memory[agent_name].log_task(
+            {"type": "ask", "prompt": prompt, "response": reply}
+        )
         return reply
 
     def broadcast(self, prompt):
@@ -171,18 +221,24 @@ class Orchestrator:
 
     def post_update(self, agent_name, content, files=None):
         """Logs an update for an agent."""
-        self.memory[agent_name].log_task({"type": "update", "content": content, "files": files or []})
+        self.memory[agent_name].log_task(
+            {"type": "update", "content": content, "files": files or []}
+        )
         # Hook: send to Discord channel via integration
         # (to be called by Discord integration)
 
     def comment_on_post(self, agent_name, target_agent, comment):
         """Logs a comment on another agent's post."""
-        self.memory[agent_name].log_task({"type": "comment", "target": target_agent, "comment": comment})
+        self.memory[agent_name].log_task(
+            {"type": "comment", "target": target_agent, "comment": comment}
+        )
         # Hook: send comment to Discord
 
     def react_to_post(self, agent_name, target_agent, emoji):
         """Logs a reaction to another agent's post."""
-        self.memory[agent_name].log_task({"type": "reaction", "target": target_agent, "emoji": emoji})
+        self.memory[agent_name].log_task(
+            {"type": "reaction", "target": target_agent, "emoji": emoji}
+        )
         # Hook: send reaction to Discord
 
     def request_assistance(self, agent_name, issue):
@@ -194,14 +250,17 @@ class Orchestrator:
         """Triggers self-assessment for an agent using recent logs."""
         # Use the agent's self_assessment_prompt and recent logs for assessment
         agent = self.agent_registry[agent_name]
-        prompt = agent.get("self_assessment_prompt", "Reflect on your recent actions. What went well, what could be improved?")
+        prompt = agent.get(
+            "self_assessment_prompt",
+            "Reflect on your recent actions. What went well, what could be improved?",
+        )
         logs = self.memory[agent_name].get_task_log()
         # Use last 5 logs for context
         context_logs = logs[-5:] if logs else []
         context_str = "\n".join([str(log) for log in context_logs])
         messages = [
             {"role": "system", "content": agent["system_prompt"]},
-            {"role": "user", "content": f"Recent activity:\n{context_str}\n\n{prompt}"}
+            {"role": "user", "content": f"Recent activity:\n{context_str}\n\n{prompt}"},
         ]
         response = openai.ChatCompletion.create(
             model=model,
@@ -210,10 +269,12 @@ class Orchestrator:
             max_tokens=max_tokens,
             top_p=top_p,
             frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty
+            presence_penalty=presence_penalty,
         )
         assessment = response.choices[0].message.content
-        self.memory[agent_name].log_task({"type": "self_assessment", "summary": assessment})
+        self.memory[agent_name].log_task(
+            {"type": "self_assessment", "summary": assessment}
+        )
         return assessment
 
     def assess_all_agents(self):
@@ -231,7 +292,10 @@ class Orchestrator:
                 # Detect @agent_name mentions
                 mentions = re.findall(r"@(\w+)", assessment)
                 for mentioned in mentions:
-                    self.notify_agent(mentioned, f"Mentioned by {agent} in self-assessment: {assessment[:100]}...")
+                    self.notify_agent(
+                        mentioned,
+                        f"Mentioned by {agent} in self-assessment: {assessment[:100]}...",
+                    )
             await asyncio.sleep(interval_minutes * 60)
 
     def notify_agent(self, agent_name, message):
@@ -241,24 +305,33 @@ class Orchestrator:
 
     def send_message(self, from_agent: str, to_agent: str, payload: dict):
         """Sends a message from one agent to another and logs it."""
-        import datetime
         payload = dict(payload)  # copy
-        payload['from'] = from_agent
-        if 'timestamp' not in payload:
-            payload['timestamp'] = datetime.datetime.utcnow().isoformat()
-        logger.info(f"Agent {from_agent} → {to_agent}: {payload.get('title', str(payload))}")
-        self.memory[from_agent].log_task({"type": "message_sent", "to": to_agent, "payload": payload})
-        self.memory[to_agent].log_task({"type": "message_received", "from": from_agent, "payload": payload})
+        payload["from"] = from_agent
+        if "timestamp" not in payload:
+            payload["timestamp"] = datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat()
+        logger.info(
+            f"Agent {from_agent} → {to_agent}: {payload.get('title', str(payload))}"
+        )
+        self.memory[from_agent].log_task(
+            {"type": "message_sent", "to": to_agent, "payload": payload}
+        )
+        self.memory[to_agent].log_task(
+            {"type": "message_received", "from": from_agent, "payload": payload}
+        )
         self.deliver_message(to_agent, payload)
 
     def deliver_message(self, to_agent: str, payload: dict):
         """Delivers a message to an agent object and logs it."""
         agent_obj = self._agent_objects.get(to_agent)
-        if agent_obj and hasattr(agent_obj, 'receive_message'):
+        if agent_obj and hasattr(agent_obj, "receive_message"):
             logger.info(f"Delivering message to live agent instance: {to_agent}")
             agent_obj.receive_message(payload)
         self.memory[to_agent].log_task({"type": "message_received", "payload": payload})
-        logger.info(f"Agent {to_agent} not live; message stored in memory: {payload.get('title', str(payload))}")
+        logger.info(
+            f"Agent {to_agent} not live; message stored in memory: {payload.get('title', str(payload))}"
+        )
         # Post to Discord if helper is set
         if self._post_agent_message:
             try:
@@ -269,13 +342,44 @@ class Orchestrator:
                     ("Priority", payload.get("priority", "-")),
                     ("Timestamp", payload.get("timestamp")),
                 ]
-                embed = render_feed_item(payload.get("from", "?"), payload.get("title", "Message"), fields=fields)
-                asyncio.create_task(self._post_agent_message(payload.get("from"), embed))
-                embed2 = render_feed_item(to_agent, f"New message from {payload.get('from')}: {payload.get('title')}", fields=fields)
+                embed = render_feed_item(
+                    payload.get("from", "?"),
+                    payload.get("title", "Message"),
+                    fields=fields,
+                )
+                asyncio.create_task(
+                    self._post_agent_message(payload.get("from"), embed)
+                )
+                embed2 = render_feed_item(
+                    to_agent,
+                    f"New message from {payload.get('from')}: {payload.get('title')}",
+                    fields=fields,
+                )
                 asyncio.create_task(self._post_agent_message(to_agent, embed2))
             except Exception as e:
                 logger.error(f"Failed to post inter-agent message to Discord: {e}")
 
     def load_yaml(self, path):
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             return yaml.safe_load(f)
+
+    async def dispatch_message(self, agent_name, context):
+        """
+        Dispatches a message to the agent, passing a context dict with keys:
+        channel_id, thread_id, content, author, timestamp
+        Now passes the entire context object to the agent's handle_message method.
+        """
+        agent = self._agent_objects.get(agent_name)
+        if agent and hasattr(agent, "handle_message"):
+            try:
+                return await agent.handle_message(context)
+            except Exception as e:
+                logger.error(
+                    f"[Orchestrator] Error in {agent_name}.handle_message: {e}"
+                )
+                return f"[Error: {agent_name} failed to handle message]"
+        else:
+            logger.warning(
+                f"[Orchestrator] Agent {agent_name} missing or lacks handle_message."
+            )
+            return f"[Error: {agent_name} not available]"

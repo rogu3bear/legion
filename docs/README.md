@@ -7,29 +7,29 @@ Modular agent orchestration system.
 Legion is organized into eight distinct logic layers:
 
 1. **Configuration Layer**
-   - YAML agent definitions and `.env` variables (prompts, schedules, channel IDs)
-   - Location: `legion/configs/`, `.env`
+   - YAML agent definitions and environment variables (prompts, schedules, channel IDs)
+   - Location: configuration module
 2. **Orchestration Layer**
    - The "brain" that loads configs, spins up agents, routes messages, and schedules tasks
-   - Location: `legion/orchestrator.py`
+   - Location: orchestration module
 3. **Agent Layer**
    - Persona runtime code (Architect, Doctor, Researcher, Ping, Echo, Healthcheck, etc.)
-   - Location: `legion/agents/`
+   - Location: agent modules
 4. **Skill & Utility Layer**
    - Reusable helpers: search engines, summarizers, networking, indexing, retry logic
-   - Location: `skills/`, `core/utils/`
+   - Location: skills and utility modules
 5. **Persistence Layer**
-   - Persistent state: SQLite DB, memory API, JSONL logs
-   - Location: `memory/`
+   - Persistent state: database, memory API, logs
+   - Location: memory module
 6. **Integration Layer**
    - Discord-bot glue: cogs, settings, bot bootstrap
-   - Location: `integration/discord/`
+   - Location: integration module
 7. **Presentation Layer**
-   - Web UI: FastAPI endpoints, front-end scripts, templates
-   - Location: `interface/`
+   - Web UI: API endpoints, front-end scripts, templates
+   - Location: interface module
 8. **Infrastructure Layer**
    - Ops-focused tooling: scripts, CI workflows, migrations, changelog, docs
-   - Location: `scripts/`, `.github/`, `docs/`, `changelog.md`, etc.
+   - Location: infrastructure modules
 
 ---
 
@@ -62,4 +62,25 @@ scripts/start_bot.sh
 ```
 
 - If you see errors, check your `.env` and dependencies.
-- For help, see the docs or run `scripts/verify_discord.sh`. 
+- For help, see the documentation or run the Discord integration verification script.
+
+## Unified Agent Message Handling
+
+All Legion agents now inherit a single, unified message handling pipeline from `BaseAgent`. This pipeline:
+
+1. Loads the agent's default prompt from its config (with a safe fallback).
+2. Retrieves top-K relevant memory snippets using the memory module's index helper.
+3. Fetches the last N messages from the Discord thread for context.
+4. Builds the LLM payload in this order:
+   - System message with the default prompt
+   - System message summarizing retrieved memories (or a fallback if none)
+   - The thread history messages (user/assistant)
+   - The new user message
+5. Sends the payload to the LLM and posts the reply back to Discord.
+6. Extracts and stores new memory items from the assistant's reply.
+
+No agent-specific prompt orchestration remains—every agent uses this robust, error-tolerant flow.
+
+## Developer Guide
+
+See [Developer Guide](developer_guide.md) for a full end-to-end flow diagram, helper documentation, and error handling details. 

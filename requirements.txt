@@ -1,5 +1,4 @@
 fastapi
 uvicorn
-pydantic
-discord.py
-alembic
+openai
+numpy

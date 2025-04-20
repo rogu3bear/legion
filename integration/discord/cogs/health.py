@@ -3,8 +3,10 @@
 import asyncio
 import time
 
+
 class HealthCog:
     pass
+
 
 class HealthcheckAgent:
     def __init__(self, name, config=None, channel=None):
@@ -27,4 +29,4 @@ class HealthcheckAgent:
             else:
                 await msg.add_reaction("⚠️")
                 self.memory.log_task({"type": "health_failure", "uptime": uptime})
-            await asyncio.sleep(self.config.get("check_interval_minutes", 5) * 60) 
+            await asyncio.sleep(self.config.get("check_interval_minutes", 5) * 60)

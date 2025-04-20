@@ -1,11 +1,15 @@
 """
 Legion agent persistent memory manager for agent state.
 """
+
 import os
 import json
 import shutil
 import sqlite3
 from datetime import datetime
+import logging
+import math
+
 
 class LegionAgentMemory:
     def __init__(self, agent_name, base_dir="memory"):
@@ -17,7 +21,7 @@ class LegionAgentMemory:
         self.docs_dir = os.path.join(self.base_dir, "docs")
         os.makedirs(self.docs_dir, exist_ok=True)
         os.makedirs(self.base_dir, exist_ok=True)
-        self.db_path = os.path.join(os.path.dirname(__file__), 'db', 'legion.db')
+        self.db_path = os.path.join(os.path.dirname(__file__), "db", "legion.db")
         self._ensure_db()
         self._data = self._load_data()
 
@@ -25,11 +29,13 @@ class LegionAgentMemory:
         """Ensures the SQLite DB and task_log table exist."""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS task_log (
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS task_log (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         agent_name TEXT,
                         task_data TEXT
-                    )''')
+                    )"""
+        )
         conn.commit()
         conn.close()
 
@@ -61,8 +67,10 @@ class LegionAgentMemory:
         """Logs a task to the SQLite DB."""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute('INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)',
-                  (self.agent_name, json.dumps(task)))
+        c.execute(
+            "INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)",
+            (self.agent_name, json.dumps(task)),
+        )
         conn.commit()
         conn.close()
 
@@ -70,7 +78,9 @@ class LegionAgentMemory:
         """Retrieves the agent's task log from the DB."""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute('SELECT task_data FROM task_log WHERE agent_name = ?', (self.agent_name,))
+        c.execute(
+            "SELECT task_data FROM task_log WHERE agent_name = ?", (self.agent_name,)
+        )
         rows = c.fetchall()
         conn.close()
         return [json.loads(row[0]) for row in rows]
@@ -106,3 +116,90 @@ class LegionAgentMemory:
         base = os.path.join(self.docs_dir, name)
         prefix = os.path.basename(base) + "."
         return [f for f in os.listdir(self.docs_dir) if f.startswith(prefix)]
+
+    @staticmethod
+    def _vector_store_path(agent_name, base_dir="memory"):
+        """Returns the path to the agent's vector store JSONL file."""
+        return os.path.join(base_dir, agent_name, "vector_store.jsonl")
+
+    @staticmethod
+    def _cosine_similarity(vec1, vec2):
+        """Compute cosine similarity between two vectors."""
+        if not vec1 or not vec2 or len(vec1) != len(vec2):
+            return 0.0
+        dot = sum(a * b for a, b in zip(vec1, vec2))
+        norm1 = math.sqrt(sum(a * a for a in vec1))
+        norm2 = math.sqrt(sum(b * b for b in vec2))
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        return dot / (norm1 * norm2)
+
+    @classmethod
+    def retrieve_memories(cls, agent_name, embedding, top_k, base_dir="memory"):
+        """
+        Loads or creates the vector index for that agent. Returns up to topK text snippets most similar to the embedding.
+        Returns an empty list if nothing is there.
+        """
+        path = cls._vector_store_path(agent_name, base_dir)
+        if not os.path.exists(path):
+            return []
+        try:
+            items = []
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        obj = json.loads(line)
+                        if "embedding" in obj and "text" in obj:
+                            sim = cls._cosine_similarity(embedding, obj["embedding"])
+                            items.append((sim, obj["text"]))
+                    except Exception:
+                        continue
+            items.sort(reverse=True, key=lambda x: x[0])
+            return [text for _, text in items[:top_k]]
+        except Exception as e:
+            logging.error(
+                f"[LegionAgentMemory] Failed to retrieve memories for {agent_name}: {e}"
+            )
+            return []
+
+    @classmethod
+    def store_memories(cls, agent_name, snippets, base_dir="memory"):
+        """
+        Upserts the given snippets into the agent's vector store. Retries once on failure, logs error if still failing.
+        Each snippet should be a dict with 'text' and 'embedding'.
+        """
+        path = cls._vector_store_path(agent_name, base_dir)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        def _write():
+            with open(path, "a", encoding="utf-8") as f:
+                for snip in snippets:
+                    if (
+                        isinstance(snip, dict)
+                        and "text" in snip
+                        and "embedding" in snip
+                    ):
+                        f.write(json.dumps(snip) + "\n")
+
+        try:
+            _write()
+        except Exception as e:
+            logging.warning(
+                f"[LegionAgentMemory] Store failed for {agent_name}, retrying: {e}"
+            )
+            try:
+                _write()
+            except Exception as e2:
+                logging.error(
+                    f"[LegionAgentMemory] Store failed again for {agent_name}: {e2}"
+                )
+
+
+def retrieve_memories(agent_name, embedding, top_k, base_dir="memory"):
+    return LegionAgentMemory.retrieve_memories(
+        agent_name, embedding, top_k, base_dir=base_dir
+    )
+
+
+def store_memories(agent_name, snippets, base_dir="memory"):
+    return LegionAgentMemory.store_memories(agent_name, snippets, base_dir=base_dir)

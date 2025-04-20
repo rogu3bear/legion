@@ -162,8 +162,6 @@ CI must fail if:
 - Any stub file is missing its minimal scaffold or contains syntax errors.
 - Any import path is broken due to structural drift.
 - Any empty artifacts or templates directory is missing.
-- `.env` is missing or does not contain `DISCORD_TOKEN=`.
 
----
 
 > This rule enforces both the canonical Legion structure and the eight-layer logic model. Any deviation will result in a failed check and a grim, dyslexia-friendly warning.

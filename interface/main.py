@@ -8,23 +8,27 @@ import asyncio
 import json
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 from legion.orchestrator import Orchestrator
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     """Renders the main feed HTML page."""
     return templates.TemplateResponse("feed.html", {"request": request})
+
 
 @app.get("/api/feed")
 def get_feed():
     """Returns the latest events from the orchestrator as JSON."""
     events = Orchestrator().run_once()
     return JSONResponse(events[-20:] if len(events) > 20 else events)
+
 
 @app.websocket("/ws/events")
 async def websocket_endpoint(websocket: WebSocket):
@@ -38,6 +42,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
 
+
 @app.get("/")
 def root():
-    return {"message": "Legion Interface Stub"} 
+    return {"message": "Legion Interface Stub"}

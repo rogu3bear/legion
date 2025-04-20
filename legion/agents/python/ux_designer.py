@@ -1,9 +1,7 @@
 from legion.agents.base import BaseAgent
 
 
-class ResearcherAgent(BaseAgent):
-    """Stub for ResearcherAgent."""
-
+class UxDesignerAgent(BaseAgent):
     def __init__(self, name, client, channel_id, config=None):
         super().__init__(name, client, channel_id, config=config)
 

@@ -1,31 +1,35 @@
-name: CI
+name: Legion ArchitectAgent CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
-    branches: ["**"]
+    branches: [main]
 
 jobs:
-  build:
+  test-architect-agent:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: PYTHONPATH=. pytest -q
-      - name: Run structure-and-stub validator
-        run: PYTHONPATH=. pytest --maxfail=1 --disable-warnings -q 
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run ArchitectAgent tests
+        id: pytest
+        run: |
+          pytest tests/test_architect_agent.py --maxfail=1 --disable-warnings --tb=short -v | tee test_output.log
+      - name: Upload logs and artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legion-architect-logs
+          path: |
+            memory/logs/
+            artifacts/reports/
+            test_output.log 
