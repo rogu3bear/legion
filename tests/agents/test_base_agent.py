@@ -1,7 +1,10 @@
-import pytest
-import datetime
 import asyncio
+import datetime
 import os
+
+import pytest
+
+from integration.discord.bot import fetch_thread_history
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.doctor import DoctorAgent
 from legion.agents.python.echo import EchoAgent
@@ -10,9 +13,8 @@ from legion.agents.python.ping import PingAgent
 from legion.agents.python.researcher import ResearcherAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
-from memory.legion_memory import LegionAgentMemory
-from integration.discord.bot import fetch_thread_history
 from legion.orchestrator import Orchestrator
+from memory.legion_memory import LegionAgentMemory
 
 
 @pytest.mark.asyncio
@@ -29,8 +31,10 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
         "history_limit": 3,
         "embedding_model": "test-embed-model",
     }
+
     class DummyOrchestrator:
         agent_channel_ids = {"echo_agent": 123}
+
     agent = EchoAgent(DummyOrchestrator())
     agent.name = "echo_agent"
     agent.client = DummyClient()
@@ -41,7 +45,11 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
     monkeypatch.setattr(agent, "get_message_embedding", lambda text: [0.1, 0.2])
     # Stub retrieve_memories
     retrieved = ["mem1", "mem2"]
-    monkeypatch.setattr(LegionAgentMemory, "retrieve_memories", staticmethod(lambda name, emb, k, base_dir="memory": retrieved))
+    monkeypatch.setattr(
+        LegionAgentMemory,
+        "retrieve_memories",
+        staticmethod(lambda name, emb, k, base_dir="memory": retrieved),
+    )
     # Stub fetch_thread_history
     stub_history = [
         {"role": "user", "content": "hi"},
@@ -56,9 +64,13 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
     def fake_call_llm(thread_id, messages, **kwargs):
         captured["thread_id"] = thread_id
         captured["messages"] = messages
+        captured["kwargs"] = kwargs
         return "reply"
 
     monkeypatch.setattr(agent, "call_llm", fake_call_llm)
+    # Add per-agent override config
+    agent.config["model"] = "custom-model"
+    agent.config["temperature"] = 0.9
     # Stub post_to_discord to avoid real Discord calls
     posted = []
 
@@ -68,9 +80,11 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
     monkeypatch.setattr(agent, "post_to_discord", fake_post)
     # Stub store_memories
     stored = {}
+
     def fake_store(name, mems, base_dir="memory"):
         stored["agent_name"] = name
         stored["mems"] = mems
+
     monkeypatch.setattr(LegionAgentMemory, "store_memories", staticmethod(fake_store))
 
     # Call handle_message
@@ -83,13 +97,23 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
 
     # Construct expected payload
     expected_messages = [
-        {"role": "system", "content": "You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow."},
+        {
+            "role": "system",
+            "content": "You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow.",
+        },
         {"role": "system", "content": "Previously on our project: mem1\nmem2"},
-        {"role": "system", "content": "Reflection: think step-by-step before answering."},
+        {
+            "role": "system",
+            "content": "Reflection: think step-by-step before answering.",
+        },
         *stub_history,
         {"role": "user", "content": context},
     ]
     assert captured.get("messages") == expected_messages
+    # Model and temperature overrides applied
+    assert "kwargs" in captured, "Override kwargs not captured by fake_call_llm"
+    assert captured["kwargs"].get("model") == "custom-model"
+    assert captured["kwargs"].get("temperature") == 0.9
 
 
 def test_legion_agent_memory_vector_store(tmp_path, monkeypatch):
@@ -181,10 +205,26 @@ async def test_agent_smoke_all_inherit(monkeypatch):
                 async def history(self, limit):
                     return
                     yield
+
             return DummyChan()
+
     class DummyOrchestrator:
-        agent_channel_ids = {k: i for i, k in enumerate([
-            "architect_agent", "doctor_agent", "echo_agent", "healthcheck_agent", "ping_agent", "researcher_agent", "therapist_agent", "ux_designer_agent"])}
+        agent_channel_ids = {
+            k: i
+            for i, k in enumerate(
+                [
+                    "architect_agent",
+                    "doctor_agent",
+                    "echo_agent",
+                    "healthcheck_agent",
+                    "ping_agent",
+                    "researcher_agent",
+                    "therapist_agent",
+                    "ux_designer_agent",
+                ]
+            )
+        }
+
     agents = [
         ArchitectAgent(DummyOrchestrator()),
         DoctorAgent(DummyOrchestrator()),
@@ -196,7 +236,14 @@ async def test_agent_smoke_all_inherit(monkeypatch):
         UxDesignerAgent(DummyOrchestrator()),
     ]
     names = [
-        "architect_agent", "doctor_agent", "echo_agent", "healthcheck_agent", "ping_agent", "researcher_agent", "therapist_agent", "ux_designer_agent"
+        "architect_agent",
+        "doctor_agent",
+        "echo_agent",
+        "healthcheck_agent",
+        "ping_agent",
+        "researcher_agent",
+        "therapist_agent",
+        "ux_designer_agent",
     ]
     for agent, name in zip(agents, names):
         agent.name = name
@@ -229,7 +276,9 @@ async def test_agent_smoke_all_inherit(monkeypatch):
         UxDesignerAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
     )
     # Patch LegionAgentMemory.retrieve_memories to avoid file IO for all agents
-    monkeypatch.setattr(LegionAgentMemory, "retrieve_memories", staticmethod(lambda *a, **k: []))
+    monkeypatch.setattr(
+        LegionAgentMemory, "retrieve_memories", staticmethod(lambda *a, **k: [])
+    )
 
     # Patch fetch_thread_history to avoid Discord API
     async def fake_history(self, channel_id, thread_id, limit):
@@ -238,8 +287,10 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     for agent in agents:
         monkeypatch.setattr(agent, "fetch_thread_history", fake_history.__get__(agent))
         monkeypatch.setattr(agent, "call_llm", lambda thread_id, messages: "ok")
+
         async def fake_post_to_discord(msg):
             return None
+
         monkeypatch.setattr(agent, "post_to_discord", fake_post_to_discord)
     # Should not raise
     for agent in agents:
@@ -289,12 +340,19 @@ def test_dispatch_message_with_context(monkeypatch):
 
 def test_embedding_fallback(monkeypatch, caplog):
     from legion.agents.base import BaseAgent
+
     class DummyOrchestrator:
         agent_channel_ids = {}
+
     agent = BaseAgent(DummyOrchestrator())
     # Patch openai.Embedding.create to raise
     import openai
-    monkeypatch.setattr(openai.Embedding, "create", lambda *a, **kw: (_ for _ in ()).throw(Exception("fail")))
+
+    monkeypatch.setattr(
+        openai.Embedding,
+        "create",
+        lambda *a, **kw: (_ for _ in ()).throw(Exception("fail")),
+    )
     with caplog.at_level("WARNING"):
         with pytest.raises(RuntimeError) as exc:
             agent.get_message_embedding("test")
