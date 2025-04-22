@@ -20,6 +20,15 @@ jobs:
           . venv/bin/activate
           pip install -U pip
           pip install -r requirements.txt
+          pip install flake8
+      - name: Lint code
+        run: |
+          . venv/bin/activate
+          flake8 .
+      - name: Security Scan (Bandit)
+        run: |
+          . venv/bin/activate
+          bandit -r legion/ -o artifacts/reports/bandit_report_ci.json -f json
       - name: Run tests
         env:
           GENERAL_CHANNEL_ID: '0'
@@ -31,12 +40,21 @@ jobs:
           DISCORD_TOKEN: 'test'
         run: |
           . venv/bin/activate
+          mkdir -p scripts/logs
+          mkdir -p artifacts/reports
           pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ --maxfail=1 --disable-warnings -q
-      - name: Lint code
-        run: |
-          . venv/bin/activate
-          pip install flake8
-          flake8 .
+      - name: Upload Logs on Failure
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: legion-logs-build
+          path: scripts/logs/
+      - name: Upload Reports on Failure
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: legion-reports-build
+          path: artifacts/reports/
 
   test:
     runs-on: ubuntu-latest
@@ -52,6 +70,13 @@ jobs:
         pip install -r requirements.txt
     - name: Run tests
       run: |
+        mkdir -p scripts/logs
         pytest -v --maxfail=5 --disable-warnings
       env:
-        PYTHONPATH: $PYTHONPATH:. 
+        PYTHONPATH: $PYTHONPATH:.
+    - name: Upload Logs on Failure
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: legion-logs-test
+        path: scripts/logs/ 
