@@ -4,21 +4,47 @@ import asyncio
 import json
 import os
 import sys
+from pathlib import Path
+from typing import Any
 
 from legion.orchestrator import Orchestrator
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from legion.core.logging_config import setup_logging
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 # Ensure the project root directory is in the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # Needs to be after sys.path modification:
 
+logger = setup_logging(__name__)
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# WebSocket connections manager (simple list for now)
+active_connections: list[WebSocket] = []
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response: Response = await call_next(request)
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+        )
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['X-Frame-Options'] = 'DENY'
+        # Only set HSTS if running under HTTPS
+        if request.url.scheme == 'https':
+            response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
@@ -49,3 +75,54 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.get("/")
 def root():
     return {"message": "Legion Interface Stub"}
+
+
+async def send_to_all(message: str):
+    """Sends a message to all connected WebSocket clients."""
+    logger.debug(f"Broadcasting message to {len(active_connections)} clients", extra={"message_content": message[:50] + "..." if len(message) > 50 else message})
+    disconnected_clients = []
+    for connection in active_connections:
+        try:
+            await connection.send_text(message)
+        except WebSocketDisconnect:
+            logger.info("Client disconnected during broadcast.")
+            disconnected_clients.append(connection)
+        except Exception as e:
+            logger.error("Error sending message to WebSocket client", exc_info=e)
+            disconnected_clients.append(connection)
+    # Clean up disconnected clients
+    for client in disconnected_clients:
+        active_connections.remove(client)
+
+
+@app.websocket("/ws/feed")
+async def websocket_feed(websocket: WebSocket):
+    """WebSocket endpoint for the live feed."""
+    logger.info("WebSocket client connected to feed.")
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            # Keep connection alive, potentially receive commands
+            data = await websocket.receive_text()
+            logger.debug(f"Received command from WebSocket: {data}")
+            # Process commands if needed (e.g., filter feed)
+            # For now, just echo back or log
+            await websocket.send_text(f"Echo: {data}") # Example echo
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected gracefully.")
+    except Exception as e:
+        logger.exception("WebSocket error", exc_info=e)
+    finally:
+        logger.info("Removing client from active connections.")
+        active_connections.remove(websocket)
+
+
+async def push_updates():
+    """Example background task to simulate pushing feed updates."""
+    count = 0
+    logger.info("Starting background update task.")
+    while True:
+        await asyncio.sleep(5) # Simulate delay
+        count += 1
