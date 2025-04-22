@@ -1,45 +1,70 @@
+"""
+Base agent class for Legion agents.
+
+Provides core agent logic, Discord posting, memory, and LLM integration.
+"""
+
 import logging
-from typing import Any, Dict, List
-from core.utils.llm_client import LLMClient
-import openai
-logging.getLogger("openai").setLevel(logging.WARNING)
-from memory.legion_memory import LegionAgentMemory
-from datetime import datetime
 import threading
 import time
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+import hashlib
+
+import openai
+
+from legion.core.llm_client import LLMClient
+from legion.core.prompt_builder import PromptBuilder
+from memory.legion_memory import LegionAgentMemory
+from legion.core.di_container import container, ILLMClient
+from legion.core.logging_config import setup_logging
+
+logging.getLogger("openai").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
 
 AGENT_EMOJIS = {
     "architect_agent": "🏗️",
-    "metrics_agent":   "📊",
-    "ux_designer_agent":"🎨",
+    "metrics_agent": "📊",
+    "ux_designer_agent": "🎨",
     "therapist_agent": "🗣️",
-    "ping_agent":      "📶",
-    "echo_agent":      "🔁",
-    "healthcheck_agent":"✅",
+    "ping_agent": "📶",
+    "echo_agent": "🔁",
+    "healthcheck_agent": "✅",
 }
 
+
 class BaseAgent:
-    def __init__(self, orchestrator):
-        self.orchestrator = orchestrator
-        self.name = self.__class__.__name__.replace('Agent', '').lower() + '_agent'
+    """Base class for all Legion agents, providing shared logic and interfaces."""
+
+    def __init__(self, name: str, config: dict, llm_client: 'ILLMClient' = None, state_manager: 'IStateManager' = None):
+        """Initialize the Base Agent with dependency injection for LLM client and state manager."""
+        self.name = name
+        self.config = config
+        self.logger = logging.getLogger(f'agent.{name}')
+        setup_logging()  # Ensure logging is configured
+        self.logger.info(f'Agent {name} initialized', extra={'agent_name': name})
+        self.orchestrator = None
         self.client = None
-        self.channel_id = getattr(orchestrator, 'agent_channel_ids', {}).get(self.name, 0)
-        self.config = {}
-        self.llm = LLMClient()
+        self.channel_id = getattr(self.orchestrator, "agent_channel_ids", {}).get(
+            self.name, 0
+        )
         self.dynamic_rules = {}
         self.memory = LegionAgentMemory(self.name)
         # Track if agent has introduced itself
         self.introduced = False
         self._self_assessment_running = False
         self._self_assessment_lock = threading.Lock()
+        # Use injected LLM client if provided, otherwise resolve from DI container
+        self.llm = llm_client or container.get(ILLMClient)
 
     async def post_to_discord(self, message):
-        # Always resolve channel from orchestrator mapping
+        """Post a message to the agent's Discord channel, splitting if too long."""
         channel_id = self.orchestrator.agent_channel_ids.get(self.name)
         if not channel_id:
             logging.error(f"[BaseAgent] No channel_id found for agent {self.name}")
             return
-        if self.client is None and hasattr(self.orchestrator, 'client'):
+        if self.client is None and hasattr(self.orchestrator, "client"):
             self.client = self.orchestrator.client
         channel = self.client.get_channel(channel_id) if self.client else None
         emoji = AGENT_EMOJIS.get(self.name, "")
@@ -47,121 +72,230 @@ class BaseAgent:
         # Discord max message length is 2000 chars
         MAX_LEN = 2000
         if not channel:
-            logging.warning(f"[BaseAgent] Channel {channel_id} not found for agent {self.name}")
+            logging.warning(
+                f"[BaseAgent] Channel {channel_id} not found for agent {self.name}"
+            )
             return
         # Split message if too long
         if len(message) > MAX_LEN:
             chunks = []
-            lines = message.split('\n')
+            lines = message.split("\n")
             chunk = ""
             for line in lines:
                 if len(chunk) + len(line) + 1 > MAX_LEN:
                     chunks.append(chunk)
                     chunk = line
                 else:
-                    chunk += ('\n' if chunk else '') + line
+                    chunk += ("\n" if chunk else "") + line
             if chunk:
                 chunks.append(chunk)
             for i, chunk in enumerate(chunks):
                 suffix = f"\n[Message chunk {i+1}/{len(chunks)}]"
-                to_send = (chunk + suffix) if i == len(chunks)-1 else chunk
+                to_send = chunk + suffix if i == len(chunks) - 1 else chunk
                 await channel.send(f"{prefix}{to_send}")
         else:
             await channel.send(f"{prefix}{message}")
 
     async def self_assess(self):
+        """Run a self-assessment and post the result to Discord."""
         logging.info(f"[BaseAgent] {self.name} running self_assess()")
         assessment = await self.handle_message(
             content="Please self-assess your current state and summarize your next actions.",
             author=self.name,
-            timestamp=None
+            timestamp=None,
         )
         await self.post_to_discord(f"[Assessment] {assessment}")
 
-    async def handle_message(self, content=None, author=None, timestamp=None, context=None):
-        """
-        Unified message handling for all agents with memory and thread-awareness.
-        """
-        # Emit introduction on first message
-        if not self.introduced:
-            first_line = self.system_prompt.strip().splitlines()[0]
-            intro = f"{AGENT_EMOJIS.get(self.name,'')} **{self.name}** here! {first_line}"
-            await self.post_to_discord(intro)
-            self.introduced = True
-        user_query = content if content is not None else (context["content"] if context else "")
-        timestamp = timestamp if timestamp is not None else (context["timestamp"] if context and "timestamp" in context else None)
-        thread_id = (
-            timestamp.isoformat() if hasattr(timestamp, "isoformat") else str(timestamp)
-        )
-        # 1. Persona system prompt
+    async def handle_message(
+        self, content=None, author=None, timestamp=None, context=None
+    ):
+        """Handle a message, manage memory, and interact with LLM and Discord."""
         try:
-            if hasattr(self, "system_prompt") and self.system_prompt:
-                system_prompt = self.system_prompt.strip()
-            else:
-                system_prompt = self.config.get("default_prompt") or "You are a helpful assistant."
+            # Emit introduction on first message
+            if not self.introduced:
+                try:
+                    if hasattr(self, "system_prompt") and self.system_prompt:
+                        first_line = self.system_prompt.strip().splitlines()[0]
+                    else:
+                        first_line = "Ready to assist."
+                except Exception as e:
+                    logging.warning(f"[{self.name}] Failed to build introduction: {e}")
+                    first_line = "Ready to assist."
+                intro = (
+                    f"{AGENT_EMOJIS.get(self.name, '')} **{self.name}** here! {first_line}"
+                )
+                await self.post_to_discord(intro)
+                self.introduced = True
+            user_query = (
+                content if content is not None else (context["content"] if context else "")
+            )
+            timestamp = (
+                timestamp
+                if timestamp is not None
+                else (context["timestamp"] if context and "timestamp" in context else None)
+            )
+            thread_id = (
+                timestamp.isoformat() if hasattr(timestamp, "isoformat") else str(timestamp)
+            )
+            # 1. Persona system prompt
+            try:
+                if hasattr(self, "system_prompt") and self.system_prompt:
+                    system_prompt = self.system_prompt.strip()
+                else:
+                    system_prompt = (
+                        self.config.get("default_prompt") or "You are a helpful assistant."
+                    )
+            except AttributeError as e:
+                logging.error(f"[{self.name}] Failed to load system prompt due to attribute error: {e}")
+                system_prompt = "You are a helpful assistant."
+            except KeyError as e:
+                logging.error(f"[{self.name}] Failed to load system prompt due to missing key: {e}")
+                system_prompt = "You are a helpful assistant."
+            # 2. Retrieve long-term memory via helper
+            try:
+                message_embedding = self.get_message_embedding(user_query)
+                top_k = self.config.get("memory_top_k", 3)
+                memories = self.mem_retrieve(
+                    message_embedding,
+                    top_k,
+                    tags=self.config.get("memory_tags"),
+                    timestamp=timestamp,
+                )
+            except RuntimeError as e:
+                logging.warning(f"[{self.name}] Failed to retrieve memories due to runtime error: {e}")
+                memories = []
+            except ValueError as e:
+                logging.warning(f"[{self.name}] Failed to retrieve memories due to value error: {e}")
+                memories = []
+            # 3. Fetch conversation history (last 5 messages)
+            try:
+                channel_id = self.orchestrator.agent_channel_ids.get(self.name)
+                thread_history = await self.fetch_thread_history(channel_id, thread_id, 5)
+            except RuntimeError as e:
+                logging.error(f"[{self.name}] Failed to fetch thread history due to runtime error: {e}")
+                thread_history = []
+            except AttributeError as e:
+                logging.error(f"[{self.name}] Failed to fetch thread history due to attribute error: {e}")
+                thread_history = []
+            # 4. Build LLM payload using PromptBuilder
+            messages = PromptBuilder.build(
+                system_prompt=system_prompt,
+                memories=memories,
+                thread_history=thread_history,
+                user_query=user_query,
+            )
+            # 5. Call LLM with per-agent overrides (model, temperature)
+            override_kwargs: Dict[str, Any] = {}
+            if "model" in self.config:
+                override_kwargs["model"] = self.config["model"]
+            if "temperature" in self.config:
+                override_kwargs["temperature"] = self.config["temperature"]
+            try:
+                start_time = time.time()
+                reply = self.call_llm(thread_id, messages, **override_kwargs)
+                end_time = time.time()
+                # Record latency metric
+                try:
+                    if hasattr(self, "orchestrator") and hasattr(
+                        self.orchestrator, "state"
+                    ):
+                        self.orchestrator.state.log_task(
+                            {
+                                "type": "llm_latency",
+                                "agent": self.name,
+                                "latency": end_time - start_time,
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
+                            }
+                        )
+                except AttributeError as e:
+                    logging.warning(f"[{self.name}] Failed to log latency due to attribute error: {e}")
+                except RuntimeError as e:
+                    logging.warning(f"[{self.name}] Failed to log latency due to runtime error: {e}")
+                print(f"[DEBUG] LLM raw response: {reply}")
+                # Check for 'choices' in the response
+                if hasattr(reply, "choices") or (
+                    isinstance(reply, dict) and "choices" in reply
+                ):
+                    print("[DEBUG] SUCCESS: 'choices' field found in response.")
+                else:
+                    print(
+                        "[DEBUG] ERROR: 'choices' field NOT found in response! Check LM Studio model and config."
+                    )
+                # Return the assistant reply as before
+                return reply
+            except RuntimeError as e:
+                logging.error(f"[{self.name}] LLM call failed due to runtime error: {e}")
+                reply = "[Error: LLM unavailable]"
+            except ValueError as e:
+                logging.error(f"[{self.name}] LLM call failed due to value error: {e}")
+                reply = "[Error: LLM unavailable]"
+            # 6. Post reply to Discord
+            try:
+                await self.post_to_discord(reply)
+            except RuntimeError as e:
+                logging.error(f"[{self.name}] Failed to post reply to Discord due to runtime error: {e}")
+            except AttributeError as e:
+                logging.error(f"[{self.name}] Failed to post reply to Discord due to attribute error: {e}")
+            # 7. Append to SQLite memory log
+            try:
+                # Ensure user_query is serializable
+                serializable_query = user_query
+                if isinstance(user_query, dict):
+                    serializable_query = user_query.copy()
+                    if "timestamp" in serializable_query and hasattr(serializable_query["timestamp"], "isoformat"):
+                        serializable_query["timestamp"] = serializable_query["timestamp"].isoformat()
+                self.memory.log_task({"type": "user_message", "content": serializable_query})
+                self.memory.log_task({"type": "assistant_reply", "content": reply})
+            except RuntimeError as e:
+                logging.error(f"[{self.name}] Failed to append to SQLite memory due to runtime error: {e}")
+            except ValueError as e:
+                logging.error(f"[{self.name}] Failed to append to SQLite memory due to value error: {e}")
+            # 8. Store vector memories with tags/timestamp
+            try:
+                # Generate embedding for reply
+                reply_embedding = self.get_message_embedding(reply)
+                self.mem_store(
+                    [
+                        {"text": user_query, "embedding": message_embedding},
+                        {"text": reply, "embedding": reply_embedding},
+                    ],
+                    tags=self.config.get("memory_tags"),
+                    timestamp=timestamp,
+                )
+            except RuntimeError as e:
+                logging.error(f"[{self.name}] Failed to store vector memories due to runtime error: {e}")
+            except ValueError as e:
+                logging.error(f"[{self.name}] Failed to store vector memories due to value error: {e}")
+            return reply
         except Exception as e:
-            logging.error(f"[{self.name}] Failed to load system prompt: {e}")
-            system_prompt = "You are a helpful assistant."
-        # 2. Retrieve long-term memory
-        try:
-            message_embedding = self.get_message_embedding(user_query)
-            memories = self.memory.retrieve_memories(self.name, message_embedding, 3)
-        except Exception as e:
-            logging.warning(f"[{self.name}] Failed to retrieve memories: {e}")
-            memories = []
-        if memories:
-            memories_msg = "Previously on our project: " + "\n".join(memories)
-        else:
-            memories_msg = "Previously on our project: (no relevant memories found)"
-        # 3. Fetch conversation history (last 5 messages)
-        try:
-            channel_id = self.orchestrator.agent_channel_ids.get(self.name)
-            thread_history = await self.fetch_thread_history(channel_id, thread_id, 5)
-        except Exception as e:
-            logging.error(f"[{self.name}] Failed to fetch thread history: {e}")
-            thread_history = []
-        # 4. Build LLM payload
-        messages = []
-        messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "system", "content": memories_msg})
-        messages.append({"role": "system", "content": "Reflection: think step-by-step before answering."})
-        messages.extend(thread_history)
-        messages.append({"role": "user", "content": user_query})
-        # 5. Call LLM
-        try:
-            reply = self.call_llm(thread_id, messages)
-        except Exception as e:
-            logging.error(f"[{self.name}] LLM call failed: {e}")
-            reply = "[Error: LLM unavailable]"
-        # 6. Post reply to Discord
-        try:
-            await self.post_to_discord(reply)
-        except Exception as e:
-            logging.error(f"[{self.name}] Failed to post reply to Discord: {e}")
-        # 7. Append to memory using the proper memory API
-        try:
-            self.memory.log_task({"type": "user_message", "content": user_query})
-            self.memory.log_task({"type": "assistant_reply", "content": reply})
-        except Exception as e:
-            logging.error(f"[{self.name}] Failed to append to memory: {e}")
-        return reply
+            logging.error(f"[{self.name}] Unhandled exception in handle_message: {e}", exc_info=True)
+            # Fallback generic error handling
+            try:
+                await self.post_to_discord(f"[Error] Internal error in {self.name}.")
+            except Exception:
+                pass
+            return "[Error: Internal error in message processing]"
 
     def get_message_embedding(self, text: str) -> List[float]:
-        # Generate an embedding for the given text, safely handling errors
+        """Generate an embedding for the given text, safely handling errors."""
         model = self.config.get("embedding_model", "text-embedding-ada-002")
         if not model:
-            raise RuntimeError(f"[{self.name}] No embedding model loaded. Please load a model before requesting embeddings.")
+            raise RuntimeError(
+                f"[{self.name}] No embedding model loaded. Please load a model before requesting embeddings."
+            )
         try:
             response = openai.Embedding.create(
                 input=[text],
                 model=model,
             )
-            if hasattr(response, 'data') and response.data:
+            if hasattr(response, "data") and response.data:
                 return response["data"][0]["embedding"]
             elif isinstance(response, dict) and "data" in response and response["data"]:
                 return response["data"][0]["embedding"]
             else:
-                print("[DEBUG] Embedding response missing 'data', returning zero-vector fallback.")
+                print(
+                    "[DEBUG] Embedding response missing 'data', returning zero-vector fallback."
+                )
                 return [0.0] * 1536  # fallback dimension
         except Exception as e:
             logging.warning(f"[{self.name}] Embedding creation failed: {e}")
@@ -170,35 +304,48 @@ class BaseAgent:
     async def fetch_thread_history(
         self, channel_id: int, thread_id: str, limit: int
     ) -> List[Dict[str, str]]:
-        logging.info(f"[BaseAgent] Fetching last {limit} messages from channel {channel_id}")
+        """Fetch the last N messages from a Discord channel thread."""
+        logging.info(
+            f"[BaseAgent] Fetching last {limit} messages from channel {channel_id}"
+        )
         try:
             if not self.client:
                 logging.warning(f"[BaseAgent] No client for fetch_thread_history")
                 return []
             channel = self.client.get_channel(channel_id)
             if not channel:
-                logging.warning(f"[BaseAgent] Channel {channel_id} not found in fetch_thread_history")
+                logging.warning(
+                    f"[BaseAgent] Channel {channel_id} not found in fetch_thread_history"
+                )
                 return []
             history = []
             async for msg in channel.history(limit=limit):
                 role = "assistant" if msg.author.bot else "user"
                 history.append({"role": role, "content": msg.content})
             return list(reversed(history))
-        except Exception as e:
-            logging.error(f"[BaseAgent] Exception in fetch_thread_history: {e}")
+        except AttributeError as e:
+            logging.error(f"[BaseAgent] Attribute error in fetch_thread_history: {e}")
+            return []
+        except RuntimeError as e:
+            logging.error(f"[BaseAgent] Runtime error in fetch_thread_history: {e}")
             return []
 
     def call_llm(
         self, thread_id: str, history: List[Dict[str, str]], **override_kwargs
     ) -> str:
-        """
-        Centralized LLM invocation: selects dynamic rules and calls the LLM client.
-        """
+        """Centralized LLM invocation: selects dynamic rules and calls the LLM client."""
         if not self.llm.model:
-            raise RuntimeError(f"[{self.name}] No LLM model loaded. Please load a model before requesting completions.")
-        print(f"[DEBUG] {self.name} calling LLM with model={self.llm.model} base={openai.api_base}")
-        print(f"[DEBUG] LLM request params: thread_id={thread_id}, history={history}, overrides={override_kwargs}")
+            raise RuntimeError(
+                f"[{self.name}] No LLM model loaded. Please load a model before requesting completions."
+            )
+        print(
+            f"[DEBUG] {self.name} calling LLM with model={self.llm.model} base={openai.api_base}"
+        )
+        print(
+            f"[DEBUG] LLM request params: thread_id={thread_id}, history={history}, overrides={override_kwargs}"
+        )
         try:
+            start_time = time.time()
             # Build the params as the OpenAI SDK would
             params = {**self.llm.default_kwargs, **override_kwargs}
             params["model"] = self.llm.model
@@ -206,29 +353,62 @@ class BaseAgent:
             print(f"[DEBUG] LLM raw params: {params}")
             # Actually call the LLM
             response = openai.ChatCompletion.create(**params)
+            end_time = time.time()
+            # Record latency metric
+            try:
+                if hasattr(self, "orchestrator") and hasattr(
+                    self.orchestrator, "state"
+                ):
+                    self.orchestrator.state.log_task(
+                        {
+                            "type": "llm_latency",
+                            "agent": self.name,
+                            "latency": end_time - start_time,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                    )
+            except AttributeError as e:
+                logging.warning(f"[{self.name}] Failed to log latency metric due to attribute error: {e}")
+            except RuntimeError as e:
+                logging.warning(f"[{self.name}] Failed to log latency metric due to runtime error: {e}")
             print(f"[DEBUG] LLM raw response: {response}")
             # Check for 'choices' in the response
-            if hasattr(response, 'choices') or (isinstance(response, dict) and 'choices' in response):
+            if hasattr(response, "choices") or (
+                isinstance(response, dict) and "choices" in response
+            ):
                 print("[DEBUG] SUCCESS: 'choices' field found in response.")
             else:
-                print("[DEBUG] ERROR: 'choices' field NOT found in response! Check LM Studio model and config.")
+                print(
+                    "[DEBUG] ERROR: 'choices' field NOT found in response! Check LM Studio model and config."
+                )
             # Return the assistant reply as before
             return response.choices[0].message.content
-        except Exception as e:
+        except openai.error.OpenAIError as e:
             import traceback
+
             print(f"[ERROR] LLM call failed: {e}")
             traceback.print_exc()
-            raise RuntimeError(f"[{self.name}] LLM call failed: {e}")
+            raise RuntimeError(f"[{self.name}] LLM call failed due to OpenAI error: {e}")
+        except ValueError as e:
+            import traceback
+
+            print(f"[ERROR] LLM call failed: {e}")
+            traceback.print_exc()
+            raise RuntimeError(f"[{self.name}] LLM call failed due to value error: {e}")
 
     def start_self_assessment(self, interval_seconds=600):
         """Start the self-assessment loop if not already running."""
         with self._self_assessment_lock:
             if self._self_assessment_running:
-                logging.info(f"[BaseAgent] Self-assessment loop already running for {self.name}. Ignoring duplicate start.")
+                logging.info(
+                    f"[BaseAgent] Self-assessment loop already running for {self.name}. Ignoring duplicate start."
+                )
                 return False
             self._self_assessment_running = True
+
         def loop():
             import asyncio
+
             try:
                 while self._self_assessment_running:
                     coro = self.self_assess()
@@ -243,6 +423,7 @@ class BaseAgent:
                         time.sleep(1)
             finally:
                 self._self_assessment_running = False
+
         t = threading.Thread(target=loop, daemon=True)
         t.start()
         logging.info(f"[BaseAgent] Started self-assessment loop for {self.name}.")
@@ -252,3 +433,67 @@ class BaseAgent:
         with self._self_assessment_lock:
             self._self_assessment_running = False
         logging.info(f"[BaseAgent] Stopped self-assessment loop for {self.name}.")
+
+    def mem_retrieve(
+        self,
+        embedding: List[float],
+        top_k: int,
+        tags: Optional[List[str]] = None,
+        timestamp: Optional[Any] = None,
+        base_dir: Optional[str] = None,
+    ) -> List[str]:
+        """Helper to retrieve vector memories with optional tags and timestamp."""
+        bd = base_dir or self.config.get("memory_base_dir", "memory")
+        return LegionAgentMemory.retrieve_memories(
+            self.name, embedding, top_k, base_dir=bd
+        )
+
+    def mem_store(
+        self,
+        snippets: List[Dict[str, Any]],
+        tags: Optional[List[str]] = None,
+        timestamp: Optional[Any] = None,
+        base_dir: Optional[str] = None,
+    ) -> None:
+        """Helper to store vector memories with optional tags, timestamp; deduplicates by text."""
+        bd = base_dir or self.config.get("memory_base_dir", "memory")
+        # Deduplicate by text
+        def make_hashable_text(text):
+            if isinstance(text, dict):
+                import json
+                return json.dumps(text, sort_keys=True)
+            return str(text)
+        unique = {
+            make_hashable_text(snip["text"]): snip
+            for snip in snippets
+            if isinstance(snip, dict) and "text" in snip and "embedding" in snip
+        }
+        enriched = []
+        for snip in unique.values():
+            item = {"text": snip["text"], "embedding": snip["embedding"]}
+            if tags:
+                item["tags"] = tags
+            if timestamp:
+                item["timestamp"] = (
+                    timestamp.isoformat()
+                    if hasattr(timestamp, "isoformat")
+                    else str(timestamp)
+                )
+            enriched.append(item)
+        LegionAgentMemory.store_memories(self.name, enriched, base_dir=bd)
+
+    async def store_message(self, payload: str, message_id: str, metadata: Optional[Dict[str, Any]] = None):
+        """Store a message in the agent's memory."""
+        message: Dict[str, Any] = {
+            "id": message_id,
+            "role": "user",
+            "content": payload,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metadata": metadata or {"source": "direct_message", "agent": self.name},
+        }
+        # Store user message (will be deduplicated)
+        await self.memory.store_memory(
+            message_id,
+            payload,
+            metadata=message["metadata"]
+        )

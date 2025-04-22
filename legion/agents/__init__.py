@@ -1,1 +1,1 @@
-
+"""Legion agents package init."""

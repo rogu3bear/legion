@@ -1,0 +1,26 @@
+%%{ init: { "theme": "base", "sequence": { "actorFontSize": 12, "noteFontSize": 12 } } }%%
+sequenceDiagram
+    participant User as 🧑‍💻 User
+    participant Discord as 💬 Discord
+    participant Orch as ⚙️ Orchestrator
+    participant Agent as 🤖 Agent
+    participant Mem as 🗄️ Memory
+    participant LLM as 🔮 LLM
+    note over Agent: If TherapistAgent<br>validate_request(content, context) == False<br>→ fallback_response(reason)
+    User->>Discord: Send message
+    Discord->>Orch: dispatch_message()
+    Orch->>Agent: handle_message()
+    Agent->>Agent: validate_request()
+    alt Valid request
+        Agent->>Mem: retrieve_memories()
+        Mem-->>Agent: snippets
+        Agent->>LLM: call_llm()
+        LLM-->>Agent: response
+        Agent->>Mem: store_memories()
+        Agent->>Discord: post_to_discord()
+        Discord-->>User: Response
+    else Invalid or low-confidence
+        Agent->>Agent: fallback_response(reason)
+        Agent->>Discord: post_to_discord(fallback)
+        Discord-->>User: Fallback response
+    end

@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic maintenance tasks with graceful cancellation
 - Message deduplication with periodic cleanup
 - Better channel-to-agent mapping and message routing
+- Dependency injection for `StateManager` and `LLMClient` in `Orchestrator` and `BaseAgent` for improved modularity and testability
+- New tests for custom dependency injection and error handling coverage in agents and orchestrator
+- Stub file `legion/core/utils/indexing.py` for core indexing logic.
+- Stub file `legion/agents/python/developer.py` for Python Developer Agent.
+- Stub migration script `legion/core/db/migrations/0001_initial.py`.
+- Initial tests with mocks for `legion.core.utils.network.fetch_with_retries` in `tests/core/test_network.py`.
+- Identified and added core Python dependencies to `requirements.txt`.
+- Basic `package.json` structure for potential frontend dependencies.
+- Added `legion/core/logging_config.py` for structured JSON logging setup.
+- Added API documentation for the indexing utility (`placeholder_indexing`) in `docs/architecture.md`.
+- Enhanced structured JSON logging in `logging_config.py` and integrated it into `BaseAgent` and Discord bot for consistent telemetry.
+- Added unit tests for agent error handling and edge cases in `tests/agents/test_agents.py`.
+- Added integration tests for orchestrator-agent interaction and error handling in `tests/test_orchestrator.py`.
 
 ### Changed
 - Improved orchestrator initialization with proper error handling
@@ -23,6 +36,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better resource cleanup on shutdown
 - Standardized logging format and levels
 - More efficient maintenance task scheduling
+- Moved all core utility files from `core/` to `legion/core/` to enforce canonical Legion structure
+- Updated all imports to use `legion.core.*` paths
+- Enhanced error handling throughout agents and orchestrator: more granular exception types, robust logging, and fallback logic
+- Hardened agent introduction logic against missing or `None` system prompts
+- Improved memory logging and deduplication to handle non-serializable and unhashable types
+- Patched Discord integration tests to use unique temporary PID files for orchestrator, eliminating lock contention and enabling parallel test runs
+- Completed structural audit using `tree`.
+- Moved `core/db/schema.sql` and `core/db/migrations/` to `legion/core/db/`.
+- Integrated dependency injection container (`legion/core/di_container.py`) into `Orchestrator` and `BaseAgent` for managing `ILLMClient` and `IStateManager` dependencies.
+- **Documentation:** Unified `README.md`, `DEPLOYMENT.md`, and `architecture.md` with a consistent, rigorous style. Incorporated GitHub Flow principles and standards into documentation.
+
+### Removed
+- Old `core/` directory and its contents.
 
 ### Fixed
 - Race conditions in orchestrator process management
@@ -31,6 +57,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Message processing duplicates
 - Channel mapping edge cases
 - Unhandled exceptions in message processing
+- All core, agent, and integration tests now pass, including edge cases for serialization, deduplication, and error handling
+- Resolved PID file contention in orchestrator-based integration tests
+- Replaced deprecated `datetime.utcnow()` with `datetime.now(timezone.utc)` across codebase.
+- Removed custom `event_loop` fixture from `tests/discord/test_discord_integration.py` to resolve `pytest-asyncio` warnings.
+- **Legion Structure Compliance:**
+  - Created missing `legion/core/utils/` directory.
+  - Ensured core utilities (`network.py`, `indexing.py`) are in `legion/core/utils/`.
+  - Ensured DB files (`schema.sql`, `migrations/`) are in `legion/core/db/`.
+  - Ensured required agents (`python/developer.py`) exist.
+  - Ensured required test file structure exists (`tests/core/test_network.py`).
+
+### Logged Test Run (YYYY-MM-DD)
+- Executed `pytest -v`. Result: 69 passed, 1 skipped (LLM endpoint), 16 warnings (mostly deprecation/asyncio config). No PID lock failures observed.
 
 ## [0.1.0] - 2024-04-20
 

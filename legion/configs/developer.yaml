@@ -1,2 +1,55 @@
 # Developer agent config stub
-{}
+name: developer
+version: 1.0.0
+description: "Go-based Developer agent for code review, refactoring, and debugging"
+
+settings:
+  max_concurrent_tasks: 5
+  message_buffer_size: 100
+  timeout_seconds: 300
+  retry_attempts: 3
+
+skills:
+  - name: code_review
+    enabled: true
+    config:
+      max_files_per_review: 10
+      review_timeout_seconds: 600
+      
+  - name: refactor
+    enabled: true
+    config:
+      max_files_per_refactor: 5
+      backup_before_refactor: true
+      
+  - name: debug
+    enabled: true
+    config:
+      max_debug_depth: 10
+      log_level: "debug"
+
+integrations:
+  discord:
+    enabled: true
+    channels:
+      - name: dev-feed
+        id: "${DISCORD_DEV_CHANNEL_ID}"
+      - name: debug-feed
+        id: "${DISCORD_DEBUG_CHANNEL_ID}"
+  
+  memory:
+    type: sqlite
+    path: "memory/db/legion.db"
+    retention_days: 30
+
+logging:
+  level: info
+  file: "memory/logs/developer.log"
+  format: json
+  max_size_mb: 100
+  max_backups: 3
+
+metrics:
+  enabled: true
+  prometheus_port: 9090
+  collect_interval_seconds: 60

@@ -1,5 +1,5 @@
-from core.utils.indexing import placeholder_indexing
-from core.utils.network import placeholder_network
+from legion.core.indexing import placeholder_indexing
+from legion.core.network import placeholder_network
 from skills.search import search_placeholder
 from skills.summarize import summarize_placeholder
 

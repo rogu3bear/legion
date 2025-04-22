@@ -2,18 +2,20 @@
 Legion agent persistent memory manager for agent state.
 """
 
-import os
 import json
-import shutil
-import sqlite3
-from datetime import datetime
 import logging
 import math
+import os
+import shutil
+import sqlite3
+from datetime import datetime, timezone
 
+logger = logging.getLogger(__name__)
 
 class LegionAgentMemory:
-    def __init__(self, agent_name, base_dir="memory"):
-        """Initializes persistent memory for an agent."""
+    def __init__(self, agent_name: str, base_dir: str = "memory") -> None:
+        """Initialize memory for a specific agent."""
+        logger.info("Initializing LegionAgentMemory", extra={"agent_name": agent_name, "base_dir": base_dir})
         self.agent_name = agent_name
         self.base_dir = os.path.join(base_dir, agent_name)
         self.data_file = os.path.join(self.base_dir, "memory.json")
@@ -87,7 +89,7 @@ class LegionAgentMemory:
 
     def save_document(self, name, content):
         """Saves a versioned document for the agent."""
-        ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         base = os.path.join(self.docs_dir, name)
         versioned = f"{base}.{ts}"
         with open(base, "w", encoding="utf-8") as f:
@@ -193,6 +195,19 @@ class LegionAgentMemory:
                 logging.error(
                     f"[LegionAgentMemory] Store failed again for {agent_name}: {e2}"
                 )
+
+    def add_raw_memory(self, text: str, metadata: dict = None):
+        """Adds raw text to the memory, potentially for later processing."""
+        metadata = metadata or {}
+        metadata["source_type"] = "raw_text"
+        # Simple timestamped filename for raw dumps
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S_%f") # Use timezone.utc, add microseconds
+        raw_path = self.memory_dir / "raw"
+        raw_path.mkdir(exist_ok=True)
+        with open(raw_path / f"raw_{ts}.txt", "w") as f:
+            f.write(text)  # Added file write logic
+            # Optionally, write metadata as JSON header or separate file
+            logging.info(f"Saved raw memory to raw_{ts}.txt")
 
 
 def retrieve_memories(agent_name, embedding, top_k, base_dir="memory"):

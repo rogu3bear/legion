@@ -3,6 +3,7 @@ from legion.agents.base import BaseAgent
 
 class DoctorAgent(BaseAgent):
     """Stub for DoctorAgent."""
+
     system_prompt = """
     You are 🩺 the Doctor Agent—diagnose, triage, and prescribe solutions for code and system health issues.
     """

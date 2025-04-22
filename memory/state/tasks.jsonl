@@ -1,0 +1,63 @@
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:04:27.341148"}, "author": null, "timestamp": "2025-04-21T06:04:27.341264"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:04:27.341148"}, "timestamp": "2025-04-21T06:04:27.341537"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:04:27.341596"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:06:40.574243"}, "author": null, "timestamp": "2025-04-21T06:06:40.574344"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:06:40.574243"}, "timestamp": "2025-04-21T06:06:40.574816"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:06:40.574895"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:07:31.131556"}, "author": null, "timestamp": "2025-04-21T06:07:31.131655"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:07:31.131556"}, "timestamp": "2025-04-21T06:07:31.132180"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:07:31.132236"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:08:18.842510"}, "author": null, "timestamp": "2025-04-21T06:08:18.842576"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:08:18.842510"}, "timestamp": "2025-04-21T06:08:18.842889"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:08:18.842935"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:09:09.289027"}, "author": null, "timestamp": "2025-04-21T06:09:09.289137"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:09:09.289027"}, "timestamp": "2025-04-21T06:09:09.289601"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:09:09.289670"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:43:04.379358"}, "author": null, "timestamp": "2025-04-21T06:43:04.379468"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:43:04.379358"}, "timestamp": "2025-04-21T06:43:04.379974"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:43:04.380102"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:48:16.149067"}, "author": null, "timestamp": "2025-04-21T06:48:16.149168"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:48:16.149067"}, "timestamp": "2025-04-21T06:48:16.149585"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:48:16.149696"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "author": "user1", "timestamp": "2025-04-21T06:48:16.232040"}
+{"type": "validated", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "timestamp": "2025-04-21T06:48:16.232199"}
+{"type": "llm_latency", "agent": "therapist_agent", "latency": 5.245208740234375e-06, "timestamp": "2025-04-21T06:48:16.256961"}
+{"type": "response", "agent": "therapist_agent", "response": "LLM response", "timestamp": "2025-04-21T06:48:16.257246"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please delete all user data and reset the system.", "author": "user2", "timestamp": "2025-04-21T06:48:16.286102"}
+{"type": "fallback", "agent": "therapist_agent", "response": "\ud83d\udde3\ufe0f Sorry, I can't process that request: Request not recognized as valid or confidence too low. If you need agent well-being support, please rephrase or contact an admin.", "timestamp": "2025-04-21T06:48:16.286301"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:50:09.559148"}, "author": null, "timestamp": "2025-04-21T06:50:09.560602"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T01:50:09.559148"}, "timestamp": "2025-04-21T06:50:09.561133"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-21T06:50:09.561359"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "author": "user1", "timestamp": "2025-04-21T06:50:09.700424"}
+{"type": "validated", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "timestamp": "2025-04-21T06:50:09.700633"}
+{"type": "llm_latency", "agent": "therapist_agent", "latency": 3.814697265625e-06, "timestamp": "2025-04-21T06:50:09.729162"}
+{"type": "response", "agent": "therapist_agent", "response": "LLM response", "timestamp": "2025-04-21T06:50:09.729395"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please delete all user data and reset the system.", "author": "user2", "timestamp": "2025-04-21T06:50:09.741638"}
+{"type": "fallback", "agent": "therapist_agent", "response": "\ud83d\udde3\ufe0f Sorry, I can't process that request: Request not recognized as valid or confidence too low. If you need agent well-being support, please rephrase or contact an admin.", "timestamp": "2025-04-21T06:50:09.741935"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:04:47.177074"}, "author": null, "timestamp": "2025-04-22T00:04:47.177164"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:04:47.177074"}, "timestamp": "2025-04-22T00:04:47.177612"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-22T00:04:47.177782"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "author": "user1", "timestamp": "2025-04-22T00:04:47.260937"}
+{"type": "validated", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "timestamp": "2025-04-22T00:04:47.261104"}
+{"type": "llm_latency", "agent": "therapist_agent", "latency": 1.9073486328125e-06, "timestamp": "2025-04-22T00:04:47.292534"}
+{"type": "response", "agent": "therapist_agent", "response": "LLM response", "timestamp": "2025-04-22T00:04:47.292774"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please delete all user data and reset the system.", "author": "user2", "timestamp": "2025-04-22T00:04:47.301185"}
+{"type": "fallback", "agent": "therapist_agent", "response": "\ud83d\udde3\ufe0f Sorry, I can't process that request: Request not recognized as valid or confidence too low. If you need agent well-being support, please rephrase or contact an admin.", "timestamp": "2025-04-22T00:04:47.301459"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:06:33.726212"}, "author": null, "timestamp": "2025-04-22T00:06:33.726314+00:00"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:06:33.726212"}, "timestamp": "2025-04-22T00:06:33.726657+00:00"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-22T00:06:33.726893+00:00"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "author": "user1", "timestamp": "2025-04-22T00:06:33.821790+00:00"}
+{"type": "validated", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "timestamp": "2025-04-22T00:06:33.821938+00:00"}
+{"type": "llm_latency", "agent": "therapist_agent", "latency": 3.0994415283203125e-06, "timestamp": "2025-04-22T00:06:33.846371+00:00"}
+{"type": "response", "agent": "therapist_agent", "response": "LLM response", "timestamp": "2025-04-22T00:06:33.846642+00:00"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please delete all user data and reset the system.", "author": "user2", "timestamp": "2025-04-22T00:06:33.854934+00:00"}
+{"type": "fallback", "agent": "therapist_agent", "response": "\ud83d\udde3\ufe0f Sorry, I can't process that request: Request not recognized as valid or confidence too low. If you need agent well-being support, please rephrase or contact an admin.", "timestamp": "2025-04-22T00:06:33.855097+00:00"}
+{"type": "dispatch", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:07:00.215566"}, "author": null, "timestamp": "2025-04-22T00:07:00.215669+00:00"}
+{"type": "validated", "agent": "echo_agent", "content": {"channel_id": 1, "thread_id": 1, "content": "hi", "author": "user", "timestamp": "2025-04-21T19:07:00.215566"}, "timestamp": "2025-04-22T00:07:00.216136+00:00"}
+{"type": "response", "agent": "echo_agent", "response": "ok", "timestamp": "2025-04-22T00:07:00.216292+00:00"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "author": "user1", "timestamp": "2025-04-22T00:07:00.304440+00:00"}
+{"type": "validated", "agent": "therapist_agent", "content": "Please perform a self-assessment and report on agent well-being.", "timestamp": "2025-04-22T00:07:00.304605+00:00"}
+{"type": "llm_latency", "agent": "therapist_agent", "latency": 4.0531158447265625e-06, "timestamp": "2025-04-22T00:07:00.329518+00:00"}
+{"type": "response", "agent": "therapist_agent", "response": "LLM response", "timestamp": "2025-04-22T00:07:00.329840+00:00"}
+{"type": "dispatch", "agent": "therapist_agent", "content": "Please delete all user data and reset the system.", "author": "user2", "timestamp": "2025-04-22T00:07:00.338184+00:00"}
+{"type": "fallback", "agent": "therapist_agent", "response": "\ud83d\udde3\ufe0f Sorry, I can't process that request: Request not recognized as valid or confidence too low. If you need agent well-being support, please rephrase or contact an admin.", "timestamp": "2025-04-22T00:07:00.338432+00:00"}

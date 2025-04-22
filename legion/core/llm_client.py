@@ -2,10 +2,11 @@
 LLMClient: Unified LLM interface wrapping OpenAI API.
 """
 
-from dotenv import load_dotenv
-load_dotenv()  # now os.environ contains .env vars
-import os, openai
+import logging
+import os
 from typing import Any, Dict, List, Optional
+
+import openai
 
 # pick up our local LM Studio endpoint
 base = os.getenv("OPENAI_API_BASE")
@@ -21,6 +22,9 @@ else:
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 print(f"DEBUG: openai.api_key  = {openai.api_key}")
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 class LLMClient:
     def __init__(
         self,
@@ -32,6 +36,7 @@ class LLMClient:
         """
         Initialize the LLM client with optional API key, model, base URL, and default parameters.
         """
+        logger.info("Initializing LLMClient", extra={"model": model, "api_base": api_base})
         # Model identifier
         self.model = model or os.getenv("OPENAI_MODEL")
         # Default parameters for all requests (e.g., temperature, max_tokens)
@@ -72,11 +77,21 @@ class LLMClient:
         # Merge parameters: defaults, overrides
         params: Dict[str, Any] = {**self.default_kwargs, **override_kwargs}
         # Ensure model and messages are provided
-        params["model"] = self.model
+        params["model"] = self.model or "meta-llama-3.1-8b-instruct"
         params["messages"] = messages
-
-        # Perform the API call
-        response = openai.ChatCompletion.create(**params)
+        params["max_tokens"] = params.get("max_tokens", 1024)
+        # Use the explicit /v1/chat/completions endpoint
+        print(f"DEBUG: Calling /v1/chat/completions with model={params['model']}")
+        response = openai.ChatCompletion.create(
+            model=params["model"],
+            messages=params["messages"],
+            max_tokens=params["max_tokens"],
+            **{
+                k: v
+                for k, v in params.items()
+                if k not in ("model", "messages", "max_tokens")
+            },
+        )
         # Extract and return the assistant reply
         try:
             if hasattr(response, "choices"):
@@ -88,6 +103,13 @@ class LLMClient:
             else:
                 print(f"[ERROR] Unrecognized LLM response: {response}")
                 raise RuntimeError(f"Unrecognized LLM response: {response}")
-        except Exception as e:
-            print(f"[ERROR] Exception parsing LLM response: {e}\nRaw response: {response}")
-            raise
+        except AttributeError as e:
+            print(
+                f"[ERROR] Exception parsing LLM response: {e}\nRaw response: {response}"
+            )
+            raise RuntimeError(f"Attribute error parsing LLM response: {e}")
+        except KeyError as e:
+            print(
+                f"[ERROR] Exception parsing LLM response: {e}\nRaw response: {response}"
+            )
+            raise RuntimeError(f"Key error parsing LLM response: {e}")

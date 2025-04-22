@@ -1,5 +1,4 @@
-name: Legion ArchitectAgent CI
-
+name: CI
 on:
   push:
     branches: [main]
@@ -7,29 +6,52 @@ on:
     branches: [main]
 
 jobs:
-  test-architect-agent:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.9'
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m venv venv
+          . venv/bin/activate
+          pip install -U pip
           pip install -r requirements.txt
-      - name: Run ArchitectAgent tests
-        id: pytest
+      - name: Run tests
+        env:
+          GENERAL_CHANNEL_ID: '0'
+          AGENT_FEED_CHANNEL_ID: '0'
+          ARCHITECT_CHANNEL_ID: '0'
+          METRICS_CHANNEL_ID: '0'
+          THERAPIST_CHANNEL_ID: '0'
+          DESIGN_CHANNEL_ID: '0'
+          DISCORD_TOKEN: 'test'
         run: |
-          pytest tests/test_architect_agent.py --maxfail=1 --disable-warnings --tb=short -v | tee test_output.log
-      - name: Upload logs and artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: legion-architect-logs
-          path: |
-            memory/logs/
-            artifacts/reports/
-            test_output.log 
+          . venv/bin/activate
+          pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ --maxfail=1 --disable-warnings -q
+      - name: Lint code
+        run: |
+          . venv/bin/activate
+          pip install flake8
+          flake8 .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run tests
+      run: |
+        pytest -v --maxfail=5 --disable-warnings
+      env:
+        PYTHONPATH: $PYTHONPATH:. 

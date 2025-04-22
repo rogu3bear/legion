@@ -1,0 +1,12 @@
+bot_commands_channel_id: 0
+agent_logs_channel_id: 0
+agent_feedback_channel_id: 0
+config_updates_channel_id: 0
+alerts_channel_id: 0
+metrics_dash_channel_id: 0
+general_channel_id: 0
+agent_feed_channel_id: 0
+architect_channel_id: 0
+metrics_channel_id: 0
+therapist_channel_id: 0
+design_channel_id: 0 

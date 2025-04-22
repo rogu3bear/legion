@@ -1,43 +1,57 @@
 #!/usr/bin/env bash
-# Verify Discord bot token and channel IDs
 
-set -e
+set -euo pipefail
 
-if [ -z "$DISCORD_TOKEN" ]; then
-  echo "[ERROR] DISCORD_TOKEN is not set in your environment or .env file."
-  exit 1
+# Source environment variables
+if [ -f .env ]; then
+    source .env
+else
+    echo "[ERROR] .env file not found"
+    exit 1
 fi
 
-cat <<EOF > verify_discord_ping.py
-import os
-import sys
-import asyncio
-from discord import Client, Intents
+# Validate required environment variables
+required_vars=("DISCORD_TOKEN" "DISCORD_CHANNELS_PATH")
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var:-}" ]; then
+        echo "[ERROR] $var is not set. Please set it in your environment or .env file."
+        exit 1
+    fi
+done
 
-token = os.getenv('DISCORD_TOKEN')
-if not token:
-    print('[ERROR] DISCORD_TOKEN is not set.')
-    sys.exit(1)
+# Extract bot token and app ID
+BOT_TOKEN="$DISCORD_TOKEN"
+APP_ID=$(echo "$BOT_TOKEN" | cut -d'.' -f1)
 
-intents = Intents.default()
+# Function to make Discord API calls
+discord_api() {
+    local endpoint=$1
+    local method=${2:-GET}
+    curl -s -X "$method" \
+        -H "Authorization: Bot $BOT_TOKEN" \
+        -H "Content-Type: application/json" \
+        "https://discord.com/api/v10$endpoint"
+}
 
-class PingClient(Client):
-    async def on_ready(self):
-        print(f'[OK] Connected as {self.user} (ID: {self.user.id})')
-        await self.close()
-    async def on_error(self, event, *args, **kwargs):
-        print(f'[ERROR] Discord event error: {event}')
-        await self.close()
+# Verify bot token
+echo "[INFO] Verifying Discord bot token..."
+if ! discord_api "/users/@me" | grep -q '"id"'; then
+    echo "[ERROR] Invalid Discord bot token"
+    exit 1
+fi
 
-try:
-    client = PingClient(intents=intents)
-    asyncio.run(client.start(token))
-except Exception as e:
-    print(f'[ERROR] Could not connect to Discord: {e}')
-    sys.exit(1)
-EOF
+# Verify channels by extracting numeric IDs from YAML
+ids=$(sed -En 's/.*: *([0-9]+)/\1/p' "$DISCORD_CHANNELS_PATH")
+for channel_id in $ids; do
+    echo "[INFO] Verifying channel: $channel_id"
+    if ! discord_api "/channels/$channel_id" | grep -q '"id"'; then
+        echo "[ERROR] Channel not found or inaccessible: $channel_id"
+        exit 1
+    fi
+done
 
-python3 verify_discord_ping.py
-status=$?
-rm -f verify_discord_ping.py
-exit $status
+# Skipping slash commands verification for dummy environment
+echo "[INFO] Skipping slash commands verification"
+
+echo "[OK] Discord verification completed successfully"
+exit 0

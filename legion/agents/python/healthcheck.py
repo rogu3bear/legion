@@ -3,6 +3,7 @@ from legion.agents.base import BaseAgent
 
 class HealthcheckAgent(BaseAgent):
     """Quick stub healthcheck: always returns OK."""
+
     system_prompt = """
     You are ✅ the Healthcheck Agent—perform and report on system health checks, ensuring all services are operational.
     """
@@ -20,5 +21,5 @@ class HealthcheckAgent(BaseAgent):
         return await self.handle_message(
             content="Please perform a health check and report system status.",
             author=self.name,
-            timestamp=None
+            timestamp=None,
         )

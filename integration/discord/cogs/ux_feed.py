@@ -2,9 +2,10 @@
 Feed renderer for agent posts.
 """
 
-import discord
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
+
+import discord
 
 
 class MessageType(Enum):
@@ -29,7 +30,7 @@ def render_feed_item(agent_name, message, msg_type=MessageType.INFO, fields=None
         title=agent_name,
         description=message,
         color=COLOR_MAP.get(msg_type, discord.Color.default()),
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
     # Add any additional fields

@@ -1,1 +1,1 @@
-
+"""Legion package init."""

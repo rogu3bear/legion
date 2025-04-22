@@ -1,86 +1,71 @@
-# Legion
+# Legion: Project Overview
 
-Modular agent orchestration system.
+## Mandate
+Legion is a modular agent orchestration system built on a canonical layered architecture. Non-compliance is not an option; CI enforces the structure.
 
-## Logic Layer System
+**Core Documents:**
+- [Legion Architecture](architecture.md): System design, APIs, layers, rules.
+- [Deployment Guide](DEPLOYMENT.md): Environment setup, scripts, CI/CD, troubleshooting.
+- [Changelog](changelog.md): History of all notable changes.
 
-Legion is organized into eight distinct logic layers:
-
-1. **Configuration Layer**
-   - YAML agent definitions and environment variables (prompts, schedules, channel IDs)
-   - Location: configuration module
-2. **Orchestration Layer**
-   - The "brain" that loads configs, spins up agents, routes messages, and schedules tasks
-   - Location: orchestration module
-3. **Agent Layer**
-   - Persona runtime code (Architect, Doctor, Researcher, Ping, Echo, Healthcheck, etc.)
-   - Location: agent modules
-4. **Skill & Utility Layer**
-   - Reusable helpers: search engines, summarizers, networking, indexing, retry logic
-   - Location: skills and utility modules
-5. **Persistence Layer**
-   - Persistent state: database, memory API, logs
-   - Location: memory module
-6. **Integration Layer**
-   - Discord-bot glue: cogs, settings, bot bootstrap
-   - Location: integration module
-7. **Presentation Layer**
-   - Web UI: API endpoints, front-end scripts, templates
-   - Location: interface module
-8. **Infrastructure Layer**
-   - Ops-focused tooling: scripts, CI workflows, migrations, changelog, docs
-   - Location: infrastructure modules
-
----
+## Structure & Layers
+Refer to [Legion Architecture](architecture.md) for the definitive 8-layer model. All files and directories MUST conform.
 
 ## Environment Setup
+1.  **Create `.env`**: Copy `.env.example` to `.env`.
+2.  **Populate Secrets**: Fill in required values (e.g., `DISCORD_TOKEN`, channel IDs).
+    ```dotenv
+    # Required:
+    DISCORD_TOKEN=
+    # Example Channel IDs (adjust for your server):
+    GENERAL_CHANNEL_ID=
+    AGENT_FEED_CHANNEL_ID=
+    # ... other agent channel IDs as needed ...
+    ```
+3.  **Dependencies**: Use a Python virtual environment.
+    ```bash
+    python3 -m venv .venv && source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
-Add the following to your `.env` file:
+## Getting Started / Local Run
+Execute from the project root:
 
-```dotenv
-DISCORD_TOKEN=
-GENERAL_CHANNEL_ID=
-AGENT_FEED_CHANNEL_ID=
-ARCHITECT_CHANNEL_ID=
-METRICS_CHANNEL_ID=
-THERAPIST_CHANNEL_ID=
-DESIGN_CHANNEL_ID=
-```
+```bash
+# Grant execution permissions & initialize memory (DB/logs)
+chmod +x scripts/*.sh
+./scripts/init_memory.sh
 
-Legion reads all channel IDs from these vars—make sure they match your Discord server.
-
-## Getting Started
-
-- Use a **monospaced font** for all code.
-- Run each step from your project root:
-
-```
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-chmod +x scripts/*.sh && scripts/init_memory.sh
+# Start the Discord bot (uses orchestrator)
 ./scripts/start_bot.sh
 ```
 
-- If you see errors, check your `.env` and dependencies.
-- For help, see the documentation or run the Discord integration verification script.
+**Troubleshooting:** Check `.env`, dependencies, and the [Deployment Guide](DEPLOYMENT.md).
 
-## Unified Agent Message Handling
+## Contribution Workflow (GitHub Flow)
+Legion adheres to GitHub Flow for development [[Cite: GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)]:
 
-All Legion agents now inherit a single, unified message handling pipeline from `BaseAgent`. This pipeline:
+1.  **Branch:** Create a descriptive branch (`feature/add-new-skill`, `fix/orchestrator-lock`).
+2.  **Commit:** Make small, atomic commits with clear messages (`refactor: simplify network retries`, `feat: add summarization skill`).
+3.  **Push:** Push changes regularly to your branch.
+4.  **Pull Request (PR):** Open a PR against the `main` branch.
+    *   Clearly describe the changes and the problem solved.
+    *   Link related issues (e.g., `Closes #123`).
+    *   Request reviews from relevant teams/individuals.
+5.  **Review & Address:** Respond to feedback, push follow-up commits to the same branch.
+6.  **Merge:** Once approved and CI checks pass, merge the PR.
+7.  **Delete Branch:** Remove the merged feature branch.
 
-1. Loads the agent's default prompt from its config (with a safe fallback).
-2. Retrieves top-K relevant memory snippets using the memory module's index helper.
-3. Fetches the last N messages from the Discord thread for context.
-4. Builds the LLM payload in this order:
-   - System message with the default prompt
-   - System message summarizing retrieved memories (or a fallback if none)
-   - The thread history messages (user/assistant)
-   - The new user message
-5. Sends the payload to the LLM and posts the reply back to Discord.
-6. Extracts and stores new memory items from the assistant's reply.
+**Branch Protection:** The `main` branch is likely protected, requiring reviews and passing CI checks before merging [[Cite: Branch Protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule)].
 
-No agent-specific prompt orchestration remains—every agent uses this robust, error-tolerant flow.
+## Key Features & Concepts
+- **Unified Agent Handling:** See [Architecture Doc](architecture.md#unified-agent-message-handling-no-prompt-drift) for details.
+- **Dependency Injection:** Core services are injected; see [Architecture Doc](architecture.md#dependency-injection-di).
+- **Structured Logging:** JSON logs via `legion/core/logging_config.py`; see [Architecture Doc](architecture.md#structured-logging--error-boundaries).
+- **Configuration Warnings:** Unknown keys in agent YAMLs are logged and ignored.
 
-## Developer Guide
+## Repository Topics
+This repository uses topics for discoverability. Key topics might include: `agent-orchestration`, `discord-bot`, `python`, `llm`, `modular-architecture`. [[Cite: Topics](https://docs.github.com/articles/classifying-your-repository-with-topics)]
 
-See [Developer Guide](developer_guide.md) for a full end-to-end flow diagram, helper documentation, and error handling details. 
+## Recent Updates
+See [Changelog](changelog.md) for the full history. 

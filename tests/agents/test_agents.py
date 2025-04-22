@@ -14,6 +14,7 @@ from legion.agents.python.ping import PingAgent
 from legion.agents.python.researcher import ResearcherAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
+from legion.core.di_container import container
 
 
 @pytest.fixture(scope="module")
@@ -187,3 +188,22 @@ def test_self_assessment_scheduler_guard(monkeypatch):
     assert any("already running" in m for m in logs)
     # Should have run self_assess at least once
     assert agent._assess_count >= 1
+
+
+@pytest.mark.asyncio
+async def test_base_agent_error_handling():
+    """Test BaseAgent's error handling for unexpected issues."""
+    agent = BaseAgent(name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None)
+    try:
+        response = await agent.handle_message(content="Test error", context={"invalid": None})
+        assert response is not None, "Agent should handle errors gracefully"
+    except Exception as e:
+        pytest.fail(f"Agent failed to handle error: {str(e)}")
+
+@pytest.mark.asyncio
+async def test_base_agent_empty_input():
+    """Test BaseAgent's response to empty or invalid input."""
+    agent = BaseAgent(name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None)
+    response = await agent.handle_message(content="")
+    assert response is not None, "Agent should handle empty input gracefully"
+    assert "error" not in response.lower(), "Response should not contain error for empty input"

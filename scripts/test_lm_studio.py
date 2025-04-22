@@ -2,10 +2,11 @@
 """
 Test LM Studio OpenAI-compatible endpoint for /v1/chat/completions.
 """
-from dotenv import load_dotenv
-import os
-import requests
 import json
+import os
+
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -26,9 +27,7 @@ headers = {
 }
 data = {
     "model": model,
-    "messages": [
-        {"role": "user", "content": "Hello, are you working?"}
-    ]
+    "messages": [{"role": "user", "content": "Hello, are you working?"}],
 }
 
 print(f"Testing LM Studio endpoint: {url}")
@@ -45,8 +44,10 @@ try:
         if "choices" in j:
             print("\nSUCCESS: 'choices' field found in response.")
         else:
-            print("\nERROR: 'choices' field NOT found in response! Check LM Studio model and config.")
+            print(
+                "\nERROR: 'choices' field NOT found in response! Check LM Studio model and config."
+            )
     except Exception as e:
         print(f"\nERROR: Could not parse JSON: {e}")
 except Exception as e:
-    print(f"Request failed: {e}") 
+    print(f"Request failed: {e}")

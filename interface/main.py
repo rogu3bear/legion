@@ -1,16 +1,19 @@
 """Legion interface FastAPI app stub."""
 
+import asyncio
+import json
+import os
+import sys
+
+from legion.orchestrator import Orchestrator
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import asyncio
-import json
-import sys
-import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-from legion.orchestrator import Orchestrator
+# Ensure the project root directory is in the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Needs to be after sys.path modification:
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")

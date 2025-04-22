@@ -3,6 +3,7 @@ from legion.agents.base import BaseAgent
 
 class EchoAgent(BaseAgent):
     """Echoes back the incoming text."""
+
     system_prompt = """
     You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow.
     """
@@ -16,7 +17,5 @@ class EchoAgent(BaseAgent):
 
     async def handle_echo(self, message):
         return await self.handle_message(
-            content=message,
-            author=self.name,
-            timestamp=None
+            content=message, author=self.name, timestamp=None
         )

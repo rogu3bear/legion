@@ -1,7 +1,9 @@
 import os
+
 import openai
 import pytest
 from dotenv import load_dotenv
+from legion.core.llm_client import LLMClient
 
 load_dotenv()
 
@@ -31,21 +33,27 @@ def test_llm_local_smoke():
         print("LLM endpoint error:", e)
         pytest.skip(f"LLM endpoint not available or failed: {e}")
 
+
 def test_llm_generate_openai(monkeypatch):
-    from core.utils.llm_client import LLMClient
     client = LLMClient()
+
     # Patch openai.ChatCompletion.create to return OpenAI style
     class FakeResp:
         def __init__(self):
-            self.choices = [type("msg", (), {"message": type("m", (), {"content": "hi"})()})()]
+            self.choices = [
+                type("msg", (), {"message": type("m", (), {"content": "hi"})()})()
+            ]
+
     monkeypatch.setattr("openai.ChatCompletion.create", lambda **_: FakeResp())
     out = client.generate("agent", "thread", {}, [{"role": "user", "content": "hi"}])
     assert out == "hi"
 
+
 def test_llm_generate_lmstudio(monkeypatch):
-    from core.utils.llm_client import LLMClient
     client = LLMClient()
     # Patch openai.ChatCompletion.create to return LM Studio style
-    monkeypatch.setattr("openai.ChatCompletion.create", lambda **_: {"generations": [{"text": "hello"}]})
+    monkeypatch.setattr(
+        "openai.ChatCompletion.create", lambda **_: {"generations": [{"text": "hello"}]}
+    )
     out = client.generate("agent", "thread", {}, [{"role": "user", "content": "hi"}])
     assert out == "hello"

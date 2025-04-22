@@ -1,0 +1,9 @@
+{
+  "config": {
+    "confidence_threshold": 0.5,
+    "max_history": 100,
+    "assessment_interval": 600
+  },
+  "metrics": {},
+  "agent_states": {}
+}

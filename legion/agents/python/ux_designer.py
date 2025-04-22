@@ -15,5 +15,5 @@ class UxDesignerAgent(BaseAgent):
         return await self.handle_message(
             content="Please critique the current user experience and suggest improvements.",
             author=self.name,
-            timestamp=None
+            timestamp=None,
         )

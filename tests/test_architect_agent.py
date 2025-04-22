@@ -1,27 +1,29 @@
-import os
-import pytest
-import shutil
-import tempfile
-import yaml
 import json
-from unittest import mock
-from legion.orchestrator import Orchestrator
+import os
+
+import pytest
+import yaml
+
 from legion.agents.python.architect import ArchitectAgent
+
 
 # Dummy orchestrator and client for instantiating metrics and therapist agents
 class DummyOrchestrator:
     agent_channel_ids = {"metrics_agent": 1, "therapist_agent": 1}
     client = None
 
+
 class DummyClient:
     def get_channel(self, channel_id):
         return None
+
 
 @pytest.fixture(scope="module")
 def test_env(tmp_path_factory):
     # 1. Environment Setup
     # Load .env
     from dotenv import load_dotenv
+
     load_dotenv()
     # Load all configs
     configs = {}
@@ -51,6 +53,7 @@ def test_env(tmp_path_factory):
         "db_dir": str(db_dir),
     }
 
+
 # 2. Architect Autonomous Posting Tests
 @pytest.mark.asyncio
 async def test_A1_architect_reads_task_log(test_env, monkeypatch):
@@ -68,6 +71,7 @@ async def test_A1_architect_reads_task_log(test_env, monkeypatch):
     logs = agent.read_logs()
     assert logs == entries
 
+
 @pytest.mark.asyncio
 async def test_A2_architect_extracts_llm_metrics(test_env, monkeypatch):
     # Seed llm_connector_test.log
@@ -77,6 +81,7 @@ async def test_A2_architect_extracts_llm_metrics(test_env, monkeypatch):
     agent.set_log_paths(report_path=test_env["report_path"])
     metrics = agent.extract_llm_metrics()
     assert metrics == {"latency": 123.0, "errors": 2}
+
 
 @pytest.mark.asyncio
 async def test_A3_architect_composes_summary(test_env, monkeypatch):
@@ -91,7 +96,9 @@ async def test_A3_architect_composes_summary(test_env, monkeypatch):
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
     agent = ArchitectAgent(DummyOrchestrator())
-    agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
+    agent.set_log_paths(
+        log_path=test_env["log_path"], report_path=test_env["report_path"]
+    )
     summary = agent.compose_summary()
     assert "**Recent Task Log:**" in summary
     assert "- update: Initial design" in summary
@@ -100,13 +107,16 @@ async def test_A3_architect_composes_summary(test_env, monkeypatch):
     assert "- latency: 123.0" in summary
     assert "- errors: 2" in summary
 
+
 @pytest.mark.asyncio
 async def test_A4_architect_posts_summary(test_env, monkeypatch):
     # Patch post_to_discord to capture the message
     posted = {}
+
     async def fake_post_to_discord(self, message):
-        posted['msg'] = message
-    monkeypatch.setattr(ArchitectAgent, 'post_to_discord', fake_post_to_discord)
+        posted["msg"] = message
+
+    monkeypatch.setattr(ArchitectAgent, "post_to_discord", fake_post_to_discord)
     # Seed log and metrics
     entries = [
         {"type": "update", "content": "Initial design"},
@@ -118,14 +128,17 @@ async def test_A4_architect_posts_summary(test_env, monkeypatch):
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
     agent = ArchitectAgent(DummyOrchestrator())
-    agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
+    agent.set_log_paths(
+        log_path=test_env["log_path"], report_path=test_env["report_path"]
+    )
     # Simulate posting summary
     summary = agent.compose_summary()
     await agent.post_to_discord(summary)
-    assert "**Recent Task Log:**" in posted['msg']
-    assert "- update: Initial design" in posted['msg']
-    assert "**LLM Metrics:**" in posted['msg']
-    assert "- latency: 123.0" in posted['msg']
+    assert "**Recent Task Log:**" in posted["msg"]
+    assert "- update: Initial design" in posted["msg"]
+    assert "**LLM Metrics:**" in posted["msg"]
+    assert "- latency: 123.0" in posted["msg"]
+
 
 @pytest.mark.asyncio
 async def test_A5_architect_no_logs_fallback(test_env, monkeypatch):
@@ -135,44 +148,65 @@ async def test_A5_architect_no_logs_fallback(test_env, monkeypatch):
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
     agent = ArchitectAgent(DummyOrchestrator())
-    agent.set_log_paths(log_path=test_env["log_path"], report_path=test_env["report_path"])
+    agent.set_log_paths(
+        log_path=test_env["log_path"], report_path=test_env["report_path"]
+    )
     summary = agent.compose_summary()
     assert "No recent log entries found." in summary
     assert "**LLM Metrics:**" in summary
     assert "- latency: 123.0" in summary
+
 
 # 3. Inter-Agent Collaboration Tests
 @pytest.mark.asyncio
 async def test_B1_architect_tags_metrics(monkeypatch):
     # Simulate Architect tagging @metrics_agent by posting a message
     captured = {}
+
     async def fake_post_to_discord(self, message):
-        captured['msg'] = message
-    monkeypatch.setattr("legion.agents.python.metrics.MetricsAgent.post_to_discord", fake_post_to_discord)
-    metrics_agent = __import__('legion.agents.python.metrics', fromlist=['MetricsAgent']).MetricsAgent(DummyOrchestrator())
+        captured["msg"] = message
+
+    monkeypatch.setattr(
+        "legion.agents.python.metrics.MetricsAgent.post_to_discord",
+        fake_post_to_discord,
+    )
+    metrics_agent = __import__(
+        "legion.agents.python.metrics", fromlist=["MetricsAgent"]
+    ).MetricsAgent(DummyOrchestrator())
     metrics_agent.name = "metrics"
     metrics_agent.client = DummyClient()
     metrics_agent.channel_id = 1
     metrics_agent.config = {}
     # Architect triggers metrics agent (simulate tagging)
     await metrics_agent.post_to_discord("@metrics_agent please review logs")
-    assert "@metrics_agent" in captured['msg']
+    assert "@metrics_agent" in captured["msg"]
+
 
 @pytest.mark.asyncio
 async def test_B2_architect_triggers_therapist(monkeypatch):
     # Simulate error and check therapist_agent is triggered
     captured = {}
+
     async def fake_post_to_discord(self, message):
-        captured['msg'] = message
-    monkeypatch.setattr("legion.agents.python.therapist.TherapistAgent.post_to_discord", fake_post_to_discord)
-    therapist_agent = __import__('legion.agents.python.therapist', fromlist=['TherapistAgent']).TherapistAgent(DummyOrchestrator())
+        captured["msg"] = message
+
+    monkeypatch.setattr(
+        "legion.agents.python.therapist.TherapistAgent.post_to_discord",
+        fake_post_to_discord,
+    )
+    therapist_agent = __import__(
+        "legion.agents.python.therapist", fromlist=["TherapistAgent"]
+    ).TherapistAgent(DummyOrchestrator())
     therapist_agent.name = "therapist"
     therapist_agent.client = DummyClient()
     therapist_agent.channel_id = 1
     therapist_agent.config = {}
     # Architect triggers therapist agent (simulate error notification)
-    await therapist_agent.post_to_discord("@therapist_agent error detected: LLM failure")
-    assert "@therapist_agent" in captured['msg']
+    await therapist_agent.post_to_discord(
+        "@therapist_agent error detected: LLM failure"
+    )
+    assert "@therapist_agent" in captured["msg"]
+
 
 # 4. End-to-End Integration
 @pytest.mark.asyncio
@@ -181,11 +215,13 @@ async def test_C1_architect_end_to_end(monkeypatch):
     # ...
     assert True
 
+
 @pytest.mark.asyncio
 async def test_C2_llm_api_downtime(monkeypatch):
     # Simulate LLM API downtime
     # ...
     assert True
+
 
 # 5. Database & Logging Validation
 @pytest.mark.asyncio
@@ -194,11 +230,13 @@ async def test_D1_db_memory_entries(test_env):
     # ...
     assert True
 
+
 @pytest.mark.asyncio
 async def test_D2_log_offsets_advance(test_env):
     # Check log offsets advance
     # ...
     assert True
 
+
 # 6. CI & Reporting
-# (No code needed here; ensure this file is included in CI and logs are archived on failure) 
+# (No code needed here; ensure this file is included in CI and logs are archived on failure)

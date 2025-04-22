@@ -15,7 +15,5 @@ class PingAgent(BaseAgent):
 
     async def handle_ping(self):
         return await self.handle_message(
-            content="ping",
-            author=self.name,
-            timestamp=None
+            content="ping", author=self.name, timestamp=None
         )

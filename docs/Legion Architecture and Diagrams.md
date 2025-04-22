@@ -278,6 +278,36 @@ sequenceDiagram
     end
 ```
 
+### Orchestrator End-to-End Data Flow
+
+```mermaid
+flowchart TD
+    User["User (Discord/Web/API)"] -->|Message| Discord["Discord Bot"]
+    Discord -->|dispatch_message| Orch["Orchestrator"]
+    Orch -->|validate_request| Agent["Target Agent"]
+    Agent -- Valid --> MemHelper["BaseAgent.mem_retrieve / mem_store"]
+    MemHelper --> Memory["Vector Store / SQLite"]
+    Agent -->|PromptBuilder.build| LLM["LLM Client"]
+    LLM --> Agent
+    Agent -->|Response| Orch
+    Orch -->|post_to_discord| Discord
+    Discord -->|Reply| User
+    Agent -- Invalid/Low Confidence --> Fallback["fallback_response"]
+    Fallback --> Orch
+    Orch -->|post_to_discord| Discord
+    Discord -->|Fallback Reply| User
+    Orch --> StateRepo["Central State Repository"]
+    Agent -->|query/update| StateRepo
+    Orch -->|log/metrics| Dashboard["Monitoring/Alerting"]
+```
+
+**Key Points:**
+- Orchestrator pre-checks every message with `validate_request` before agent logic.
+- All memory ops go through `BaseAgent.mem_retrieve`/`mem_store`.
+- PromptBuilder assembles all LLM prompts.
+- Central state repo tracks tasks, agent status, errors, workloads.
+- Monitoring hooks log validation failures, latencies, and more.
+
 ### Layer Interaction Map
 
 ```mermaid

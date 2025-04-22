@@ -1,2 +1,15 @@
-# Doctor agent config stub
-{}
+# Legion orchestrator config with all required agents
+architect_agent:
+  discord_channel_id: 1363184898470445256
+therapist_agent:
+  discord_channel_id: 1363185156759752865
+metrics_agent:
+  discord_channel_id: 1363185079173513358
+ux_designer_agent:
+  discord_channel_id: 1363185227953868900
+ping_agent:
+  discord_channel_id: 123
+echo_agent:
+  discord_channel_id: 123
+healthcheck_agent:
+  discord_channel_id: 123

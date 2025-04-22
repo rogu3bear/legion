@@ -1,6 +1,8 @@
-import os
 import json
+import os
+
 from legion.agents.base import BaseAgent
+from memory.legion_memory import LegionAgentMemory
 
 
 class TherapistAgent(BaseAgent):
@@ -15,14 +17,14 @@ class TherapistAgent(BaseAgent):
         self._log_path = log_path
 
     def read_logs(self):
-        path = getattr(self, '_log_path', None)
+        path = getattr(self, "_log_path", None)
         if not path:
-            path = os.path.join('memory', self.name + '_agent', 'task_log.jsonl')
+            path = os.path.join("memory", self.name + "_agent", "task_log.jsonl")
             if not os.path.exists(path):
-                path = os.path.join('memory', 'logs', 'task_log.jsonl')
+                path = os.path.join("memory", "logs", "task_log.jsonl")
         if not os.path.exists(path):
             return []
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             return [json.loads(line) for line in f if line.strip()]
 
     def compose_summary(self):
@@ -31,7 +33,9 @@ class TherapistAgent(BaseAgent):
         if logs:
             summary_lines.append("**Recent Therapy Log:**")
             for entry in logs:
-                summary_lines.append(f"- {entry.get('type','?')}: {entry.get('content','')}")
+                summary_lines.append(
+                    f"- {entry.get('type', '?')}: {entry.get('content', '')}"
+                )
         else:
             summary_lines.append("No recent therapy log entries found.")
         return "\n".join(summary_lines)
@@ -50,7 +54,9 @@ class TherapistAgent(BaseAgent):
             "stress",
             "conflict",
         ]
-        if not content or not any(phrase in content.lower() for phrase in allowed_phrases):
+        if not content or not any(
+            phrase in content.lower() for phrase in allowed_phrases
+        ):
             return False
         # Simulate confidence threshold (context may provide 'confidence' float)
         if context and isinstance(context, dict):
@@ -75,9 +81,16 @@ class TherapistAgent(BaseAgent):
             await self.post_to_discord(fallback)
             return fallback
         return await self.handle_message(
-            content=content,
-            author=self.name,
-            timestamp=None
+            content=content, author=self.name, timestamp=None
         )
 
     # All message handling is now inherited from BaseAgent.
+
+    def retrieve_memories(self, embeddings):
+        feedback = LegionAgentMemory.retrieve_memories(
+            self.name, 
+            embeddings, 
+            top_k=5, 
+            category="feedback"
+        )
+        return feedback

@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
-# set up our module path and launch the Discord bot
-MODEL=${OPENAI_MODEL:-meta-llama-3.1-8b-instruct}
-if command -v lms >/dev/null 2>&1; then
-  echo "[INFO] Ensuring LM Studio model is loaded: $MODEL"
-  lms load "$MODEL" || echo "[WARN] lms load failed or not required."
+
+set -euo pipefail
+
+# Source environment variables if .env exists
+if [ -f .env ]; then
+    source .env
 fi
+
+# Validate required environment variables
+required_vars=("DISCORD_TOKEN" "ORCH_CONFIG_PATH" "DISCORD_CHANNELS_PATH")
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var:-}" ]; then
+        echo "[ERROR] $var is not set. Please set it in your environment or .env file."
+        exit 1
+    fi
+done
+
+# Set up Python path
 export PYTHONPATH="$(pwd)"
-exec python3 -m integration.discord.bot 
+
+# Start the orchestrator
+echo "[INFO] Starting Legion orchestrator..."
+exec python -m legion.orchestrator 

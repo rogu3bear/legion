@@ -8,14 +8,17 @@ import atexit
 import signal
 import sys
 from pathlib import Path
+import asyncio
+import datetime
+import re
 
 import openai
 import yaml
 from dotenv import load_dotenv
 
 from memory.legion_memory import LegionAgentMemory
-from core.utils.llm_client import LLMClient
-from core.state import StateManager
+from legion.core.llm_client import LLMClient
+from legion.core.state import StateManager
 from legion.agents.python import (
     ArchitectAgent,
     MetricsAgent,
@@ -25,24 +28,14 @@ from legion.agents.python import (
     EchoAgent,
     HealthcheckAgent,
 )
+from legion.core.indexing import render_feed_item
+from legion.core.di_container import container, IStateManager, ILLMClient
+from legion.core.logging_config import setup_logging
+
+# Setup structured logging early
+setup_logging()
 
 logging.getLogger("openai").setLevel(logging.ERROR)
-import asyncio
-import datetime
-import re
-import signal
-import sys
-from pathlib import Path
-
-# Ensure project root is discoverable when running as a script
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# Configure logging if a YAML config exists
-LOGGING_CONFIG_PATH = os.path.join("config", "logging.yaml")
-if os.path.exists(LOGGING_CONFIG_PATH):
-    with open(LOGGING_CONFIG_PATH, "r") as f:
-        logging_config = yaml.safe_load(f)
-    logging.config.dictConfig(logging_config)
 logger = logging.getLogger(__name__)
 
 # Only load .env if OpenAI config is used
@@ -118,23 +111,27 @@ class ProcessRunningError(Exception):
 class Orchestrator:
     """Manages agent lifecycle and communication."""
 
-    def __init__(self, post_agent_message=None, pid_file=None):
-        self._pid_file = pid_file or PID_FILE
+    def __init__(self, post_agent_message=None, pid_file=None, state_manager=None, llm_client=None):
+        # Only enforce locking when a pid_file is explicitly provided
         self._lock_fd = None
         self._lock_acquired = False
-        
-        # Early duplicate startup check with proper file locking
-        try:
-            self._acquire_lock()
-        except ProcessRunningError as e:
-            logger.error(f"Another orchestrator is running: {e}")
-            sys.exit(1)
-        except Exception as e:
-            logger.error(f"Failed to acquire lock: {e}")
-            sys.exit(1)
-            
-        self._setup_signal_handlers()
-        
+        if pid_file is not None:
+            self._pid_file = pid_file
+            # Duplicate startup check with proper file locking
+            try:
+                self._acquire_lock()
+            except ProcessRunningError as e:
+                logger.error(f"Another orchestrator is already running: {e}")
+                sys.exit(1)
+            except Exception as e:
+                logger.error(f"Failed to acquire lock: {e}")
+                sys.exit(1)
+            # Set up graceful shutdown handlers
+            self._setup_signal_handlers()
+        else:
+            # No locking for default startup (e.g., during tests or simple runs)
+            self._pid_file = None
+
         # Populate agent_channel_ids from agent_configs (YAML), fallback to env/channel map
         self.agent_channel_ids = {}
         for name in CLASS_MAP.keys():
@@ -155,39 +152,34 @@ class Orchestrator:
         })
 
         self._post_agent_message = post_agent_message or (lambda agent, payload: None)
-        
+
         # Load agent configs and instantiate agents
         self.agent_configs = self.load_agent_configs()
-        
+
         # Warn and remove unknown config keys
         for key in list(self.agent_configs):
             if key not in CLASS_MAP:
                 logger.warning(f"Ignoring unknown config key: {key}")
                 self.agent_configs.pop(key)
-                
+
         self.agents = {
             name: CLASS_MAP[name](self)
             for name in self.agent_configs.keys()
             if name in CLASS_MAP
         }
         self._agent_objects = self.agents  # Backward compatibility for legacy tests
-        
+
         self.agent_classes = CLASS_MAP
         self.memory = {name: LegionAgentMemory(name) for name in self.agent_classes}
-        
+
         # Only use self.agents for all agent lookups and dispatches
         for name, agent in self.agents.items():
             agent.config = self.agent_configs.get(name, {})
-            agent.llm = LLMClient(
-                api_key=agent.config.get('llm_api_key'),
-                model=agent.config.get('llm_model'),
-                api_base=agent.config.get('llm_api_base'),
-                **agent.config.get('default_kwargs', {})
-            )
+            agent.llm = llm_client or container.get(ILLMClient)
             agent.dynamic_rules = agent.config.get('dynamic_rules', {})
-            
+
         # Central state repository
-        self.state = StateManager()
+        self.state = state_manager or container.get(IStateManager)
         logger.info("Orchestrator initialized with agents: %s", list(self.agent_configs.keys()))
         self.alert_subscribers = set()  # User IDs for alert DMs
 
@@ -196,10 +188,10 @@ class Orchestrator:
         try:
             # Open the PID file in read/write mode, create if doesn't exist
             self._lock_fd = os.open(self._pid_file, os.O_RDWR | os.O_CREAT, 0o600)
-            
+
             # Try to acquire an exclusive lock
             fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            
+
             # Get existing PID if any
             try:
                 pid_data = os.read(self._lock_fd, 32).decode().strip()
@@ -214,27 +206,27 @@ class Orchestrator:
                             logger.info(f"Removing stale PID {pid}")
                         else:
                             raise
-            except (ValueError, UnicodeDecodeError):
-                logger.info("Corrupt PID file, will overwrite")
-                
+            except (ValueError, UnicodeDecodeError) as e:
+                logger.info(f"Corrupt PID file, will overwrite: {e}")
+
             # Write our PID
             os.ftruncate(self._lock_fd, 0)
             os.lseek(self._lock_fd, 0, os.SEEK_SET)
             os.write(self._lock_fd, str(os.getpid()).encode())
-            
+
             self._lock_acquired = True
             atexit.register(self._release_lock)
             logger.info(f"Acquired orchestrator lock (PID {os.getpid()})")
-            
-        except BlockingIOError:
-            raise ProcessRunningError("Another process holds the lock")
-        except Exception as e:
+
+        except BlockingIOError as e:
+            raise ProcessRunningError(f"Another process holds the lock: {e}")
+        except OSError as e:
             if self._lock_fd is not None:
                 try:
                     os.close(self._lock_fd)
-                except:
+                except OSError:
                     pass
-            raise RuntimeError(f"Failed to acquire lock: {e}")
+            raise RuntimeError(f"Failed to acquire lock due to OS error: {e}")
 
     def _release_lock(self):
         """Release the lock and clean up the PID file."""
@@ -244,8 +236,10 @@ class Orchestrator:
                 os.close(self._lock_fd)
                 os.unlink(self._pid_file)
                 logger.info("Released orchestrator lock and cleaned up PID file")
-            except Exception as e:
-                logger.error(f"Failed to release lock: {e}")
+            except OSError as e:
+                logger.error(f"Failed to release lock due to OS error: {e}")
+            except FileNotFoundError as e:
+                logger.error(f"Failed to release lock due to missing PID file: {e}")
         self._lock_acquired = False
         self._lock_fd = None
 
@@ -255,7 +249,7 @@ class Orchestrator:
             logger.info(f"Received signal {signum}. Initiating graceful shutdown.")
             self._release_lock()
             sys.exit(0)
-            
+
         signal.signal(signal.SIGINT, handle_signal)
         signal.signal(signal.SIGTERM, handle_signal)
 
@@ -314,7 +308,10 @@ class Orchestrator:
         logger.info("Legion orchestrator loop started (interval=%ss).", interval)
         try:
             while True:
-                self.run_once()
+                try:
+                    self.run_once()
+                except Exception as e:
+                    logger.error(f"Error during orchestrator loop iteration: {e}", exc_info=True)
                 time.sleep(interval)
         except KeyboardInterrupt:
             logger.info("Legion orchestrator shutdown requested. Exiting loop.")
@@ -331,35 +328,39 @@ class Orchestrator:
 
     def ask(self, agent_name, prompt, context=None):
         """Sends a prompt to an agent and returns the response."""
-        if agent_name not in self.agent_registry:
-            return f"Agent '{agent_name}' not found."
-        agent = self.agent_registry[agent_name]
-        event = {"from": "user", "content": prompt}
-        messages = [
-            {"role": "system", "content": agent["system_prompt"]},
-            {
-                "role": "user",
-                "content": agent["user_prompt"].format(
-                    event_content=prompt, event=event
-                ),
-            },
-        ]
-        if context:
-            messages.extend(context)
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-        )
-        reply = response.choices[0].message.content
-        self.memory[agent_name].log_task(
-            {"type": "ask", "prompt": prompt, "response": reply}
-        )
-        return reply
+        try:
+            if agent_name not in self.agent_registry:
+                return f"Agent '{agent_name}' not found."
+            agent = self.agent_registry[agent_name]
+            event = {"from": "user", "content": prompt}
+            messages = [
+                {"role": "system", "content": agent["system_prompt"]},
+                {
+                    "role": "user",
+                    "content": agent["user_prompt"].format(
+                        event_content=prompt, event=event
+                    ),
+                },
+            ]
+            if context:
+                messages.extend(context)
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+            )
+            reply = response.choices[0].message.content
+            self.memory[agent_name].log_task(
+                {"type": "ask", "prompt": prompt, "response": reply}
+            )
+            return reply
+        except Exception as e:
+            logger.error(f"Unexpected error in ask('{agent_name}'): {e}", exc_info=True)
+            return "[Error: Agent request failed]"
 
     def broadcast(self, prompt):
         """Broadcasts a prompt to all agents and collects responses."""
@@ -506,8 +507,10 @@ class Orchestrator:
                     fields=fields,
                 )
                 asyncio.create_task(self._post_agent_message(to_agent, embed2))
-            except Exception as e:
-                logger.error(f"Failed to post inter-agent message to Discord: {e}")
+            except RuntimeError as e:
+                logger.error(f"Failed to post inter-agent message to Discord due to runtime error: {e}")
+            except AttributeError as e:
+                logger.error(f"Failed to post inter-agent message to Discord due to attribute error: {e}")
 
     def load_yaml(self, path):
         with open(path, "r") as f:
@@ -521,97 +524,123 @@ class Orchestrator:
         timestamp: str = None,
     ):
         """Routes a message to the appropriate agent by name, with validation."""
-        agent_name = agent_name.lower()
-        if agent_name not in self.agents:
-            return f"[Error: '{agent_name}' not available. Valid: {', '.join(self.agents.keys())}]"
-        agent = self.agents[agent_name]
-        # Log dispatch event
-        self.state.log_task(
-            {
-                "type": "dispatch",
-                "agent": agent_name,
-                "content": content,
+        import time
+        start_time = time.time()
+        try:
+            agent_name = agent_name.lower()
+            if agent_name not in self.agents:
+                return f"[Error: '{agent_name}' not available. Valid: {', '.join(self.agents.keys())}]"
+            agent = self.agents[agent_name]
+            # Log dispatch event
+            self.state.log_task(
+                {
+                    "type": "dispatch",
+                    "agent": agent_name,
+                    "content": content,
+                    "author": author,
+                    "timestamp": timestamp,
+                }
+            )
+            # Build context for validation
+            context = {
                 "author": author,
                 "timestamp": timestamp,
+                "content": content,
             }
-        )
-        # Build context for validation
-        context = {
-            "author": author,
-            "timestamp": timestamp,
-            "content": content,
-        }
-        # If agent has validate_request, use it
-        if hasattr(agent, "validate_request") and callable(
-            getattr(agent, "validate_request")
-        ):
-            # use threshold from state.config
-            self.state.get_state()["config"].get("confidence_threshold", 0.5)
-            is_valid = agent.validate_request(content, context)
-            if not is_valid:
-                # Log validation failure
-                self.state.log_error(
-                    {
-                        "type": "validation_failed",
-                        "agent": agent_name,
-                        "content": content,
-                        "reason": "validate_request returned False",
-                        "timestamp": timestamp,
-                    }
-                )
-                if hasattr(agent, "fallback_response") and callable(
-                    getattr(agent, "fallback_response")
-                ):
-                    fallback = agent.fallback_response(
-                        "Request not recognized as valid or confidence too low."
-                    )
-                    # Optionally post to Discord if agent has post_to_discord
-                    if hasattr(agent, "post_to_discord") and callable(
-                        getattr(agent, "post_to_discord")
-                    ):
-                        await agent.post_to_discord(fallback)
-                    # Log fallback response
-                    self.state.log_task(
+            # If agent has validate_request, use it
+            if hasattr(agent, "validate_request") and callable(
+                getattr(agent, "validate_request")
+            ):
+                # use threshold from state.config
+                self.state.get_state()["config"].get("confidence_threshold", 0.5)
+                is_valid = agent.validate_request(content, context)
+                if not is_valid:
+                    # Log validation failure
+                    self.state.log_error(
                         {
-                            "type": "fallback",
+                            "type": "validation_failed",
                             "agent": agent_name,
-                            "response": fallback,
+                            "content": content,
+                            "reason": "validate_request returned False",
                             "timestamp": timestamp,
                         }
                     )
-                    # Record false-positive feedback for validation
-                    self.state.add_feedback(
-                        {
-                            "type": "validation_false_positive",
-                            "agent": agent_name,
-                            "content": content,
-                            "note": "Fallback triggered for invalid request",
-                        }
-                    )
-                    return fallback
-                else:
-                    return "[Validation failed: request not permitted for this agent.]"
-        # Log validation success
-        self.state.log_task(
-            {
-                "type": "validated",
+                    if hasattr(agent, "fallback_response") and callable(
+                        getattr(agent, "fallback_response")
+                    ):
+                        fallback = agent.fallback_response(
+                            "Request not recognized as valid or confidence too low."
+                        )
+                        # Optionally post to Discord if agent has post_to_discord
+                        if hasattr(agent, "post_to_discord") and callable(
+                            getattr(agent, "post_to_discord")
+                        ):
+                            await agent.post_to_discord(fallback)
+                        # Log fallback response
+                        self.state.log_task(
+                            {
+                                "type": "fallback",
+                                "agent": agent_name,
+                                "response": fallback,
+                                "timestamp": timestamp,
+                            }
+                        )
+                        # Record false-positive feedback for validation
+                        self.state.add_feedback(
+                            {
+                                "type": "validation_false_positive",
+                                "agent": agent_name,
+                                "content": content,
+                                "note": "Fallback triggered for invalid request",
+                            }
+                        )
+                        return fallback
+                    else:
+                        return "[Validation failed: request not permitted for this agent.]"
+            # Log validation success
+            self.state.log_task(
+                {
+                    "type": "validated",
+                    "agent": agent_name,
+                    "content": content,
+                    "timestamp": timestamp,
+                }
+            )
+            # Route to agent logic
+            llm_start = time.time()
+            reply = await agent.handle_message(content, author=author, timestamp=timestamp)
+            llm_end = time.time()
+            self.state.log_telemetry({
+                "type": "llm_latency",
                 "agent": agent_name,
-                "content": content,
-                "timestamp": timestamp,
-            }
-        )
-        # Route to agent logic
-        reply = await agent.handle_message(content, author=author, timestamp=timestamp)
-        # Log response
-        self.state.log_task(
-            {
-                "type": "response",
+                "latency": llm_end - llm_start,
+                "event": "handle_message"
+            })
+            # Post the reply to Discord channel
+            try:
+                await agent.post_to_discord(reply)
+            except Exception as e:
+                logger.error(f"Failed to post reply for {agent_name}: {e}")
+            # Log response
+            self.state.log_task(
+                {
+                    "type": "response",
+                    "agent": agent_name,
+                    "response": reply,
+                    "timestamp": timestamp,
+                }
+            )
+            dispatch_end = time.time()
+            self.state.log_telemetry({
+                "type": "dispatch_duration",
                 "agent": agent_name,
-                "response": reply,
-                "timestamp": timestamp,
-            }
-        )
-        return reply
+                "latency": dispatch_end - start_time,
+                "event": "dispatch_message"
+            })
+            return reply
+        except Exception as e:
+            logger.error(f"Unexpected error in dispatch_message: {e}", exc_info=True)
+            return "[Error: Internal error during message dispatch]"
 
     async def run_self_assess_all(self):
         """Run self_assess() on all agents, logging exceptions."""
@@ -619,10 +648,12 @@ class Orchestrator:
             if hasattr(agent, "self_assess"):
                 try:
                     await agent.self_assess()
-                except Exception as e:
-                    logger.error(f"[self_assess] Agent {name} failed: {e}")
+                except RuntimeError as e:
+                    logger.error(f"[self_assess] Agent {name} failed due to runtime error: {e}")
+                except AttributeError as e:
+                    logger.error(f"[self_assess] Agent {name} failed due to attribute error: {e}")
 
-    def reload_agent_configs(self):
+    def reload_agent_configs(self, llm_client=None):
         """Reloads agent configurations from YAML files and updates all agents."""
         # Reload configs
         self.agent_configs = self.load_agent_configs()
@@ -653,12 +684,7 @@ class Orchestrator:
         # Update agent attributes
         for name, agent in self.agents.items():
             agent.config = self.agent_configs.get(name, {})
-            agent.llm = LLMClient(
-                api_key=agent.config.get("llm_api_key"),
-                model=agent.config.get("llm_model"),
-                api_base=agent.config.get("llm_api_base"),
-                **agent.config.get("default_kwargs", {}),
-            )
+            agent.llm = llm_client or container.get(ILLMClient)
             agent.dynamic_rules = agent.config.get("dynamic_rules", {})
         logger.info(
             "Agent configs reloaded. Agents: %s", list(self.agent_configs.keys())
@@ -733,7 +759,9 @@ class Orchestrator:
 
 # Allow direct execution to start the orchestrator loop
 if __name__ == "__main__":
-    orch = Orchestrator()
+    # Ensure logging is set up before creating Orchestrator instance
+    setup_logging()
+    orch = Orchestrator(pid_file=PID_FILE, state_manager=container.get(IStateManager), llm_client=container.get(ILLMClient))
     try:
         orch.run()
     except KeyboardInterrupt:

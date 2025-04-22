@@ -1,0 +1,61 @@
+channels:
+  - name: bot-commands
+    type: GUILD_TEXT
+    topic: "Bot command entrypoint for Legion"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL]
+  - name: agent-logs
+    type: GUILD_TEXT
+    topic: "Agent logs and validation events"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL]
+  - name: agent-feedback
+    type: GUILD_TEXT
+    topic: "User and audit feedback for agents"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL]
+  - name: config-updates
+    type: GUILD_TEXT
+    topic: "Configuration changes and audit trail"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL]
+  - name: alerts
+    type: GUILD_TEXT
+    topic: "Critical alerts and notifications"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL]
+  - name: metrics-dash
+    type: GUILD_TEXT
+    topic: "Metrics dashboard and system health"
+    permissions:
+      - role: Admin
+        allow: [VIEW_CHANNEL, SEND_MESSAGES, MANAGE_MESSAGES]
+      - role: Operator
+        allow: [VIEW_CHANNEL, SEND_MESSAGES]
+      - role: Viewer
+        allow: [VIEW_CHANNEL] 
