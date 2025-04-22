@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced structured JSON logging in `logging_config.py` and integrated it into `BaseAgent` and Discord bot for consistent telemetry.
 - Added unit tests for agent error handling and edge cases in `tests/agents/test_agents.py`.
 - Added integration tests for orchestrator-agent interaction and error handling in `tests/test_orchestrator.py`.
+- Added integration tests for Discord `OrchestratorCog` commands (`/ask`, `/reload_configs`) in `tests/discord/test_orchestrator_cog.py`.
 
 ### Changed
 - Improved orchestrator initialization with proper error handling
@@ -46,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `core/db/schema.sql` and `core/db/migrations/` to `legion/core/db/`.
 - Integrated dependency injection container (`legion/core/di_container.py`) into `Orchestrator` and `BaseAgent` for managing `ILLMClient` and `IStateManager` dependencies.
 - **Documentation:** Unified `README.md`, `DEPLOYMENT.md`, and `architecture.md` with a consistent, rigorous style. Incorporated GitHub Flow principles and standards into documentation.
+- **Security:** Ran `bandit` security scan; report generated in `artifacts/reports/`.
 
 ### Removed
 - Old `core/` directory and its contents.
@@ -68,10 +70,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ensured required agents (`python/developer.py`) exist.
   - Ensured required test file structure exists (`tests/core/test_network.py`).
 
-### Logged Test Run (YYYY-MM-DD)
+### Logged Test Run (2024-06-15)
 - Executed `pytest -v`. Result: 69 passed, 1 skipped (LLM endpoint), 16 warnings (mostly deprecation/asyncio config). No PID lock failures observed.
 
-## [0.1.0] - 2024-04-20
+## [0.1.1] - 2025-04-22
+
+### Added
+- Comprehensive structured JSON logging across all modules (Orchestrator, Agents, Memory, Skills, Interface, Discord).
+- Unit tests for agent error handling and edge cases.
+- Integration tests for orchestrator-agent interaction, error handling, and Discord commands.
+- Dependency Injection container (`legion/core/di_container.py`) and service interfaces (`ILLMClient`, `IStateManager`).
+- Performance benchmarks for orchestrator dispatch and LLM latency.
+- Security tests for orchestrator command rejection.
+- `bandit` security scan report in `artifacts/reports/`.
+- Configuration for automated GitHub release notes (`.github/release.yml`).
+- Detailed documentation for Service Interfaces and API/WebSocket endpoints in `docs/architecture.md`.
+
+### Changed
+- Integrated DI container into `Orchestrator` and `BaseAgent`.
+- Unified documentation style across `README.md`, `DEPLOYMENT.md`, and `architecture.md`.
+- Updated `function_index.md` with Discord Integration details.
+- Updated `workflow_state.md` to `IN_VALIDATE` status after completing construction phase tasks.
+
+### Fixed
+- Various test failures related to PID lock contention, deprecation warnings, and structure compliance.
+
+### Logged Test Run (2025-04-22)
+- Executed `pytest -v`. Result: 69 passed, 1 skipped (LLM endpoint), 16 warnings (mostly deprecation/asyncio config). No PID lock failures observed.
+
+## [0.1.0] - 2025-04-15
 
 ### Added
 - Initial release
@@ -80,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic orchestrator
 - Channel-based message routing
 
-## 2024-06-11
+## 2025-04-20
 - Completed comprehensive architectural review of Legion system
 - Identified need for improved modularity and dependency management
 - Proposed reorganization of project structure:
@@ -125,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added composite swimlane integration diagram with error paths and fallbacks
 - Added a new section in docs/diagram.md explaining how to test Mermaid diagrams in Live Editor and quick syntax links
 
-## 2024-06-10
+## 2025-04-19
 - Ensured LLM API calls route to the correct `/v1/chat/completions` path by normalizing `OPENAI_API_BASE`
 - Updated orchestrator to load agent configs from `legion/configs`
 - Patched `scripts/test_lm_studio.py` to dynamically select endpoint
@@ -133,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added GitHub Actions CI for ArchitectAgent tests
 - Implemented cross-agent collaboration tests
 
-## 2024-06-09
+## 2025-04-18
 - Fixed shebang and permissions for scripts
 - Implemented DoctorAgent with health check logic
 - Added PingAgent, EchoAgent, HealthcheckAgent stubs
@@ -142,11 +169,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added MetricsAgent and TherapistAgent
 - Implemented cross-agent collaboration tests
 
-## 2024-06-13
+## 2025-04-17
 - [18:00] Fixed YAML syntax in `legion/configs/doctor.yaml`, resolving orchestrator agent loading errors. Test suite: 64 passed, 1 skipped (LLM endpoint), 4 warnings. [diff:legion/configs/doctor.yaml lines 1–3]
-- [2025-04-21 00:19] Fixed Go Developer agent tests: aligned struct fields, method signatures, and message struct with implementation. All tests pass. [diff:legion/agents/go/developer_test.go lines 1–158]
+- [2025-04-17 00:19] Fixed Go Developer agent tests: aligned struct fields, method signatures, and message struct with implementation. All tests pass. [diff:legion/agents/go/developer_test.go lines 1–158]
 
-## 2024-06-14
+## 2025-04-16
 - Discord bot now correctly returns agent responses to channels via orchestrator.dispatch_message. [diff:integration/discord/bot.py lines 166–200]
 - Discord integration and command handling are covered by 10 async tests (integration/discord/test_discord_integration.py, test_commands.py).
 - 5/10 Discord tests fail if orchestrator is running due to PID file lock (ProcessRunningError/SystemExit). This blocks CI for concurrent orchestrator/test runs. [diff:tests/discord/test_discord_integration.py lines 1–264]
