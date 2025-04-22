@@ -25,6 +25,14 @@ jobs:
         run: |
           . venv/bin/activate
           flake8 .
+      - name: Type Check (mypy)
+        run: |
+          . venv/bin/activate
+          mypy legion/ > artifacts/reports/mypy_report.txt || true
+      - name: Ruff Lint
+        run: |
+          . venv/bin/activate
+          ruff check legion/ > artifacts/reports/ruff_report.txt || true
       - name: Security Scan (Bandit)
         run: |
           . venv/bin/activate
