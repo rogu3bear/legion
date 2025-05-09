@@ -41,16 +41,12 @@ jobs:
         env:
           GENERAL_CHANNEL_ID: '0'
           AGENT_FEED_CHANNEL_ID: '0'
-          ARCHITECT_CHANNEL_ID: '0'
-          METRICS_CHANNEL_ID: '0'
-          THERAPIST_CHANNEL_ID: '0'
-          DESIGN_CHANNEL_ID: '0'
-          DISCORD_TOKEN: 'test'
+          ORCHESTRATOR_API_URL: 'http://localhost:8000'
         run: |
           . venv/bin/activate
           mkdir -p scripts/logs
           mkdir -p artifacts/reports
-          pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ --maxfail=1 --disable-warnings -q
+          pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ interface/ --maxfail=1 --disable-warnings -q
       - name: Upload Logs on Failure
         uses: actions/upload-artifact@v3
         if: failure()
@@ -82,9 +78,33 @@ jobs:
         pytest -v --maxfail=5 --disable-warnings
       env:
         PYTHONPATH: $PYTHONPATH:.
+    - name: Run integration tests
+      run: |
+        pytest -q tests/integration
+    - name: CLI smoke test
+      run: legion list-agents
+    - name: Check port generation
+      run: bash scripts/gen_ports_env.sh > /dev/null
     - name: Upload Logs on Failure
       uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: legion-logs-test
-        path: scripts/logs/ 
+        path: scripts/logs/
+
+  agent-instantiation-guard:
+    name: "Agent Instantiation Guard"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install libcst
+      - name: Run instantiation guard
+        run: |
+          python scripts/agent_instantiation_guard.py legion/

@@ -1,0 +1,51 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0 # Use a recent, stable version
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-toml
+    -   id: check-added-large-files
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version should match the one in requirements.txt/pyproject.toml if possible
+    rev: v0.11.8 # Or specific version used in project
+    hooks:
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+    -   id: ruff-format
+
+# Mypy hook (optional, can be slow)
+# Ensure mypy is installed in the environment pre-commit runs in
+# or use pre-commit's additional_dependencies
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0 # Use a version compatible with project config
+    hooks:
+    -   id: mypy
+        # You might need additional_dependencies if mypy needs project dependencies
+        # additional_dependencies: [types-PyYAML, types-requests, ...]
+        args: [--config-file=pyproject.toml] # Point to your config
+
+# Bandit hook (optional)
+# -   repo: https://github.com/PyCQA/bandit
+#     rev: 1.7.8 # Use a recent version
+#     hooks:
+#     -   id: bandit
+#         args: ["-c", "pyproject.toml"] # Reference config if needed
+#         # Exclude tests if desired: args: ["-c", "pyproject.toml", "-r", ".", "-x", "./tests"]
+
+-   repo: local
+    hooks:
+    -   id: guard-agent-instantiation
+        name: Guard direct agent instantiation
+        entry: python scripts/agent_instantiation_guard.py legion/
+        language: system
+        types: [python]
+    -   id: ban-3000-port
+        name: Ban hard-coded port 3000 in docker-compose.yml
+        entry: bash -c "grep -R '3000:' docker-compose.yml && echo 'Hard-coded port 3000 detected, please use env var' && exit 1 || exit 0"
+        language: system
+        files: ^docker-compose\.yml$

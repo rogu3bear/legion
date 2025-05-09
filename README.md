@@ -71,5 +71,21 @@ Legion follows a strict layered architecture enforced by CI:
 3. Update documentation when adding features
 4. Maintain the changelog
 
+## Agent Instantiation Guard
+**Purpose:** Prevent direct construction of agent classes outside the orchestrator.
+
+**How it works:** A pre-commit hook and a CI job run `scripts/agent_instantiation_guard.py` on the `legion/` directory to detect improper instantiations.
+
+**Local usage:**
+```bash
+# Check for direct instantiations
+python scripts/agent_instantiation_guard.py legion/
+
+# Apply automatic fixes
+python scripts/agent_instantiation_guard.py --apply legion/
+```
+
+Use the `orchestrator.load_agent()` API to instantiate agents correctly.
+
 ## License
 All rights reserved. This codebase is proprietary and confidential. 

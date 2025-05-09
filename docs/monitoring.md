@@ -1,0 +1,80 @@
+# Monitoring & Metrics
+
+Legion now exposes Prometheus metrics for operational monitoring.
+
+## Starting the metrics server
+
+Import and start the HTTP endpoint before running the orchestrator:
+
+```python
+from metrics.exporter import start_metrics_server
+
+# Start on port 8000 (default)
+start_metrics_server(port=8000)
+
+# Then start the orchestrator normally
+from legion.orchestrator import Orchestrator
+Orchestrator(...).run()
+```
+
+## Available Metrics
+
+- `legion_dispatch_total{agent_key="..."}`: Counter of dispatch calls per agent.
+- `legion_dispatch_latency_seconds_bucket{agent_key="..."}`: Histogram buckets for dispatch latency.
+- `legion_dispatch_latency_seconds_sum{agent_key="..."}`: Sum of all latencies.
+- `legion_dispatch_latency_seconds_count{agent_key="..."}`: Total observations count.
+
+## Grafana Dashboard Snippet
+
+Below is a minimal Grafana dashboard JSON snippet to visualize 95th percentile latency:
+
+```json
+{
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Dispatch Latency (95th percentile)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(legion_dispatch_latency_seconds_bucket[5m])) by (agent_key, le))",
+          "legendFormat": "{{agent_key}}",
+          "refId": "A"
+        }
+      ],
+      "yaxes": [
+        {"format": "s", "label": "Latency (s)"},
+        {"format": "short"}
+      ]
+    }
+  ]
+}
+```
+
+## Port Allocation
+
+Legion uses a clustered port scheme to avoid conflicts across services:
+
+| Cluster         | Base   | Range      | Purpose                                 |
+|-----------------|--------|------------|-----------------------------------------|
+| **App Core**    | **5500** | 5500–5519 | Orchestrator API, REST helpers          |
+| **Data Stores** | **5520** | 5520–5539 | Redis, PostgreSQL, Vector DB            |
+| **Observability** | **5540** | 5540–5559 | Prometheus, Grafana, Alertmanager       |
+| **Dev UX**      | **5560** | 5560–5579 | Hot-reloading front-ends, mock servers  |
+| **Spare/Future** | **5580** | 5580–5599 | Expansion buffer                       |
+
+**Generate environment variables:**
+
+```bash
+bash scripts/gen_ports_env.sh > .env.ports
+export $(grep -v '^#' .env.ports)
+```
+
+Then reference them in `docker-compose.yml`:
+
+```yaml
+services:
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "${PORT_ALLOCATOR_GRAFANA}:3000"
+```
