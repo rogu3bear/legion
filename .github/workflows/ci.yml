@@ -14,28 +14,30 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv .venv
+          bash scripts/activate_once.sh
       - name: Install dependencies
         run: |
-          python -m venv venv
-          . venv/bin/activate
           pip install -U pip
           pip install -r requirements.txt
           pip install flake8
       - name: Lint code
         run: |
-          . venv/bin/activate
+          bash scripts/activate_once.sh
           flake8 .
       - name: Type Check (mypy)
         run: |
-          . venv/bin/activate
+          bash scripts/activate_once.sh
           mypy legion/ > artifacts/reports/mypy_report.txt || true
       - name: Ruff Lint
         run: |
-          . venv/bin/activate
+          bash scripts/activate_once.sh
           ruff check legion/ > artifacts/reports/ruff_report.txt || true
       - name: Security Scan (Bandit)
         run: |
-          . venv/bin/activate
+          bash scripts/activate_once.sh
           bandit -r legion/ -o artifacts/reports/bandit_report_ci.json -f json
       - name: Run tests
         env:
@@ -43,7 +45,7 @@ jobs:
           AGENT_FEED_CHANNEL_ID: '0'
           ORCHESTRATOR_API_URL: 'http://localhost:8000'
         run: |
-          . venv/bin/activate
+          bash scripts/activate_once.sh
           mkdir -p scripts/logs
           mkdir -p artifacts/reports
           pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ interface/ --maxfail=1 --disable-warnings -q

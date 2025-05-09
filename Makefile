@@ -1,5 +1,13 @@
 # Legion Makefile
-.PHONY: test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh
+.PHONY: test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv
+
+venv:
+	@echo "Activating virtual environment..."
+	@echo "Note: This needs to be run with 'source', e.g.:"
+	@echo "  source scripts/activate_once.sh"
+	@echo "or"
+	@echo "  source make venv"
+	@bash scripts/activate_once.sh
 
 test: test-agents test-core test-discord test-integration test-interface
 	@echo "All tests passed."

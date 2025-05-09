@@ -1,5 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+default_stages: [commit]
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0 # Use a recent, stable version
@@ -49,3 +51,14 @@ repos:
         entry: bash -c "grep -R '3000:' docker-compose.yml && echo 'Hard-coded port 3000 detected, please use env var' && exit 1 || exit 0"
         language: system
         files: ^docker-compose\.yml$
+    -   id: check-venv-double-activation
+        name: Check for duplicate virtual environment activations
+        entry: bash scripts/pre-commit-hooks/check_venv_double_activation.sh
+        language: system
+        pass_filenames: false
+    -   id: ensure-venv-activated
+        name: Ensure virtual environment is activated
+        entry: bash scripts/activate_once.sh
+        language: system
+        pass_filenames: false
+        always_run: true
