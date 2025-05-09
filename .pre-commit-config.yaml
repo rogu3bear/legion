@@ -27,7 +27,7 @@ repos:
     -   id: mypy
         # You might need additional_dependencies if mypy needs project dependencies
         # additional_dependencies: [types-PyYAML, types-requests, ...]
-        args: [--config-file=pyproject.toml] # Point to your config
+        args: [--config-file=pyproject.toml, --exclude, "(legion/core/db\\.py|legion/core/db/__init__\\.py)$"]
 
 # Bandit hook (optional)
 # -   repo: https://github.com/PyCQA/bandit

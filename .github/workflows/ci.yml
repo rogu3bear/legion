@@ -85,12 +85,22 @@ jobs:
       run: legion list-agents
     - name: Check port generation
       run: bash scripts/gen_ports_env.sh > /dev/null
-    - name: Generate ports & boot compose
+    - name: Check service health
       run: |
         bash scripts/gen_ports_env.sh
         docker compose up -d --no-build
         sleep 15
         curl -f "http://localhost:${PORT_ALLOCATOR_PROMETHEUS}/-/ready"
+        # Redis PING
+        python3 - << 'PY'
+        import os, redis, sys
+        r = redis.Redis(host="localhost", port=int(os.environ['PORT_ALLOCATOR_REDIS']))
+        sys.exit(0 if r.ping() else 1)
+        PY
+        # Postgres simple connect
+        pg_isready -h localhost -p ${PORT_ALLOCATOR_POSTGRES}
+        # Grafana health
+        curl -f "http://localhost:${PORT_ALLOCATOR_GRAFANA}/api/health"
         docker compose down -v
     - name: Upload Logs on Failure
       uses: actions/upload-artifact@v3
