@@ -3,6 +3,7 @@ import atexit
 import datetime
 import errno
 import fcntl
+import importlib
 import json
 import logging
 import logging.config
@@ -13,13 +14,14 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import openai
 import yaml
 import zmq.asyncio
 from dotenv import load_dotenv
 
+from core.utils.ports import PortAllocator
 from integration.discord.cogs.ux_feed import render_feed_item
 from legion.agents.python import (
     ArchitectAgent,
@@ -32,7 +34,10 @@ from legion.agents.python import (
 )
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.core.logging_config import setup_logging
+from legion.ports import RUNTIME_PORTS, load_runtime_ports
+from legion.ports import get_port as get_service_port_new
 from memory.legion_memory import LegionAgentMemory
+from metrics.exporter import dispatch_counter, dispatch_latency
 
 # Setup structured logging early
 setup_logging()
@@ -123,6 +128,12 @@ class ProcessRunningError(Exception):
     pass
 
 
+class AgentLoadError(Exception):
+    """Raised when an agent fails to load due to import or instantiation errors."""
+
+    pass
+
+
 class Orchestrator:
     """Manages agent lifecycle and communication."""
 
@@ -166,8 +177,15 @@ class Orchestrator:
 
         # Initialize core dependencies (DI)
         self.agents = {}  # Initialize agents dict *before* loading configs
+        self._agent_instances = {}  # Cache for instantiated agents
         self.state_manager = state_manager or container.get(IStateManager)
         self.llm_client = llm_client or container.get(ILLMClient)
+        # Initialize dynamic port allocator
+        self.port_allocator = PortAllocator()
+
+        # Load runtime ports and log them
+        load_runtime_ports()  # Ensure this populates legion.ports.RUNTIME_PORTS
+        self._log_runtime_ports()
 
         self.client = None
         self.task_queue = []
@@ -241,6 +259,20 @@ class Orchestrator:
             "Orchestrator initialized with agents: %s", list(self.config.keys())
         )
         self.alert_subscribers = set()  # User IDs for alert DMs
+
+        self.agent_channel_ids.update(
+            CHANNEL_ID_MAP
+        )  # Ensure all defined channels are available
+
+        self._log_runtime_ports()
+
+    def _log_runtime_ports(self) -> None:
+        """Logs the currently configured runtime ports if DEBUG is set."""
+        if os.getenv("LEGION_DEBUG_PORTS", "False").lower() == "true":
+            port_banner = "  ".join(
+                [f"{k}:{v}" for k, v in sorted(RUNTIME_PORTS.items())]
+            )
+            logger.info(f"[orchestrator] dynamic ports -> {port_banner}")
 
     def _acquire_lock(self):
         """Acquire an exclusive lock on the PID file."""
@@ -892,9 +924,14 @@ class Orchestrator:
                     return f"Cannot process request: {reason}"
 
             # Dispatch to agent
+            # Record dispatch latency and count
+            start = time.time()
             response = await agent.handle_message(
                 content, author=author, timestamp=timestamp
             )
+            duration = time.time() - start
+            dispatch_counter.labels(agent_key=agent_name).inc()
+            dispatch_latency.labels(agent_key=agent_name).observe(duration)
 
             # Post-process response
             if not response or not isinstance(response, str):
@@ -903,7 +940,6 @@ class Orchestrator:
                 return "Error: Agent returned invalid response"
 
             # Log success metrics
-            duration = time.time() - start_time
             self.state_manager.log_telemetry(
                 {
                     "event": "message_dispatch_complete",
@@ -982,7 +1018,7 @@ class Orchestrator:
             for name in self.config.keys()
             if name in CLASS_MAP
         }
-        self._agent_objects = self.agents  # Backward compatibility
+        self._agent_instances = self.agents  # Backward compatibility
         # Update agent attributes
         for name, agent in self.agents.items():
             agent.config = self.config.get(name, {})
@@ -1464,6 +1500,111 @@ class Orchestrator:
         if not start_success:
             return False, f"Failed to start agent during restart: {start_detail}"
         return True, f"Agent '{agent_name}' restarted successfully (Placeholder)."
+
+    def load_agent(self, key: str) -> Any:
+        """
+        Load or return a cached agent instance by its key.
+        Args:
+            key: The agent key from agents.yaml (e.g., "architect", "metrics").
+        Returns:
+            An instance of the requested agent.
+        Raises:
+            KeyError: If the key is not in the agent configs.
+            AgentLoadError: If import or instantiation fails.
+        """
+        # Check cache first
+        if key in self._agent_instances:
+            return self._agent_instances[key]
+
+        # Validate the key exists in configs
+        if key not in self.config:
+            raise KeyError(f"Unknown agent key: {key}")
+
+        agent_config = self.config[key]
+        class_name = agent_config.get("class")
+
+        if not class_name:
+            raise AgentLoadError(
+                f"Missing class name in configuration for agent '{key}'"
+            )
+
+        try:
+            # Dynamically import the agent module
+            module_name = f"legion.agents.python.{key}"
+            module = importlib.import_module(module_name)
+
+            # Get the agent class
+            agent_class = getattr(module, class_name)
+
+            # Instantiate the agent
+            agent = agent_class(orchestrator=self, llm_client=self.llm_client)
+
+            # Initialize agent if it has an initialize method
+            if hasattr(agent, "initialize") and callable(agent.initialize):
+                agent.initialize()
+
+            # Store in cache
+            self._agent_instances[key] = agent
+
+            logger.info(f"Loaded agent: {key}")
+            return agent
+
+        except ImportError as e:
+            error_msg = f"Failed to import module for agent '{key}': {e!s}"
+            logger.error(error_msg)
+            raise AgentLoadError(error_msg) from e
+        except AttributeError as e:
+            error_msg = f"Failed to get class '{class_name}' for agent '{key}': {e!s}"
+            logger.error(error_msg)
+            raise AgentLoadError(error_msg) from e
+        except Exception as e:
+            error_msg = f"Failed to instantiate agent '{key}': {e!s}"
+            logger.error(error_msg)
+            raise AgentLoadError(error_msg) from e
+
+    def dispatch(self, agent_key: str, payload: dict) -> dict:
+        """
+        Dispatch a payload to the agent via its LLM client, returning the response dict.
+        Raises KeyError if the agent key is unknown.
+        """
+        if agent_key not in self.config:
+            raise KeyError(f"Unknown agent key: {agent_key}")
+        try:
+            # Record dispatch latency and count
+            start = time.time()
+            result = self.llm_client.create(payload)
+            duration = time.time() - start
+            dispatch_counter.labels(agent_key=agent_key).inc()
+            dispatch_latency.labels(agent_key=agent_key).observe(duration)
+            # Log dispatch in memory if available
+            if agent_key in self.memory:
+                self.memory[agent_key].log_task(
+                    {
+                        "type": "dispatch",
+                        "payload": payload,
+                        "response": result,
+                    }
+                )
+            return result
+        except Exception as e:
+            raise RuntimeError(f"Error dispatching to {agent_key}: {e}") from e
+
+    def get_service_port(self, service_key: str) -> int:
+        """DEPRECATED: Use legion.ports.get_port directly or orchestrator.get_service_port_new."""
+        # This now refers to the PortAllocator's own get_free_port, not the new RUNTIME_PORTS based one.
+        # This needs to be clarified or updated if Orchestrator should use the new system.
+        # For now, retaining original PortAllocator behavior here.
+        # return self.port_allocator.get_free_port(service_key) # Original behavior
+        # To use the new system:
+        port = get_service_port_new(service_key)
+        if port is None:
+            logger.warning(
+                f"Port for service '{service_key}' not found in RUNTIME_PORTS. This might be an issue."
+            )
+            # Fallback or raise error, current get_port returns Optional[int]
+            # Forcing a non-Optional return to match previous signature, though risky.
+            return 0  # Or some other default / error handling
+        return port
 
 
 # Allow direct execution to start the orchestrator loop
