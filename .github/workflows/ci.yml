@@ -108,6 +108,16 @@ jobs:
       with:
         name: legion-logs-test
         path: scripts/logs/
+    - name: Discord notify
+      if: always()
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        status="${{ job.status }}"
+        sha="${GITHUB_SHA::7}"
+        curl -H "Content-Type: application/json" \\
+             -d "{\\"content\\":\\"CI run *${status}* for \`${sha}\`\\"}" \\
+             "$DISCORD_WEBHOOK"
 
   agent-instantiation-guard:
     name: "Agent Instantiation Guard"
