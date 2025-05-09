@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Generate PORT_ALLOCATOR_<SERVICE> env variables for docker-compose
-python3 - <<'PY'
+# Generate .env.ports with PORT_ALLOCATOR_<SERVICE>=<port>
+python3 - << 'PY' > .env.ports
 from core.utils.ports import PortAllocator
 pa = PortAllocator(base=5500, cluster_size=100)
-services = ["orchestrator", "redis", "postgres", "prometheus", "grafana"]
+services = ["orchestrator", "redis", "postgres", "prometheus", "grafana", "dev_frontend"]
 for svc in services:
     port = pa.get_free_port(svc)
     up = svc.upper()
-    print(f"export PORT_ALLOCATOR_{up}={port}")
+    print(f"PORT_ALLOCATOR_{up}={port}")
 PY

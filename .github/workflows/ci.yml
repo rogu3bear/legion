@@ -85,6 +85,13 @@ jobs:
       run: legion list-agents
     - name: Check port generation
       run: bash scripts/gen_ports_env.sh > /dev/null
+    - name: Generate ports & boot compose
+      run: |
+        bash scripts/gen_ports_env.sh
+        docker compose up -d --no-build
+        sleep 15
+        curl -f "http://localhost:${PORT_ALLOCATOR_PROMETHEUS}/-/ready"
+        docker compose down -v
     - name: Upload Logs on Failure
       uses: actions/upload-artifact@v3
       if: failure()

@@ -1,0 +1,44 @@
+# docker-compose.yml for Legion Web Interface
+
+version: '3.8'
+
+services:
+  web:
+    env_file:
+      - .env.ports
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legion-web
+    command: bash -c "alembic upgrade head && uvicorn interface.main:app --host 0.0.0.0 --port 8000 --reload" # Use reload for dev
+    volumes:
+      - ./interface:/app/interface
+      - ./legion:/app/legion
+      - ./memory:/app/memory
+      - ./skills:/app/skills
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
+      - ./memory/db:/app/memory/db # Mount DB volume
+      - ./.env:/app/.env # Mount .env file
+    ports:
+      - "${PORT_ALLOCATOR_DEV_FRONTEND}:8000"
+    environment:
+      # Pass environment variables from .env file or define here
+      - PYTHONUNBUFFERED=1
+      # Ensure ZMQ communication works if orchestrator is outside docker
+      # - ORCHESTRATOR_ADDRESS=tcp://host.docker.internal:5555 # Example for Docker Desktop
+      # Add other necessary env vars
+    depends_on:
+      # Add dependencies like a database service if needed
+      # - db
+    networks:
+      - legion-net
+
+# Define networks
+networks:
+  legion-net:
+    driver: bridge
+
+# Define volumes if needed for persistent data (e.g., separate DB service)
+# volumes:
+#   postgres_data:
