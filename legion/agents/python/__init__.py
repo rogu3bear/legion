@@ -1,28 +1,23 @@
 """Legion Python agents package init."""
 
-from .architect import ArchitectAgent  # noqa: F401
-from .developer import DeveloperAgent  # noqa: F401
-from .doctor import DoctorAgent  # noqa: F401
-from .echo import EchoAgent  # noqa: F401
-from .healthcheck import HealthcheckAgent  # noqa: F401
-from .metrics import MetricsAgent  # noqa: F401
-from .ping import PingAgent  # noqa: F401
-from .researcher import ResearcherAgent  # noqa: F401
-from .therapist import TherapistAgent  # noqa: F401
-from .ux_designer import UxDesignerAgent  # noqa: F401
+from .architect import ArchitectAgent
+from .echo import EchoAgent
+from .healthcheck import HealthcheckAgent
+from .metrics import MetricsAgent
+from .ping import PingAgent
+from .therapist import TherapistAgent
+from .ux_designer import UxDesignerAgent
 
 # This __init__ intentionally imports all agents
 # for easier registration and potential future dynamic loading.
 # The noqa F401 suppresses unused import warnings here.
 
 __all__ = [
-    'ArchitectAgent',
-    'MetricsAgent', 
-    'UxDesignerAgent',
-    'TherapistAgent',
-    'PingAgent',
-    'EchoAgent',
-    'HealthcheckAgent',
-    'DoctorAgent',
-    'ResearcherAgent'
+    "ArchitectAgent",
+    "EchoAgent",
+    "HealthcheckAgent",
+    "MetricsAgent",
+    "PingAgent",
+    "TherapistAgent",
+    "UxDesignerAgent",
 ]

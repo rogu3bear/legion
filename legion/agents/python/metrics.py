@@ -101,7 +101,7 @@ class MetricsAgent(BaseAgent):
                 path = os.path.join("memory", "logs", "task_log.jsonl")
         if not os.path.exists(path):
             return []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return [json.loads(line) for line in f if line.strip()]
 
     def compose_summary(self):
@@ -141,62 +141,92 @@ class MetricsAgent(BaseAgent):
         # Implement the logic to analyze feedback, retrieve memories, report, and post
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(self):
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+        self,
+    ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass

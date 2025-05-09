@@ -24,7 +24,7 @@ class TherapistAgent(BaseAgent):
                 path = os.path.join("memory", "logs", "task_log.jsonl")
         if not os.path.exists(path):
             return []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return [json.loads(line) for line in f if line.strip()]
 
     def compose_summary(self):
@@ -88,9 +88,6 @@ class TherapistAgent(BaseAgent):
 
     def retrieve_memories(self, embeddings):
         feedback = LegionAgentMemory.retrieve_memories(
-            self.name, 
-            embeddings, 
-            top_k=5, 
-            category="feedback"
+            self.name, embeddings, top_k=5, category="feedback"
         )
         return feedback
