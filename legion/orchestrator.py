@@ -1,9 +1,11 @@
 import asyncio
 import atexit
+import contextlib
 import datetime
 import errno
 import fcntl
 import importlib
+import inspect
 import json
 import logging
 import logging.config
@@ -16,12 +18,9 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional
 
-import openai
 import yaml
 import zmq.asyncio
-from dotenv import load_dotenv
 
-from core.utils.ports import PortAllocator
 from integration.discord.cogs.ux_feed import render_feed_item
 from legion.agents.python import (
     ArchitectAgent,
@@ -34,10 +33,10 @@ from legion.agents.python import (
 )
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.core.logging_config import setup_logging
-from legion.ports import RUNTIME_PORTS, load_runtime_ports
-from legion.ports import get_port as get_service_port_new
+from legion.ports import unified_port_manager
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
+from legion.middleware import run_middleware_pipeline
 
 # Setup structured logging early
 setup_logging()
@@ -45,25 +44,24 @@ setup_logging()
 logging.getLogger("openai").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 
-# Only load .env if OpenAI config is used
-try:
-    load_dotenv(dotenv_path=".env")
-    # LM Studio override: read OPENAI_API_BASE and ensure /v1 prefix
-    llm_base = os.getenv("OPENAI_API_BASE")
-    if llm_base:
-        # Ensure base URL includes /v1 prefix
-        if not llm_base.rstrip("/").endswith("/v1"):
-            llm_base = llm_base.rstrip("/") + "/v1"
-        openai.api_base = llm_base
-        openai.api_type = "openai"
-    model = os.getenv("OPENAI_MODEL")
-    temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.5))
-    max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", 1000))
-    top_p = float(os.getenv("OPENAI_TOP_P", 1))
-    frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", 0))
-    presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", 0))
-except ImportError:
-    pass
+# .env file is loaded by setup_logging() called above.
+# OpenAI client configuration (e.g., api_base) is read from environment variables here.
+# llm_base = os.getenv("OPENAI_API_BASE")
+# if llm_base:
+#     # Ensure base URL includes /v1 prefix
+#     if not llm_base.rstrip("/").endswith("/v1"):
+#         llm_base = llm_base.rstrip("/") + "/v1"
+#     openai.api_base = llm_base
+#     openai.api_type = "openai" # Assuming this is still relevant if using non-OpenAI but compatible APIs
+#
+# # These are used by the openai client library when making calls, if set.
+# # They are not directly passed by the Orchestrator if using a pre-configured llm_client via DI.
+# model = os.getenv("OPENAI_MODEL")
+# temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.5))
+# max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", 1000))
+# top_p = float(os.getenv("OPENAI_TOP_P", 1))
+# frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", 0))
+# presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", 0))
 
 # Read Discord channel IDs from environment variables
 GENERAL_CHANNEL_ID = int(os.getenv("GENERAL_CHANNEL_ID", "0"))
@@ -111,15 +109,7 @@ CLASS_MAP = {
 
 PID_FILE = "/tmp/legion_orchestrator.pid"
 
-# --- IPC Directories --- START ---
-# Define relative to the project root where orchestrator.py is assumed to be
-PROJECT_ROOT_ORCH = Path(
-    __file__
-).parent.parent  # Assuming legion is one level down from root
-IPC_DIR_ORCH = PROJECT_ROOT_ORCH / "interface" / "orchestrator_ipc"
-COMMAND_DIR_ORCH = IPC_DIR_ORCH / "commands"
-RESPONSE_DIR_ORCH = IPC_DIR_ORCH / "responses"
-# --- IPC Directories --- END ---
+
 
 
 class ProcessRunningError(Exception):
@@ -149,15 +139,24 @@ class Orchestrator:
         self._lock_acquired = False
         if pid_file is not None:
             self._pid_file = pid_file
-            # Duplicate startup check with proper file locking
             try:
                 self._acquire_lock()
-            except ProcessRunningError as e:
+            except ProcessRunningError as e: # This should be first
                 logger.error(f"Another orchestrator is already running: {e}")
                 sys.exit(1)
-            except Exception as e:
-                logger.error(f"Failed to acquire lock: {e}")
-                sys.exit(1)
+            except BlockingIOError as e: # B904 handled by 'from e'
+                logger.error(f"Lock acquisition blocked by another process: {e}")
+                raise ProcessRunningError(f"Lock acquisition blocked: {e}") from e
+            except OSError as e: # B904 handled by 'from e'
+                logger.error(f"OS error during lock acquisition: {e}")
+                # SIM105 for os.close is implicitly handled if self._lock_fd is None or close fails within suppress
+                # The primary goal is to ensure we attempt to clean up then raise from original OSError
+                if self._lock_fd is not None:
+                    with contextlib.suppress(OSError): # Ensure os.close doesn't mask original error
+                        os.close(self._lock_fd)
+                raise RuntimeError(f"Failed to acquire lock due to OS error: {e}") from e
+            # A general Exception catch here might be too broad for startup; specific errors handled above.
+
             # Set up graceful shutdown handlers
             self._setup_signal_handlers()
         else:
@@ -166,12 +165,14 @@ class Orchestrator:
 
         # Initialize ZeroMQ PUB server for broadcasting task updates
         try:
-            self.init_zmq_pub_server("tcp://*:5556")
+            zmq_pub_port = self.port_allocator.get_port("orchestrator", "zmq_pub_port")
+            self.init_zmq_pub_server(f"tcp://*:{zmq_pub_port}")
         except Exception as e:
             logger.error(f"Failed to start ZMQ PUB server: {e}")
         # Initialize ZeroMQ REP server for API commands
         try:
-            self.init_zmq_rep_server("tcp://*:5555")
+            zmq_rep_port = self.port_allocator.get_port("orchestrator", "zmq_rep_port")
+            self.init_zmq_rep_server(f"tcp://*:{zmq_rep_port}")
         except Exception as e:
             logger.error(f"Failed to start ZMQ REP server: {e}")
 
@@ -181,26 +182,19 @@ class Orchestrator:
         self.state_manager = state_manager or container.get(IStateManager)
         self.llm_client = llm_client or container.get(ILLMClient)
         # Initialize dynamic port allocator
-        self.port_allocator = PortAllocator()
-
-        # Load runtime ports and log them
-        load_runtime_ports()  # Ensure this populates legion.ports.RUNTIME_PORTS
-        self._log_runtime_ports()
+        self.port_allocator = unified_port_manager
 
         self.client = None
         self.task_queue = []
         self.completed_tasks = []
 
         # Load agent configs first
-        self.config = self.load_agent_configs()
+        self.load_agent_configs()
 
         # Populate agent_channel_ids from agent_configs (YAML), fallback to env/channel map
         self.agent_channel_ids = {}
-        for name in CLASS_MAP:
-            chan = self.config.get(name, {}).get("discord_channel_id")
-            if not chan:
-                chan = CHANNEL_ID_MAP.get(name, 0)
-            self.agent_channel_ids[name] = int(chan) if chan else 0
+        for agent_name, agent_conf in self.config.items():
+            self.agent_channel_ids[agent_name] = int(agent_conf.get("channel_id", 0))
 
         # Add new channels to agent_channel_ids for easy access
         self.agent_channel_ids.update(
@@ -221,10 +215,14 @@ class Orchestrator:
             try:
                 # Get agent class from CLASS_MAP using class name from config
                 agent_class = CLASS_MAP[config["class"]]
-                agent = agent_class(
-                    orchestrator=self,  # Pass orchestrator instance
-                    llm_client=self.llm_client,  # Pass LLM client instance
-                )
+
+                # Inspect constructor to pass llm_client only if accepted
+                sig = inspect.signature(agent_class.__init__)
+                agent_kwargs = {"orchestrator": self}
+                if 'llm_client' in sig.parameters:
+                    agent_kwargs["llm_client"] = self.llm_client
+
+                agent = agent_class(**agent_kwargs)
 
                 # Initialize agent
                 if hasattr(agent, "initialize") and callable(agent.initialize):
@@ -235,7 +233,7 @@ class Orchestrator:
 
             except Exception as e:
                 logger.error(f"Failed to instantiate agent {agent_name}: {e!s}")
-                raise RuntimeError(f"Agent instantiation failed: {e!s}")
+                raise RuntimeError(f"Agent instantiation failed: {e!s}") from e
 
         if not self.agents:
             raise RuntimeError("No agents were loaded successfully")
@@ -259,20 +257,13 @@ class Orchestrator:
             "Orchestrator initialized with agents: %s", list(self.config.keys())
         )
         self.alert_subscribers = set()  # User IDs for alert DMs
+        self._background_tasks = set() # For RUF006
 
         self.agent_channel_ids.update(
             CHANNEL_ID_MAP
         )  # Ensure all defined channels are available
 
-        self._log_runtime_ports()
 
-    def _log_runtime_ports(self) -> None:
-        """Logs the currently configured runtime ports if DEBUG is set."""
-        if os.getenv("LEGION_DEBUG_PORTS", "False").lower() == "true":
-            port_banner = "  ".join(
-                [f"{k}:{v}" for k, v in sorted(RUNTIME_PORTS.items())]
-            )
-            logger.info(f"[orchestrator] dynamic ports -> {port_banner}")
 
     def _acquire_lock(self):
         """Acquire an exclusive lock on the PID file."""
@@ -310,14 +301,12 @@ class Orchestrator:
             logger.info(f"Acquired orchestrator lock (PID {os.getpid()})")
 
         except BlockingIOError as e:
-            raise ProcessRunningError(f"Another process holds the lock: {e}")
+            raise ProcessRunningError(f"Another process holds the lock: {e}") from e
         except OSError as e:
             if self._lock_fd is not None:
-                try:
+                with contextlib.suppress(OSError):
                     os.close(self._lock_fd)
-                except OSError:
-                    pass
-            raise RuntimeError(f"Failed to acquire lock due to OS error: {e}")
+            raise RuntimeError(f"Failed to acquire lock due to OS error: {e}") from e
 
     def _release_lock(self):
         """Release the lock and clean up the PID file."""
@@ -325,12 +314,11 @@ class Orchestrator:
             try:
                 fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
                 os.close(self._lock_fd)
-                os.unlink(self._pid_file)
+                if self._pid_file:  # Ensure pid_file is not None
+                    Path(self._pid_file).unlink(missing_ok=True)
                 logger.info("Released orchestrator lock and cleaned up PID file")
             except OSError as e:
                 logger.error(f"Failed to release lock due to OS error: {e}")
-            except FileNotFoundError as e:
-                logger.error(f"Failed to release lock due to missing PID file: {e}")
         self._lock_acquired = False
         self._lock_fd = None
 
@@ -361,8 +349,8 @@ class Orchestrator:
             ValueError: If config format is invalid
             RuntimeError: If agent instantiation fails
         """
-        config_dir = os.path.join(os.path.dirname(__file__), "configs")
-        if not os.path.exists(config_dir):
+        config_dir = Path(__file__).parent / "configs"
+        if not config_dir.exists():
             raise FileNotFoundError(f"Config directory not found: {config_dir}")
 
         # Track loaded configs for validation
@@ -373,18 +361,20 @@ class Orchestrator:
         skip_files = ["test_agents.yaml", "discord_channels.yaml", "developer.yaml"]
 
         # Load and validate each config file
-        for filename in os.listdir(config_dir):
-            if not filename.endswith(".yaml"):
+        for item in config_dir.iterdir():
+            if not item.is_file() or not item.name.endswith(".yaml"):
                 continue
+
+            filename = item.name # Keep filename for logging and skip_files check
 
             # Skip test-specific or non-agent config files
             if filename in skip_files:
                 logger.debug(f"Skipping non-agent config file: {filename}")
                 continue
 
-            config_path = os.path.join(config_dir, filename)
+            config_path = item # Use the Path object directly
             try:
-                with open(config_path) as f:
+                with config_path.open() as f:
                     config = yaml.safe_load(f)
 
                 # Check if file contains multiple agent definitions (dictionary)
@@ -433,9 +423,9 @@ class Orchestrator:
                     )
 
             except yaml.YAMLError as e:
-                raise ValueError(f"Failed to parse {filename}: {e!s}")
+                raise ValueError(f"Failed to parse {filename}: {e!s}") from e
             except Exception as e:
-                raise RuntimeError(f"Error loading {filename}: {e!s}")
+                raise RuntimeError(f"Error loading {filename}: {e!s}") from e
 
         # Store combined config and populate channel IDs
         self.config = loaded_configs
@@ -448,10 +438,14 @@ class Orchestrator:
             try:
                 # Get agent class from CLASS_MAP using class name from config
                 agent_class = CLASS_MAP[config["class"]]
-                agent = agent_class(
-                    orchestrator=self,  # Pass orchestrator instance
-                    llm_client=self.llm_client,  # Pass LLM client instance
-                )
+
+                # Inspect constructor to pass llm_client only if accepted
+                sig = inspect.signature(agent_class.__init__)
+                agent_kwargs = {"orchestrator": self}
+                if 'llm_client' in sig.parameters:
+                    agent_kwargs["llm_client"] = self.llm_client
+
+                agent = agent_class(**agent_kwargs)
 
                 # Initialize agent
                 if hasattr(agent, "initialize") and callable(agent.initialize):
@@ -462,7 +456,7 @@ class Orchestrator:
 
             except Exception as e:
                 logger.error(f"Failed to instantiate agent {agent_name}: {e!s}")
-                raise RuntimeError(f"Agent instantiation failed: {e!s}")
+                raise RuntimeError(f"Agent instantiation failed: {e!s}") from e
 
         if not self.agents:
             raise RuntimeError("No agents were loaded successfully")
@@ -478,146 +472,6 @@ class Orchestrator:
             event = {"from": "architect_agent", "content": "hello world"}
         logger.info("Stub run_once called with event: %s", event)
         return self.broadcast(event["content"])
-
-    def _check_ipc_commands(self):
-        """Check for command files from the web interface and process them."""
-        processed_files = 0
-        if not COMMAND_DIR_ORCH.exists():
-            # Directory might not exist on first run or if deleted
-            logger.debug("Command directory does not exist, skipping IPC check.")
-            return
-        try:
-            command_files = list(COMMAND_DIR_ORCH.glob("command_*.json"))
-            for cmd_file in command_files:
-                command_id = None
-                response_payload = {
-                    "status": "error",
-                    "detail": "Unknown processing error",
-                }
-                try:
-                    with open(cmd_file, encoding="utf-8") as f:
-                        command_data = json.load(f)
-
-                    command_id = command_data.get("command_id")
-                    action = command_data.get("action")
-                    payload = command_data.get("payload", {})  # Optional payload
-
-                    logger.info(
-                        f"Processing IPC command {command_id} with action '{action}'"
-                    )
-
-                    # --- Process supported actions ---
-                    if action == "status":
-                        # Example: Return basic status
-                        response_payload = {
-                            "status": "ok",
-                            "detail": "Orchestrator is running",
-                            "pid": os.getpid(),
-                            "active_agents": list(self.agents.keys()),
-                        }
-                    elif action == "list_agents":
-                        response_payload = {
-                            "status": "ok",
-                            "agents": {
-                                name: agent.config
-                                for name, agent in self.agents.items()
-                            },
-                        }
-                    elif action == "metrics":
-                        # Placeholder: Return basic process metrics or dummy data
-                        # In a real implementation, collect actual system/agent metrics
-                        response_payload = {
-                            "status": "ok",
-                            "metrics": {
-                                "cpu_usage_percent": 15.5,  # Example
-                                "memory_usage_mb": 256.8,  # Example
-                                "active_commands": processed_files,  # Example: number of commands processed in this check
-                                "pid": os.getpid(),
-                            },
-                        }
-                    elif action == "logs":
-                        # Placeholder: Return dummy log entries
-                        # In a real implementation, fetch actual logs from logging system or file
-                        response_payload = {
-                            "status": "ok",
-                            "logs": [
-                                {
-                                    "timestamp": "2023-10-01T10:00:00Z",
-                                    "level": "INFO",
-                                    "message": "Orchestrator started",
-                                    "agent": "system",
-                                },
-                                {
-                                    "timestamp": "2023-10-01T10:01:00Z",
-                                    "level": "INFO",
-                                    "message": "Agent architect_agent initialized",
-                                    "agent": "architect_agent",
-                                },
-                                {
-                                    "timestamp": "2023-10-01T10:02:00Z",
-                                    "level": "ERROR",
-                                    "message": "Failed to process message",
-                                    "agent": "metrics_agent",
-                                },
-                            ],
-                        }
-                    else:
-                        response_payload = {
-                            "status": "error",
-                            "detail": f"Unsupported action: {action}",
-                        }
-                        logger.warning(
-                            f"Unsupported IPC action '{action}' in command {command_id}"
-                        )
-
-                except (OSError, json.JSONDecodeError, KeyError) as e:
-                    logger.error(f"Error processing command file {cmd_file.name}: {e}")
-                    response_payload = {
-                        "status": "error",
-                        "detail": f"Error processing command: {e}",
-                    }
-                except Exception as e:
-                    logger.exception(
-                        f"Unexpected error processing command {command_id} from {cmd_file.name}"
-                    )
-                    response_payload = {
-                        "status": "error",
-                        "detail": f"Unexpected error: {e}",
-                    }
-                finally:
-                    # --- Write response ---
-                    if command_id:
-                        response_file = (
-                            RESPONSE_DIR_ORCH / f"response_{command_id}.json"
-                        )
-                        temp_response_file = response_file.with_suffix(".tmp")
-                        final_payload = {
-                            "command_id": command_id,
-                            "response": response_payload,
-                        }
-                        try:
-                            with open(temp_response_file, "w", encoding="utf-8") as f:
-                                json.dump(final_payload, f, indent=2)
-                            os.rename(temp_response_file, response_file)
-                        except OSError as e:
-                            logger.error(
-                                f"Failed to write response file for {command_id}: {e}"
-                            )
-                            if temp_response_file.exists():
-                                os.remove(temp_response_file)
-
-                    # --- Cleanup command file ---
-                    try:
-                        os.remove(cmd_file)
-                        processed_files += 1
-                    except OSError as e:
-                        logger.warning(f"Could not remove command file {cmd_file}: {e}")
-
-            if processed_files > 0:
-                logger.info(f"Processed {processed_files} IPC command(s).")
-
-        except Exception:
-            logger.exception("Error occurred while checking IPC commands")
 
     def run(self, interval: int = 5):
         """Main orchestrator loop. Now relies on ZMQ REP server for commands."""
@@ -673,29 +527,49 @@ class Orchestrator:
         try:
             if agent_name not in self.agent_registry:
                 return f"Agent '{agent_name}' not found."
-            agent = self.agent_registry[agent_name]
+            agent_config = self.agent_registry[agent_name] # Agent config from self.config
             event = {"from": "user", "content": prompt}
             messages = [
-                {"role": "system", "content": agent["system_prompt"]},
+                {"role": "system", "content": agent_config.get("system_prompt", "You are a helpful assistant.")},
                 {
                     "role": "user",
-                    "content": agent["user_prompt"].format(
+                    "content": agent_config.get("user_prompt", "{event_content}").format(
                         event_content=prompt, event=event
                     ),
                 },
             ]
             if context:
                 messages.extend(context)
-            response = openai.ChatCompletion.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-            )
-            reply = response.choices[0].message.content
+
+            # Prepare llm_kwargs from agent_config, falling back to llm_client defaults
+            llm_kwargs = {}
+            if "model" in agent_config:
+                llm_kwargs["model"] = agent_config["model"]
+            if "temperature" in agent_config:
+                llm_kwargs["temperature"] = agent_config["temperature"]
+            if "max_tokens" in agent_config:
+                llm_kwargs["max_tokens"] = agent_config["max_tokens"]
+            if "top_p" in agent_config:
+                llm_kwargs["top_p"] = agent_config["top_p"]
+            if "frequency_penalty" in agent_config:
+                llm_kwargs["frequency_penalty"] = agent_config["frequency_penalty"]
+            if "presence_penalty" in agent_config:
+                llm_kwargs["presence_penalty"] = agent_config["presence_penalty"]
+
+            # response = openai.ChatCompletion.create(
+            #     model=model,
+            #     messages=messages,
+            #     temperature=temperature,
+            #     max_tokens=max_tokens,
+            #     top_p=top_p,
+            #     frequency_penalty=frequency_penalty,
+            #     presence_penalty=presence_penalty,
+            # )
+            # Use self.llm_client
+            response_obj = self.llm_client.create(messages=messages, **llm_kwargs)
+            # Assuming response_obj is compatible with OpenAI's structure
+            reply = response_obj.choices[0].message.content
+
             self.memory[agent_name].log_task(
                 {"type": "ask", "prompt": prompt, "response": reply}
             )
@@ -741,34 +615,56 @@ class Orchestrator:
 
     def self_assess(self, agent_name):
         """Triggers self-assessment for an agent using recent logs."""
-        # Use the agent's self_assessment_prompt and recent logs for assessment
-        agent = self.agent_registry[agent_name]
-        prompt = agent.get(
-            "self_assessment_prompt",
-            "Reflect on your recent actions. What went well, what could be improved?",
-        )
-        logs = self.memory[agent_name].get_task_log()
-        # Use last 5 logs for context
-        context_logs = logs[-5:] if logs else []
-        context_str = "\n".join([str(log) for log in context_logs])
-        messages = [
-            {"role": "system", "content": agent["system_prompt"]},
-            {"role": "user", "content": f"Recent activity:\n{context_str}\n\n{prompt}"},
-        ]
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-        )
-        assessment = response.choices[0].message.content
-        self.memory[agent_name].log_task(
-            {"type": "self_assessment", "summary": assessment}
-        )
-        return assessment
+        try:
+            if agent_name not in self.agent_registry:
+                logger.warning(f"Attempted to self-assess non-existent agent: {agent_name}")
+                return f"Agent '{agent_name}' not found for self-assessment."
+
+            agent_config = self.agent_registry[agent_name] # Agent config
+            prompt_template = agent_config.get(
+                "self_assessment_prompt",
+                "Reflect on your recent actions. What went well, what could be improved?",
+            )
+            logs = self.memory[agent_name].get_task_log()
+            context_logs = logs[-5:] if logs else []
+            context_str = "\n".join([str(log) for log in context_logs])
+
+            messages = [
+                {"role": "system", "content": agent_config.get("system_prompt", "You are a helpful assistant.")},
+                {"role": "user", "content": f"Recent activity:\n{context_str}\n\n{prompt_template}"},
+            ]
+
+            # Prepare llm_kwargs from agent_config, falling back to llm_client defaults
+            llm_kwargs = {}
+            if "model" in agent_config:
+                llm_kwargs["model"] = agent_config["model"]
+            if "temperature" in agent_config:
+                llm_kwargs["temperature"] = agent_config["temperature"]
+            if "max_tokens" in agent_config:
+                llm_kwargs["max_tokens"] = agent_config["max_tokens"]
+            # Self-assessment might use different defaults or fewer overrides
+            # For example, it might always use a certain model or temperature unless specified.
+
+            # response = openai.ChatCompletion.create(
+            #     model=model,
+            #     messages=messages,
+            #     temperature=temperature,
+            #     max_tokens=max_tokens,
+            #     top_p=top_p,
+            #     frequency_penalty=frequency_penalty,
+            #     presence_penalty=presence_penalty,
+            # )
+            # Use self.llm_client
+            response_obj = self.llm_client.create(messages=messages, **llm_kwargs)
+            assessment = response_obj.choices[0].message.content
+
+            self.memory[agent_name].log_task(
+                {"type": "self_assessment", "summary": assessment}
+            )
+            return assessment
+        except Exception as e:
+            logger.error(f"Error during self_assess for {agent_name}: {e}", exc_info=True)
+            return f"[Error: Self-assessment failed for {agent_name}]"
 
     def assess_all_agents(self):
         """Triggers self-assessment for all agents."""
@@ -840,15 +736,20 @@ class Orchestrator:
                     payload.get("title", "Message"),
                     fields=fields,
                 )
-                asyncio.create_task(
+                task1 = asyncio.create_task(
                     self._post_agent_message(payload.get("from"), embed)
                 )
+                self._background_tasks.add(task1)
+                task1.add_done_callback(self._background_tasks.discard)
+
                 embed2 = render_feed_item(
                     to_agent,
                     f"New message from {payload.get('from')}: {payload.get('title')}",
                     fields=fields,
                 )
-                asyncio.create_task(self._post_agent_message(to_agent, embed2))
+                task2 = asyncio.create_task(self._post_agent_message(to_agent, embed2))
+                self._background_tasks.add(task2)
+                task2.add_done_callback(self._background_tasks.discard)
             except RuntimeError as e:
                 logger.error(
                     f"Failed to post inter-agent message to Discord due to runtime error: {e}"
@@ -858,16 +759,16 @@ class Orchestrator:
                     f"Failed to post inter-agent message to Discord due to attribute error: {e}"
                 )
 
-    def load_yaml(self, path):
-        with open(path) as f:
+    def load_yaml(self, path: str): # path can remain str if called externally
+        with Path(path).open() as f:
             return yaml.safe_load(f)
 
     async def dispatch_message(
         self,
         agent_name: str,
         content: str,
-        author: str = None,
-        timestamp: str = None,
+        author: Optional[str] = None,
+        timestamp: Optional[str] = None,
     ) -> str:
         """
         Dispatch a message to an agent and return its response.
@@ -970,7 +871,7 @@ class Orchestrator:
 
             # Notify subscribers of critical errors
             if isinstance(e, (RuntimeError, ValueError)):
-                for subscriber in self.alert_subscribers:
+                for _subscriber in self.alert_subscribers: # B007: Renamed subscriber to _subscriber
                     self.notify_agent(
                         "system", f"Critical error in {agent_name}: {e!s}"
                     )
@@ -1007,7 +908,7 @@ class Orchestrator:
             test_configs = self.load_yaml(str(test_agents_path))
             self.config.update(test_configs)
         # Update channel IDs
-        for name in self.config.keys():
+        for name in self.config: # SIM118: Removed .keys()
             chan = self.config.get(name, {}).get("discord_channel_id")
             if not chan:
                 chan = CHANNEL_ID_MAP.get(name, 0)
@@ -1015,7 +916,7 @@ class Orchestrator:
         # Re-instantiate agents
         self.agents = {
             name: CLASS_MAP[name](self)
-            for name in self.config.keys()
+            for name in self.config # SIM118: Removed .keys()
             if name in CLASS_MAP
         }
         self._agent_instances = self.agents  # Backward compatibility
@@ -1100,7 +1001,9 @@ class Orchestrator:
         self._zmq_socket.bind(bind_address)
         logger.info(f"ZeroMQ REP server bound to {bind_address}")
         # Start asyncio loop for handling requests
-        asyncio.create_task(self._zmq_rep_loop())
+        task = asyncio.create_task(self._zmq_rep_loop())
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
 
     def init_zmq_pub_server(self, bind_address: str) -> None:
         """Initialize ZeroMQ PUB socket for broadcasting task update events."""
@@ -1129,12 +1032,10 @@ class Orchestrator:
             except zmq.ZMQError as e:
                 logger.error(f"ZMQ communication error in REP loop: {e}")
                 # Attempt to send generic error response if possible
-                try:
+                with contextlib.suppress(Exception):
                     await self._zmq_socket.send_json(
                         {"status": "error", "detail": f"ZMQ Error: {e}"}
                     )
-                except Exception:
-                    pass  # Ignore if sending fails too
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to decode ZMQ request JSON: {e}")
                 await self._zmq_socket.send_json(
@@ -1143,15 +1044,13 @@ class Orchestrator:
             except Exception as e:
                 logger.exception(f"Unexpected error in ZMQ REP loop: {e}")
                 # Attempt to send a generic error response
-                try:
+                with contextlib.suppress(Exception):
                     await self._zmq_socket.send_json(
                         {
                             "status": "error",
                             "detail": f"Internal orchestrator error: {e}",
                         }
                     )
-                except Exception:
-                    pass  # Ignore if sending fails
 
     def dispatch_command(self, command: dict) -> dict:
         """Dispatch incoming command based on 'action' field and return response."""
@@ -1231,10 +1130,9 @@ class Orchestrator:
                 # Requires integration with memory search
                 agent_name = payload.get("agent_name")
                 query = payload.get("query")
-                top_k = payload.get("top_k", 5)
                 if not agent_name or not query:
                     return {"status": "error", "detail": "Missing agent_name or query"}
-                # results = self.memory[agent_name].search(query, top_k)
+                # results = self.memory[agent_name].search(query, payload.get("top_k", 5)) # Use directly
                 results = []  # Placeholder
                 return {
                     "status": "success",
@@ -1245,10 +1143,9 @@ class Orchestrator:
             elif action == "memory_search_global":
                 # Requires integration with global memory search
                 query = payload.get("query")
-                top_k = payload.get("top_k", 5)
                 if not query:
                     return {"status": "error", "detail": "Missing query"}
-                # results = self.search_all_memories(query, top_k)
+                # results = self.search_all_memories(query, payload.get("top_k", 5)) # Use directly
                 results = []  # Placeholder
                 return {"status": "success", "results": results, "query": query}
 
@@ -1258,15 +1155,15 @@ class Orchestrator:
                 if task_id:
                     # Publish task creation event
                     try:
-                        self._zmq_pub_socket.send_json(
-                            {
-                                "type": "task_created",
-                                "task_id": str(task_id),
-                                "payload": payload,
-                            }
-                        )
+                        event_data = {
+                            "type": "task_created",
+                            "task_id": str(task_id),
+                            "payload": payload,
+                        }
+                        self._zmq_pub_socket.send_json(event_data)
+                        logger.debug(f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id}")
                     except Exception as e:
-                        logger.error(f"Failed to publish task_created event: {e}")
+                        logger.error(f"Failed to publish ZMQ event type 'task_created' for task_id '{task_id}': {e}")
                     return {"status": "success", "task_id": str(task_id)}
                 else:
                     return {"status": "error", "detail": "Failed to create task"}
@@ -1297,11 +1194,11 @@ class Orchestrator:
                 if success:
                     # Publish task cancellation event
                     try:
-                        self._zmq_pub_socket.send_json(
-                            {"type": "task_cancelled", "task_id": task_id_str}
-                        )
+                        event_data = {"type": "task_cancelled", "task_id": task_id_str}
+                        self._zmq_pub_socket.send_json(event_data)
+                        logger.debug(f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id_str}")
                     except Exception as e:
-                        logger.error(f"Failed to publish task_cancelled event: {e}")
+                        logger.error(f"Failed to publish ZMQ event type 'task_cancelled' for task_id '{task_id_str}': {e}")
                     return {"status": "success"}
                 else:
                     return {
@@ -1426,19 +1323,78 @@ class Orchestrator:
     def get_memory_system_stats(self) -> dict:
         # Placeholder - Requires StateManager integration
         return {
-            "memory_stats": {
-                "vector_db_size_gb": 0.0,
-                "sql_db_size_mb": 0.0,
-            }
+            "status": "success",
+            "detail": "Memory system statistics (placeholder)",
+            "total_documents": 0,
+            "total_size_mb": 0,
+            "vector_db_status": "unknown",
         }
 
-    # --- Placeholder Task Management Methods ---
     def create_new_task(self, payload: dict) -> Optional[uuid.UUID]:
-        # TODO: Implement task creation logic (e.g., add to queue, update state)
-        logger.info(f"Placeholder: Creating task with payload: {payload}")
-        new_id = uuid.uuid4()
-        # self.state_manager.log_task({...}) # Persist task
-        return new_id
+        """
+        Validates a task payload using the middleware pipeline and then, if valid,
+        proceeds to create the task.
+        """
+        logger.info(f"Attempting to create task with payload: {payload}")
+
+        # Prepare the request for the middleware pipeline
+        # Ensure payload contains 'agent', 'directive', and 'confidence'
+        agent_name = payload.get("agent")
+        directive_name = payload.get("directive")
+        confidence_score = payload.get("confidence") # Agents should provide this
+
+        if not all([agent_name, directive_name]): # Confidence can be handled by pipeline default or further logic
+            logger.error("Task creation failed: 'agent' and 'directive' are required in payload.")
+            return None
+
+        # If confidence is not provided by the agent in the request,
+        # we might assign a default (e.g., 1.0 for high confidence in the request itself)
+        # or let the pipeline handle it (it currently defaults to 0.0 with a warning).
+        # For critical tasks, a missing confidence from agent request might be an issue.
+        # Let's assume for now the pipeline's default handling is acceptable if not present,
+        # but ideally, agent requests should include it.
+        if confidence_score is None:
+            logger.warning(f"Confidence not provided for task from agent '{agent_name}'. Defaulting in middleware if necessary.")
+            # To be explicit, we can pass it as None and let the pipeline handle it,
+            # or set a default here: confidence_score = 1.0 # Example default for requests
+
+        middleware_request = {
+            "agent": agent_name,
+            "directive": directive_name,
+            "confidence": confidence_score, # Will be None if not in original payload
+            # Pass other relevant parts of payload if middleware needs them
+            **payload  # Pass the whole payload for now, middleware can pick what it needs
+        }
+
+        # Call the middleware pipeline
+        # The confidence_threshold for the hallucination_guard can be passed here if needed,
+        # otherwise it uses its default.
+        validation_result = run_middleware_pipeline(middleware_request)
+
+        if not validation_result.get("final_valid", False):
+            rejection_reason = validation_result.get("reason", "Unknown reason")
+            rejection_source = validation_result.get("source", "Unknown source")
+            logger.error(
+                f"Task creation rejected by middleware. Source: {rejection_source}, Reason: {rejection_reason}, Payload: {payload}"
+            )
+            # Raise exception to propagate rejection reason to dispatch_command
+            raise ValueError(f"{rejection_source.capitalize()} rejection: {rejection_reason}")
+
+        # If validation passes, proceed with task creation logic
+        # The actual directive might have been modified by the therapist
+        validated_directive = validation_result.get("directive", directive_name)
+        logger.info(f"Middleware validation passed for agent '{agent_name}', directive '{validated_directive}'. Proceeding with task creation.")
+
+        # TODO: Implement actual task creation logic here
+        # (e.g., add to a queue, update state manager, interact with agent)
+        # For now, generate a dummy task ID
+        new_task_id = uuid.uuid4()
+        logger.info(f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'.")
+        
+        # Example: Store task in a simple list or more sophisticated state management
+        # self.task_queue.append({"id": new_task_id, "agent": agent_name, "directive": validated_directive, "status": "pending", "payload": payload})
+        
+        return new_task_id
 
     def get_task_details(self, task_id: uuid.UUID) -> Optional[dict]:
         # TODO: Fetch task details from StateManager or task queue
@@ -1589,34 +1545,21 @@ class Orchestrator:
         except Exception as e:
             raise RuntimeError(f"Error dispatching to {agent_key}: {e}") from e
 
-    def get_service_port(self, service_key: str) -> int:
-        """DEPRECATED: Use legion.ports.get_port directly or orchestrator.get_service_port_new."""
-        # This now refers to the PortAllocator's own get_free_port, not the new RUNTIME_PORTS based one.
-        # This needs to be clarified or updated if Orchestrator should use the new system.
-        # For now, retaining original PortAllocator behavior here.
-        # return self.port_allocator.get_free_port(service_key) # Original behavior
-        # To use the new system:
-        port = get_service_port_new(service_key)
-        if port is None:
-            logger.warning(
-                f"Port for service '{service_key}' not found in RUNTIME_PORTS. This might be an issue."
-            )
-            # Fallback or raise error, current get_port returns Optional[int]
-            # Forcing a non-Optional return to match previous signature, though risky.
-            return 0  # Or some other default / error handling
-        return port
-
 
 # Allow direct execution to start the orchestrator loop
 if __name__ == "__main__":
-    # Ensure logging is set up before creating Orchestrator instance
-    setup_logging()
+    # Example usage (basic setup, might need more for full DI)
+    logging.basicConfig(level=logging.INFO)
+    # Initialize dependencies (basic example)
+    # In a real app, container setup would be more sophisticated
+    container.register(ILLMClient, container.get(ILLMClient)) # Assuming already registered from core
+    container.register(IStateManager, container.get(IStateManager))
+
     orch = Orchestrator(
         pid_file=PID_FILE,
         state_manager=container.get(IStateManager),
         llm_client=container.get(ILLMClient),
     )
-    try:
+    with contextlib.suppress(KeyboardInterrupt): # SIM105
         orch.run()
-    except KeyboardInterrupt:
-        pass
+    logger.info("Orchestrator shut down gracefully.")

@@ -50,38 +50,33 @@ Below is a minimal Grafana dashboard JSON snippet to visualize 95th percentile l
 }
 ```
 
-## Port Allocation
 
-Legion uses a clustered port scheme to avoid conflicts across services:
 
-| Cluster         | Base   | Range      | Purpose                                 |
-|-----------------|--------|------------|-----------------------------------------|
-| **App Core**    | **5500** | 5500–5519 | Orchestrator API, REST helpers          |
-| **Data Stores** | **5520** | 5520–5539 | Redis, PostgreSQL, Vector DB            |
-| **Observability** | **5540** | 5540–5559 | Prometheus, Grafana, Alertmanager       |
-| **Dev UX**      | **5560** | 5560–5579 | Hot-reloading front-ends, mock servers  |
-| **Spare/Future** | **5580** | 5580–5599 | Expansion buffer                       |
+## Port Management with `ports.yaml`
 
-**Generate environment variables:**
+Legion utilizes `UnifiedPortManager` for port assignments, configured via `ports.yaml` at the project root. This file defines static ports or dynamic port ranges for all services, including Prometheus.
 
-```bash
-bash scripts/gen_ports_env.sh > .env.ports
+Refer to `ports.yaml` in the project root to find the currently configured port for Prometheus (typically under the `services.prometheus` key).
+
+For detailed information on port configuration, see `docs/orchestrator.md`.
+
+## Launching Services
+
+When launching services (e.g., via `docker-compose` or other means), ensure they are configured to use the ports defined in `ports.yaml`.
+
+For example, if Prometheus is defined in `ports.yaml` as:
+```yaml
+services:
+  prometheus: 9090
 ```
+Your `docker-compose.yml` or service startup script should use port `9090` for Prometheus.
 
-## Launching with dynamic ports
-
-Generate `.env.ports` and start services:
-
-```bash
-bash scripts/gen_ports_env.sh
-# Consume .env.ports in docker-compose (via env_file)
-docker compose up -d --no-build
-```
-
-Then verify readiness (e.g., Prometheus):
+Then verify readiness (e.g., Prometheus, assuming it's on port 9090 as per `ports.yaml`):
 
 ```bash
-curl -f "http://localhost:${PORT_ALLOCATOR_PROMETHEUS}/-/ready"
+# First, check ports.yaml to find the Prometheus port (e.g., 9090)
+# Then use that port in your command:
+curl -f "http://localhost:9090/-/ready" # Replace 9090 with the actual port from ports.yaml
 ```
 
 ### Current Port Map
