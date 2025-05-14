@@ -1,104 +1,149 @@
 """
 Middleware for request processing, embedding validation, and directive compliance.
 """
-from typing import Any, Dict, Tuple, Optional
-from core.utils.chroma_client import ChromaClient
-from core.middleware.directive_compliance import DirectiveCompliance
 
-# Placeholder for actual therapist agent integration
-THERAPIST_AGENT_THRESHOLD = 0.70 # Example: similarity < 0.70 might trigger therapist
-ACCEPTABLE_SIMILARITY = 0.85
-REVIEW_SIMILARITY = 0.60
+from typing import Any, Dict, Optional, Tuple
+
+from core.middleware.directive_compliance import DirectiveCompliance
+from core.utils.chroma_client import ChromaClient
+
+# Threshold constants for embedding similarity validation
+THERAPIST_AGENT_THRESHOLD = 0.70  # Similarity below 0.70 triggers therapist review
+ACCEPTABLE_SIMILARITY = 0.85      # Similarity at or above 0.85 is acceptable
+REVIEW_SIMILARITY = 0.60          # Similarity below 0.60 is rejected outright
+
 
 class RequestMiddleware:
-    def __init__(self, chroma_client: ChromaClient, directive_checker: DirectiveCompliance):
+    def __init__(
+        self, chroma_client: ChromaClient, directive_checker: DirectiveCompliance
+    ):
         self.chroma_client = chroma_client
         self.directive_checker = directive_checker
 
-    def process_request(self, request_text: str, request_metadata: Dict[str, Any]) -> Tuple[str, Optional[Dict[str, Any]]]:
+    def process_request(
+        self, request_text: str, request_metadata: Dict[str, Any]
+    ) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
         Processes an incoming request, performs embedding validation and directive compliance.
 
         Returns a tuple: (status, details_dict)
         Status can be: "approved", "rejected", "needs_review", "escalated_therapist"
         """
-        # 1. Embedding Validation
+        # 1. Input Validation
         if not request_text:
-            return "rejected", {"reason": "Empty request text", "source": "embedding_validation"}
+            return "rejected", {
+                "reason": "Empty request text", 
+                "source": "input_validation"
+            }
 
+        # 2. Embedding Generation
         try:
             request_embedding = self.chroma_client.create_embedding(request_text)
         except Exception as e:
             # Log exception e
-            return "rejected", {"reason": f"Failed to create embedding: {e}", "source": "embedding_validation"}
+            return "rejected", {
+                "reason": f"Failed to create embedding: {e}",
+                "source": "embedding_system"
+            }
 
-        # Retrieve relevant embeddings. For validation, we might want a small number of very similar items.
-        # The exact query for validation (e.g. against what collection/subset) needs definition.
-        # For now, let's assume we query a general collection.
+        # 3. Embedding Retrieval & Initial Validation
         try:
             similar_embeddings = self.chroma_client.retrieve_similar_embeddings(
                 query_embedding=request_embedding,
-                top_k=1 # Get the most similar for validation
+                top_k=1,  # Get the most similar for validation
             )
         except Exception as e:
             # Log exception e
-            return "rejected", {"reason": f"Failed to retrieve similar embeddings: {e}", "source": "embedding_validation"}
+            return "rejected", {
+                "reason": f"Failed to retrieve similar embeddings: {e}",
+                "source": "embedding_system"
+            }
 
-        validation_status = "approved"
-        validation_details: Dict[str, Any] = {}
+        # Initialize embedding-derived status and details
+        embedding_derived_status = "approved"
+        embedding_details: Dict[str, Any] = {}
 
+        # Calculate embedding outcome based on top_similarity
         if not similar_embeddings:
-            validation_status = "needs_review" # Or perhaps a specific policy for no similar context
-            validation_details["embedding_reason"] = "No similar context found."
+            embedding_derived_status = "needs_review_embedding"
+            embedding_details["reason"] = "No similar context found"
         else:
             top_similarity = similar_embeddings[0].get("similarity", 0.0)
-            validation_details["top_similarity"] = top_similarity
+            embedding_details["top_similarity"] = top_similarity
 
+            # Apply threshold logic for embedding validation
             if top_similarity < REVIEW_SIMILARITY:
-                validation_status = "rejected"
-                validation_details["embedding_reason"] = f"Similarity {top_similarity:.2f} below rejection threshold {REVIEW_SIMILARITY}"
+                # Immediate rejection for very low similarity
+                return "rejected", {
+                    "reason": f"Similarity {top_similarity:.2f} below rejection threshold {REVIEW_SIMILARITY}",
+                    "source": "embedding_validation",
+                    "similarity": top_similarity
+                }
+            elif top_similarity < THERAPIST_AGENT_THRESHOLD:
+                # Needs review for similarity between REVIEW_SIMILARITY and THERAPIST_AGENT_THRESHOLD
+                embedding_derived_status = "needs_review_embedding"
+                embedding_details["reason"] = f"Similarity {top_similarity:.2f} below therapist threshold {THERAPIST_AGENT_THRESHOLD}, needs review"
             elif top_similarity < ACCEPTABLE_SIMILARITY:
-                validation_status = "needs_review"
-                validation_details["embedding_reason"] = f"Similarity {top_similarity:.2f} below acceptable threshold {ACCEPTABLE_SIMILARITY}, needs review."
-            
-            if top_similarity < THERAPIST_AGENT_THRESHOLD and validation_status != "rejected":
-                # This logic might need refinement: should it override 'needs_review'?
-                # For now, if not outright rejected but below therapist, it's escalated.
-                validation_status = "escalated_therapist"
-                validation_details["embedding_reason"] = f"Similarity {top_similarity:.2f} below therapist threshold {THERAPIST_AGENT_THRESHOLD}. Escalating."
-                validation_details["escalation_trigger"] = "low_semantic_similarity"
+                # Escalate to therapist for similarity between THERAPIST_AGENT_THRESHOLD and ACCEPTABLE_SIMILARITY
+                embedding_derived_status = "escalate_therapist_embedding"
+                embedding_details["reason"] = f"Similarity {top_similarity:.2f} below acceptable threshold {ACCEPTABLE_SIMILARITY}, escalating to therapist"
+                embedding_details["escalation_trigger"] = "low_semantic_similarity"
+            else:
+                # Approved for similarity at or above ACCEPTABLE_SIMILARITY
+                embedding_derived_status = "approved_embedding"
+                embedding_details["reason"] = f"Similarity {top_similarity:.2f} meets acceptable threshold {ACCEPTABLE_SIMILARITY}"
 
-        # 2. Directive Compliance (if embedding validation didn't reject)
-        final_status = validation_status
-        final_details = validation_details
+        # 4. Directive Compliance Check
+        agent_id = request_metadata.get("agent_id")
+        directive_status, directive_details = self.directive_checker.check(
+            request_text, request_metadata, agent_id=agent_id
+        )
+
+        # 5. Combine Outcomes & Final Decision
+        final_status = embedding_derived_status
+        final_details = embedding_details.copy()
         final_details["source"] = "embedding_validation"
 
-        # Only run directive checks if embedding validation didn't lead to outright rejection or therapist escalation based on similarity alone.
-        # The policy here might be: if embedding is poor, don't even bother with directive checks, or
-        # always run directive checks unless embedding creation itself failed.
-        # Current: Run if not "rejected" by embedding similarity directly.
-        if final_status not in ["rejected"]:
-            agent_id = request_metadata.get("agent_id") # Assuming agent_id is in metadata
-            compliance_status, compliance_details = self.directive_checker.check(request_text, request_metadata, agent_id=agent_id)
+        # 5.1 Directive Rejection Precedence
+        if directive_status == "non_compliant":
+            final_status = "rejected"
+            final_details.update(directive_details)
+            final_details["source"] = "directive_compliance"
+            return final_status, final_details
 
-            # Combine results: If either is non-compliant, overall is non-compliant.
-            # Therapist trigger from either takes precedence.
-            if compliance_status == "therapist_triggered":
-                final_status = "therapist_triggered"
-                final_details.update(compliance_details)
-                final_details["source"] = "directive_compliance"
-            elif compliance_status == "non_compliant":
-                if final_status == "approved" or final_status == "needs_review": # Directive non-compliance overrides weaker embedding statuses
-                    final_status = "non_compliant"
-                final_details.update(compliance_details) # Merge details
-                final_details["source"] = "directive_compliance"
-            elif final_status == "approved" and compliance_status == "compliant":
-                final_status = "approved" # Both are good
-                final_details.update(compliance_details) # Add compliance check details
-            # If embedding was 'needs_review' or 'escalated_therapist' and compliance is 'compliant', retain the stronger embedding status.
-            # This part of the logic might need further refinement based on desired precedence.
+        # 5.2 Therapist Escalation Precedence
+        if directive_status == "therapist_triggered":
+            final_status = "escalated_therapist"
+            final_details.update(directive_details)
+            final_details["source"] = "directive_compliance"
+            return final_status, final_details
+        elif embedding_derived_status == "escalate_therapist_embedding":
+            final_status = "escalated_therapist"
+            final_details["source"] = "embedding_validation"
+            return final_status, final_details
 
+        # 5.3 Needs Review (if applicable)
+        if embedding_derived_status == "needs_review_embedding" and directive_status == "compliant":
+            final_status = "needs_review"
+            final_details["source"] = "embedding_validation"
+            return final_status, final_details
+
+        # 5.4 Approval
+        if embedding_derived_status == "approved_embedding" and directive_status == "compliant":
+            final_status = "approved"
+            final_details.update(directive_details)
+            final_details["source"] = "combined_approval"
+            return final_status, final_details
+
+        # Default fallback (should be caught by logic above, but just in case)
+        # Retain the more severe status
+        if directive_status != "compliant":
+            final_status = "rejected"
+            final_details.update(directive_details)
+            final_details["source"] = "directive_compliance"
+        
         return final_status, final_details
+
 
 # Example usage (will be refined)
 # if __name__ == '__main__':
@@ -107,7 +152,7 @@ class RequestMiddleware:
 #     client = ChromaClient(persist_directory=".test_chroma_mw")
 #     # dummy_directive_checker = DirectiveCompliance() # Replace with actual
 #     directive_checker_instance = DirectiveCompliance()
-#     middleware = RequestMiddleware(chroma_client=client, directive_checker=directive_checker_instance) 
+#     middleware = RequestMiddleware(chroma_client=client, directive_checker=directive_checker_instance)
 
 #     test_req = "Tell me about quantum field theory."
 #     status, details = middleware.process_request(test_req, {})
@@ -118,4 +163,4 @@ class RequestMiddleware:
 #     client.store_embedding("physics_query_1", emb_to_store, {"topic": "physics"})
 
 #     status, details = middleware.process_request(test_req, {})
-#     print(f"Request (after storing similar): '{test_req}' -> Status: {status}, Details: {details}") 
+#     print(f"Request (after storing similar): '{test_req}' -> Status: {status}, Details: {details}")
