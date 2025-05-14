@@ -13,3 +13,4 @@ ruff>=0.11.0,<0.12.0
 alembic>=1.10.0
 SQLAlchemy>=2.0.0
 numpy>=1.20.0,<2.0.0
+libcst>=0.4.9 # Required for pre-commit hook: guard-agent-instantiation
