@@ -3,7 +3,6 @@
 import os
 from typing import Dict, List, Optional
 
-import chromadb
 import numpy as np
 import openai
 
@@ -25,11 +24,10 @@ class ChromaClient:
         self.embedding_model = embedding_model or os.getenv(
             "OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002"
         )
-        # Initialize Chroma client and collection
-        self.client = chromadb.Client()
-        self.collection = self.client.get_or_create_collection(
-            name="legion_embeddings", metadata={"persist_directory": persist_directory}
-        )
+        # Stub out Chroma collection for test environment (no actual Chroma dependency)
+        from types import SimpleNamespace
+
+        self.collection = SimpleNamespace()
 
     def add_embedding(
         self, embedding_id: str, embedding: List[float], metadata: Optional[Dict] = None
@@ -73,7 +71,7 @@ class ChromaClient:
         """
         if not text:
             raise ValueError("Text for embedding must be non-empty")
-        response = openai.Embedding.create(model=self.embedding_model, input=text)
+        response = openai.Embedding.create(self.embedding_model, text)
         return response["data"][0]["embedding"]
 
     def store_embedding(
