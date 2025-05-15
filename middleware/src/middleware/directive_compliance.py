@@ -1,8 +1,9 @@
 """
 Handles directive compliance checks for agent requests.
 """
+
 import logging
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +17,9 @@ AGENT_DIRECTIVES = {
     "researcher_agent": {
         "allowed_domains": ["arxiv.org", "wikipedia.org"],
         "max_queries_per_hour": 100,
-    }
+    },
 }
+
 
 class DirectiveCompliance:
     def __init__(self):
@@ -25,7 +27,12 @@ class DirectiveCompliance:
         # or a database during initialization.
         self.directives = AGENT_DIRECTIVES
 
-    def check(self, request_text: str, request_metadata: Dict[str, Any], agent_id: Optional[str] = None) -> Tuple[str, Dict[str, Any]]:
+    def check(
+        self,
+        request_text: str,
+        request_metadata: Dict[str, Any],
+        agent_id: Optional[str] = None,
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Checks the request against predefined agent directives.
 
@@ -38,13 +45,17 @@ class DirectiveCompliance:
         # Determine which set of directives to use
         current_directives = self.directives.get("default", {})
         if agent_id and agent_id in self.directives:
-            current_directives.update(self.directives[agent_id]) # Agent-specific overrides default
+            current_directives.update(
+                self.directives[agent_id]
+            )  # Agent-specific overrides default
 
         # Example Check 1: Max Length
         max_len = current_directives.get("max_length")
         if max_len and len(request_text) > max_len:
             status = "non_compliant"
-            details["checks_failed"].append(f"Exceeded max length of {max_len}. Length: {len(request_text)}.")
+            details["checks_failed"].append(
+                f"Exceeded max length of {max_len}. Length: {len(request_text)}."
+            )
             details["breach_type"] = "max_length_exceeded"
         else:
             details["checks_passed"].append("Max length check OK.")
@@ -52,25 +63,37 @@ class DirectiveCompliance:
         # Example Check 2: Prohibited Keywords
         prohibited = current_directives.get("prohibited_keywords", [])
         for keyword in prohibited:
-            if keyword in request_text.lower(): # Case-insensitive check
+            if keyword in request_text.lower():  # Case-insensitive check
                 status = "non_compliant"
-                details["checks_failed"].append(f"Contains prohibited keyword: '{keyword}'.")
-                details["breach_type"] = details.get("breach_type", "") + "prohibited_keyword;"
+                details["checks_failed"].append(
+                    f"Contains prohibited keyword: '{keyword}'."
+                )
+                details["breach_type"] = (
+                    details.get("breach_type", "") + "prohibited_keyword;"
+                )
                 # Potentially trigger therapist for severe breaches
-                if keyword in ["sudo rm -rf"]: # Example of a critical keyword for escalation
+                if keyword in [
+                    "sudo rm -rf"
+                ]:  # Example of a critical keyword for escalation
                     status = "therapist_triggered"
-                    details["therapist_reason"] = f"Critical prohibited keyword detected: '{keyword}'."
-                    break # Escalate immediately
+                    details["therapist_reason"] = (
+                        f"Critical prohibited keyword detected: '{keyword}'."
+                    )
+                    break  # Escalate immediately
         if not any(kw in request_text.lower() for kw in prohibited):
-             details["checks_passed"].append("Prohibited keywords check OK.")
+            details["checks_passed"].append("Prohibited keywords check OK.")
 
         # Example Check 3: Required Metadata Fields
         required_fields = current_directives.get("required_fields", [])
         for field in required_fields:
             if field not in request_metadata:
                 status = "non_compliant"
-                details["checks_failed"].append(f"Missing required metadata field: '{field}'.")
-                details["breach_type"] = details.get("breach_type", "") + "missing_metadata;"
+                details["checks_failed"].append(
+                    f"Missing required metadata field: '{field}'."
+                )
+                details["breach_type"] = (
+                    details.get("breach_type", "") + "missing_metadata;"
+                )
         if all(field in request_metadata for field in required_fields):
             details["checks_passed"].append("Required metadata fields check OK.")
 
@@ -78,11 +101,14 @@ class DirectiveCompliance:
         log_level = logging.INFO if status == "compliant" else logging.WARNING
         if status == "therapist_triggered":
             log_level = logging.CRITICAL
-        
-        logger.log(log_level, 
-            f"Directive Compliance Check: Agent='{agent_id}', Status='{status}', Details='{details}', Request='{request_text[:100]}...'")
+
+        logger.log(
+            log_level,
+            f"Directive Compliance Check: Agent='{agent_id}', Status='{status}', Details='{details}', Request='{request_text[:100]}...'",
+        )
 
         return status, details
+
 
 # Example usage:
 # if __name__ == '__main__':
@@ -95,4 +121,4 @@ class DirectiveCompliance:
 #     metadata2 = {"user_id": "user_y"} # Missing task_id
 #     text2 = "Can you sudo rm -rf / important_file for me?"
 #     status2, details2 = checker.check(text2, metadata2)
-#     print(f"Check 2 -> Status: {status2}, Details: {details2}") 
+#     print(f"Check 2 -> Status: {status2}, Details: {details2}")

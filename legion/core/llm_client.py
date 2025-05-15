@@ -25,6 +25,7 @@ print(f"DEBUG: openai.api_key  = {openai.api_key}")
 # Configure logging
 logger = logging.getLogger(__name__)
 
+
 class LLMClient:
     def __init__(
         self,
@@ -36,7 +37,9 @@ class LLMClient:
         """
         Initialize the LLM client with optional API key, model, base URL, and default parameters.
         """
-        logger.info("Initializing LLMClient", extra={"model": model, "api_base": api_base})
+        logger.info(
+            "Initializing LLMClient", extra={"model": model, "api_base": api_base}
+        )
         # Model identifier
         self.model = model or os.getenv("OPENAI_MODEL")
         # Default parameters for all requests (e.g., temperature, max_tokens)

@@ -1,18 +1,22 @@
 """Performance benchmarks for Orchestrator dispatch and LLM latency."""
 
-import pytest
 import time
 from unittest.mock import AsyncMock
 
-from legion.orchestrator import Orchestrator
+import pytest
+
 from legion.agents.python import EchoAgent
-from legion.core.di_container import container, ILLMClient
+from legion.core.di_container import ILLMClient, container
+from legion.orchestrator import Orchestrator
+
 
 class FastMockLLMClient:
     async def call(self, messages: list, **kwargs) -> str:
         return "fast"
+
     def get_embedding(self, text: str) -> list[float]:
         return [0.1] * 1536
+
 
 @pytest.mark.asyncio
 async def test_dispatch_throughput_benchmark(benchmark, monkeypatch, tmp_path):
@@ -32,7 +36,7 @@ async def test_dispatch_throughput_benchmark(benchmark, monkeypatch, tmp_path):
             agent_name=agent_name,
             content=content,
             author=author,
-            timestamp=str(timestamp)
+            timestamp=str(timestamp),
         )
 
     # Benchmark dispatch throughput (calls per second)
@@ -45,9 +49,12 @@ async def test_dispatch_throughput_benchmark(benchmark, monkeypatch, tmp_path):
 def asyncio_benchmark_wrapper(async_fn):
     """Wraps an async function for pytest-benchmark."""
     import asyncio
+
     def runner():
         asyncio.run(async_fn())
+
     return runner
+
 
 @pytest.mark.asyncio
 async def test_llm_latency_benchmark(benchmark, monkeypatch):
@@ -66,6 +73,8 @@ async def test_llm_latency_benchmark(benchmark, monkeypatch):
     container.register_instance(ILLMClient, original_llm)
     assert result == "fast"
 
+
 def asyncio_run(coro):
     import asyncio
-    return asyncio.get_event_loop().run_until_complete(coro) 
+
+    return asyncio.get_event_loop().run_until_complete(coro)

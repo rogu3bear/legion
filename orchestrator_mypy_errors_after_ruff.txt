@@ -1,0 +1,291 @@
+legion/core/interfaces.py:11: error: Function is missing a type annotation for one or more arguments  [no-untyped-def]
+legion/core/interfaces.py:50: error: Incompatible default for argument "metadata" (default has type "None", argument has type "Dict[str, Any]")  [assignment]
+legion/core/interfaces.py:50: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+legion/core/interfaces.py:50: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+legion/core/interfaces.py:57: error: Incompatible default for argument "category" (default has type "None", argument has type "str")  [assignment]
+legion/core/interfaces.py:57: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+legion/core/interfaces.py:57: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+legion/core/logging_config.py:9: error: Incompatible default for argument "name" (default has type "None", argument has type "str")  [assignment]
+legion/core/logging_config.py:9: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+legion/core/logging_config.py:9: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+legion/core/state.py:31: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:31: note: Use "-> None" if function does not return a value
+legion/core/state.py:75: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:87: error: Returning Any from function declared to return "Dict[str, Any]"  [no-any-return]
+legion/core/state.py:105: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:118: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:128: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:149: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:156: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:162: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/state.py:239: error: Returning Any from function declared to return "Optional[Dict[str, Any]]"  [no-any-return]
+legion/core/state.py:242: error: Returning Any from function declared to return "Optional[Dict[str, Any]]"  [no-any-return]
+legion/core/state.py:268: error: Returning Any from function declared to return "Optional[Dict[str, Any]]"  [no-any-return]
+legion/core/state.py:281: error: Syntax error in type annotation  [syntax]
+legion/core/state.py:281: note: Suggestion: Use Tuple[T1, ..., Tn] instead of (T1, ..., Tn)
+legion/core/state.py:288: error: Need type annotation for "tasks_latest_state" (hint: "tasks_latest_state: Dict[<type>, <type>] = ...")  [var-annotated]
+legion/core/state.py:411: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:38: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:38: note: Use "-> None" if function does not return a value
+memory/legion_memory.py:52: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:67: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:71: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:76: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:76: note: Use "-> None" if function does not return a value
+memory/legion_memory.py:81: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:92: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:103: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:113: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:125: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:129: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:136: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:141: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:153: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:187: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:195: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:195: note: Use "-> None" if function does not return a value
+memory/legion_memory.py:222: error: Function is missing a return type annotation  [no-untyped-def]
+memory/legion_memory.py:222: error: Incompatible default for argument "metadata" (default has type "None", argument has type "Dict[Any, Any]")  [assignment]
+memory/legion_memory.py:222: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+memory/legion_memory.py:222: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+memory/legion_memory.py:230: error: "LegionAgentMemory" has no attribute "memory_dir"  [attr-defined]
+memory/legion_memory.py:238: error: Function is missing a type annotation  [no-untyped-def]
+memory/legion_memory.py:244: error: Function is missing a type annotation  [no-untyped-def]
+metrics/exporter.py:22: error: Function is missing a return type annotation  [no-untyped-def]
+legion/ports.py:48: error: Function is missing a return type annotation  [no-untyped-def]
+legion/ports.py:94: error: Function is missing a return type annotation  [no-untyped-def]
+integration/discord/cogs/ux_feed.py:83: error: Incompatible default for argument "fields" (default has type "None", argument has type "List[Any]")  [assignment]
+integration/discord/cogs/ux_feed.py:83: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+integration/discord/cogs/ux_feed.py:83: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+integration/discord/cogs/ux_feed.py:110: error: Item "None" of "Optional[datetime]" has no attribute "strftime"  [union-attr]
+integration/discord/cogs/ux_feed.py:125: error: Function is missing a type annotation  [no-untyped-def]
+integration/discord/cogs/ux_feed.py:131: error: Function is missing a return type annotation  [no-untyped-def]
+integration/discord/cogs/ux_feed.py:131: error: Incompatible default for argument "message" (default has type "None", argument has type "str")  [assignment]
+integration/discord/cogs/ux_feed.py:131: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+integration/discord/cogs/ux_feed.py:131: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+integration/discord/cogs/ux_feed.py:131: error: Incompatible default for argument "embed" (default has type "None", argument has type "Embed")  [assignment]
+integration/discord/cogs/ux_feed.py:151: error: Function is missing a return type annotation  [no-untyped-def]
+integration/discord/cogs/ux_feed.py:162: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:36: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:59: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/base.py:71: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:80: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/base.py:80: note: Use "-> None" if function does not return a value
+legion/agents/base.py:90: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:234: error: Incompatible types in assignment (expression has type "str", variable has type "Dict[str, Any]")  [assignment]
+legion/agents/base.py:237: error: Incompatible types in assignment (expression has type "str", variable has type "Dict[str, Any]")  [assignment]
+legion/agents/base.py:261: error: Item "None" of "Optional[Any]" has no attribute "log_task"  [union-attr]
+legion/agents/base.py:264: error: Item "None" of "Optional[Any]" has no attribute "log_task"  [union-attr]
+legion/agents/base.py:276: error: Argument 1 to "get_message_embedding" of "BaseAgent" has incompatible type "Dict[str, Any]"; expected "str"  [arg-type]
+legion/agents/base.py:323: error: Returning Any from function declared to return "List[float]"  [no-any-return]
+legion/agents/base.py:388: error: Returning Any from function declared to return "Dict[str, Any]"  [no-any-return]
+legion/agents/base.py:395: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:405: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/base.py:405: note: Use "-> None" if function does not return a value
+legion/agents/base.py:419: error: Statement is unreachable  [unreachable]
+legion/agents/base.py:429: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/base.py:429: note: Use "-> None" if function does not return a value
+legion/agents/base.py:444: error: Returning Any from function declared to return "List[str]"  [no-any-return]
+legion/agents/base.py:459: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/base.py:485: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/base.py:497: error: Item "None" of "Optional[Any]" has no attribute "store_memory"  [union-attr]
+legion/agents/base.py:501: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/llm_client.py:58: error: Argument 2 to "getenv" has incompatible type "Optional[float]"; expected "Union[str, Buffer, SupportsFloat, SupportsIndex]"  [arg-type]
+legion/core/llm_client.py:59: error: Argument 2 to "getenv" has incompatible type "Optional[int]"; expected "Union[str, Buffer, SupportsInt, SupportsIndex, SupportsTrunc]"  [arg-type]
+legion/core/llm_client.py:60: error: Argument 2 to "getenv" has incompatible type "Optional[float]"; expected "Union[str, Buffer, SupportsFloat, SupportsIndex]"  [arg-type]
+legion/core/llm_client.py:61: error: Argument 2 to "getenv" has incompatible type "Optional[float]"; expected "Union[str, Buffer, SupportsFloat, SupportsIndex]"  [arg-type]
+legion/core/llm_client.py:62: error: Argument 2 to "getenv" has incompatible type "Optional[float]"; expected "Union[str, Buffer, SupportsFloat, SupportsIndex]"  [arg-type]
+legion/core/llm_client.py:104: error: Module has no attribute "api_base"  [attr-defined]
+legion/core/llm_client.py:107: error: Module has no attribute "api_base"  [attr-defined]
+legion/core/llm_client.py:122: error: Module has no attribute "ChatCompletion"  [attr-defined]
+legion/core/llm_client.py:127: error: Returning Any from function declared to return "Dict[str, Any]"  [no-any-return]
+legion/core/llm_client.py:137: error: Module has no attribute "api_base"  [attr-defined]
+legion/core/llm_client.py:143: error: Module has no attribute "api_base"  [attr-defined]
+legion/core/llm_client.py:145: error: Module has no attribute "api_base"  [attr-defined]
+legion/core/llm_client.py:147: error: Module has no attribute "Embedding"  [attr-defined]
+legion/core/llm_client.py:148: error: Returning Any from function declared to return "List[float]"  [no-any-return]
+legion/core/llm_client.py:154: error: Module has no attribute "api_base"  [attr-defined]
+legion/agents/python/ux_designer.py:9: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/ux_designer.py:14: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:13: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:16: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:19: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:30: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:43: error: Incompatible default for argument "context" (default has type "None", argument has type "Dict[Any, Any]")  [assignment]
+legion/agents/python/therapist.py:43: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+legion/agents/python/therapist.py:43: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+legion/agents/python/therapist.py:74: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:89: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/therapist.py:90: error: Unexpected keyword argument "category" for "retrieve_memories" of "LegionAgentMemory"  [call-arg]
+memory/legion_memory.py:153: note: "retrieve_memories" of "LegionAgentMemory" defined here
+legion/agents/python/ping.py:11: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/ping.py:16: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:18: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:24: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:32: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:32: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:37: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:37: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:42: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:42: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:47: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:71: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:78: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:90: error: Item "None" of "Optional[Any]" has no attribute "get_channel"  [union-attr]
+legion/agents/python/metrics.py:93: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:96: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:107: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:120: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:120: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:124: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:128: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:128: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:132: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:132: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:136: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:136: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:140: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:140: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:144: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:144: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:150: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:150: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:156: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:156: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:162: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:162: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:168: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:168: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:174: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:174: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:180: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:180: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:186: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:186: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:192: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:192: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:198: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:198: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:204: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:204: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:210: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:210: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:216: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:216: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:222: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:222: note: Use "-> None" if function does not return a value
+legion/agents/python/metrics.py:228: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/metrics.py:228: note: Use "-> None" if function does not return a value
+legion/agents/python/healthcheck.py:18: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:26: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:26: note: Use "-> None" if function does not return a value
+legion/agents/python/healthcheck.py:32: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:32: note: Use "-> None" if function does not return a value
+legion/agents/python/healthcheck.py:43: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:43: note: Use "-> None" if function does not return a value
+legion/agents/python/healthcheck.py:70: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:81: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:96: error: Missing positional argument "messages" in call to "call_llm" of "BaseAgent"  [call-arg]
+legion/agents/python/healthcheck.py:118: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/healthcheck.py:139: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/echo.py:11: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/echo.py:18: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:18: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:39: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:69: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/architect.py:72: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:84: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/architect.py:84: note: Use "-> None" if function does not return a value
+legion/agents/python/architect.py:94: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:173: error: Function is missing a type annotation  [no-untyped-def]
+legion/agents/python/architect.py:194: error: Incompatible types in assignment (expression has type "float", target has type "int")  [assignment]
+legion/agents/python/architect.py:196: error: Incompatible types in assignment (expression has type "float", target has type "int")  [assignment]
+legion/agents/python/architect.py:200: error: Function is missing a return type annotation  [no-untyped-def]
+legion/agents/python/architect.py:224: error: Function is missing a type annotation  [no-untyped-def]
+legion/core/di_container.py:13: error: Function is missing a return type annotation  [no-untyped-def]
+legion/core/di_container.py:13: note: Use "-> None" if function does not return a value
+legion/core/di_container.py:15: error: Function "builtins.callable" is not valid as a type  [valid-type]
+legion/core/di_container.py:15: note: Perhaps you meant "typing.Callable" instead of "callable"?
+legion/core/di_container.py:21: error: Function "builtins.callable" is not valid as a type  [valid-type]
+legion/core/di_container.py:21: note: Perhaps you meant "typing.Callable" instead of "callable"?
+legion/core/di_container.py:28: error: Returning Any from function declared to return "T"  [no-any-return]
+legion/core/di_container.py:30: error: callable? not callable  [misc]
+legion/core/di_container.py:32: error: Returning Any from function declared to return "T"  [no-any-return]
+legion/core/di_container.py:50: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+legion/core/di_container.py:55: error: Only concrete class can be given where "Type[IStateManager]" is expected  [type-abstract]
+legion/core/di_container.py:60: error: Only concrete class can be given where "Type[IMemoryManager]" is expected  [type-abstract]
+legion/core/di_container.py:67: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+legion/core/di_container.py:68: error: Only concrete class can be given where "Type[IStateManager]" is expected  [type-abstract]
+legion/orchestrator.py:137: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:162: error: Statement is unreachable  [unreachable]
+legion/orchestrator.py:175: error: Cannot determine type of "port_allocator"  [has-type]
+legion/orchestrator.py:181: error: Cannot determine type of "port_allocator"  [has-type]
+legion/orchestrator.py:189: error: Only concrete class can be given where "Type[IStateManager]" is expected  [type-abstract]
+legion/orchestrator.py:190: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+legion/orchestrator.py:230: error: Accessing "__init__" on an instance is unsound, since instance.__init__ could be from an incompatible subclass  [misc]
+legion/orchestrator.py:233: error: Incompatible types in assignment (expression has type "Union[Any, ILLMClient]", target has type "Orchestrator")  [assignment]
+legion/orchestrator.py:286: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:286: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:329: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:329: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:343: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:343: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:346: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:354: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:461: error: Accessing "__init__" on an instance is unsound, since instance.__init__ could be from an incompatible subclass  [misc]
+legion/orchestrator.py:464: error: Incompatible types in assignment (expression has type "Union[Any, ILLMClient]", target has type "Orchestrator")  [assignment]
+legion/orchestrator.py:482: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:482: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:487: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:494: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:534: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:539: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:543: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:589: error: Item "Dict[str, Any]" of "Union[Any, Dict[str, Any]]" has no attribute "choices"  [union-attr]
+legion/orchestrator.py:599: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:607: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:615: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:622: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:629: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:634: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:677: error: Item "Dict[str, Any]" of "Union[Any, Dict[str, Any]]" has no attribute "choices"  [union-attr]
+legion/orchestrator.py:687: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:694: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:708: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:713: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:732: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:758: error: Argument 1 to "create_task" has incompatible type "Optional[Any]"; expected "Union[Generator[Any, None, Any], Coroutine[Any, Any, Any]]"  [arg-type]
+legion/orchestrator.py:768: error: Argument 1 to "create_task" has incompatible type "Optional[Any]"; expected "Union[Generator[Any, None, Any], Coroutine[Any, Any, Any]]"  [arg-type]
+legion/orchestrator.py:780: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:862: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "log_telemetry"  [union-attr]
+legion/orchestrator.py:872: error: Returning Any from function declared to return "str"  [no-any-return]
+legion/orchestrator.py:880: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "log_telemetry"  [union-attr]
+legion/orchestrator.py:899: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:899: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:914: error: Function is missing a type annotation  [no-untyped-def]
+legion/orchestrator.py:917: error: "load_agent_configs" of "Orchestrator" does not return a value (it only ever returns None)  [func-returns-value]
+legion/orchestrator.py:944: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+legion/orchestrator.py:955: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "add_feedback"  [union-attr]
+legion/orchestrator.py:958: error: Missing positional argument "key" in call to "get_state" of "IStateManager"  [call-arg]
+legion/orchestrator.py:958: error: Value of type "Optional[Any]" is not indexable  [index]
+legion/orchestrator.py:961: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "adjust_confidence_threshold"  [union-attr]
+legion/orchestrator.py:1005: error: Missing positional argument "key" in call to "get_state" of "IStateManager"  [call-arg]
+legion/orchestrator.py:1005: error: Item "None" of "Optional[Any]" has no attribute "get"  [union-attr]
+legion/orchestrator.py:1033: error: Function is missing a return type annotation  [no-untyped-def]
+legion/orchestrator.py:1033: note: Use "-> None" if function does not return a value
+legion/orchestrator.py:1121: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "list_documents"  [union-attr]
+legion/orchestrator.py:1132: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "get_document"  [union-attr]
+legion/orchestrator.py:1154: error: Need type annotation for "results" (hint: "results: List[<type>] = ...")  [var-annotated]
+legion/orchestrator.py:1369: error: Syntax error in type annotation  [syntax]
+legion/orchestrator.py:1369: note: Suggestion: Use Tuple[T1, ..., Tn] instead of (T1, ..., Tn)
+legion/orchestrator.py:1389: error: "tuple" is not subscriptable, use "typing.Tuple" instead  [misc]
+legion/orchestrator.py:1397: error: "tuple" is not subscriptable, use "typing.Tuple" instead  [misc]
+legion/orchestrator.py:1405: error: "tuple" is not subscriptable, use "typing.Tuple" instead  [misc]
+legion/orchestrator.py:1490: error: Argument 1 to "create" of "ILLMClient" has incompatible type "Dict[Any, Any]"; expected "List[Dict[str, str]]"  [arg-type]
+legion/orchestrator.py:1514: error: "DIContainer" has no attribute "register"  [attr-defined]
+legion/orchestrator.py:1514: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+legion/orchestrator.py:1515: error: "DIContainer" has no attribute "register"  [attr-defined]
+legion/orchestrator.py:1515: error: Only concrete class can be given where "Type[IStateManager]" is expected  [type-abstract]
+legion/orchestrator.py:1519: error: Only concrete class can be given where "Type[IStateManager]" is expected  [type-abstract]
+legion/orchestrator.py:1520: error: Only concrete class can be given where "Type[ILLMClient]" is expected  [type-abstract]
+Found 230 errors in 18 files (checked 1 source file)

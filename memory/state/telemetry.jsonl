@@ -1,0 +1,8 @@
+{"type": "llm_latency", "agent": "echo_agent", "latency": 3.0994415283203125e-06, "event": "handle_message", "timestamp": "2025-04-22T06:05:27.635104+00:00"}
+{"type": "dispatch_duration", "agent": "echo_agent", "latency": 0.0019159317016601562, "event": "dispatch_message", "timestamp": "2025-04-22T06:05:27.635508+00:00"}
+{"type": "llm_latency", "agent": "echo_agent", "latency": 3.0994415283203125e-06, "event": "handle_message", "timestamp": "2025-04-22T06:06:08.523257+00:00"}
+{"type": "dispatch_duration", "agent": "echo_agent", "latency": 0.0008170604705810547, "event": "dispatch_message", "timestamp": "2025-04-22T06:06:08.523556+00:00"}
+{"type": "llm_latency", "agent": "echo_agent", "latency": 3.0994415283203125e-06, "event": "handle_message", "timestamp": "2025-04-22T06:06:34.532452+00:00"}
+{"type": "dispatch_duration", "agent": "echo_agent", "latency": 0.0006330013275146484, "event": "dispatch_message", "timestamp": "2025-04-22T06:06:34.532780+00:00"}
+{"type": "llm_latency", "agent": "echo_agent", "latency": 3.0994415283203125e-06, "event": "handle_message", "timestamp": "2025-04-22T06:06:59.486040+00:00"}
+{"type": "dispatch_duration", "agent": "echo_agent", "latency": 0.0009076595306396484, "event": "dispatch_message", "timestamp": "2025-04-22T06:06:59.486439+00:00"}

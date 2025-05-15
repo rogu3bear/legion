@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legion Task Management</title>
+    <!-- Include Bootstrap for basic styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container-fluid {
+            display: flex;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #sidebar {
+            width: 250px;
+            margin-right: 20px;
+            border-right: 1px solid #dee2e6;
+            padding-right: 20px;
+        }
+        #main-content {
+            flex-grow: 1;
+        }
+        .task-item {
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Legion Task Management</h1>
+            <div class="nav">
+                <a href="/" class="btn btn-outline-secondary me-2">Dashboard</a>
+                <a href="/agents" class="btn btn-outline-secondary">Agent Management</a>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <!-- Sidebar for Agent Status -->
+            <div id="sidebar">
+                <h2>Agent Status</h2>
+                <div id="agent-status">
+                    <!-- Agent status will be rendered here by js_feed.js -->
+                    <p>Loading agent status...</p>
+                </div>
+            </div>
+
+            <!-- Main Content Area for Task Management -->
+            <div id="main-content">
+                <!-- Task Creation Form -->
+                <div class="card mb-3">
+                    <div class="card-header">Create New Task</div>
+                    <div class="card-body">
+                        <form id="task-form">
+                            <div class="mb-3">
+                                <label for="task-title" class="form-label">Task Title</label>
+                                <input type="text" class="form-control" id="task-title" placeholder="Enter task title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-description" class="form-label">Description</label>
+                                <textarea class="form-control" id="task-description" rows="3" placeholder="Enter task description"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-agent" class="form-label">Assign to Agent</label>
+                                <select class="form-select" id="task-agent">
+                                    <option value="">Select an agent</option>
+                                    <!-- Agent options will be populated dynamically by js_tasks.js -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div id="task-list">
+                    <h2>Tasks</h2>
+                    <p>Loading tasks...</p>
+                    <!-- Task items will be rendered here by js_tasks.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notification-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+            <!-- Notifications will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Include JavaScript for agent status -->
+    <script src="/static/js_feed.js"></script>
+    <!-- Include JavaScript for task management -->
+    <script src="/static/js_tasks.js"></script>
+</body>
+</html>

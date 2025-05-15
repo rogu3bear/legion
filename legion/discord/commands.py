@@ -16,7 +16,8 @@ from legion.orchestrator import Orchestrator
 
 if TYPE_CHECKING:
     # Precise names just for type-checking; runtime not needed.
-    from discord import Message, Thread, User
+    # from discord import Message, Thread, User # Removed as they are now imported globally by ruff
+    pass
 
 
 async def _safe_send(
@@ -41,7 +42,7 @@ class LegionCommandCog(commands.Cog):
         self.bot = bot
         self.orchestrator = orchestrator
 
-    @commands.hybrid_command(name="config", description="Update agent config.")  # type: ignore[arg-type]
+    @commands.hybrid_command(name="config", description="Update agent config.")
     async def config_agent(
         self,
         ctx: commands.Context[Any],
@@ -67,9 +68,9 @@ class LegionCommandCog(commands.Cog):
             self.orchestrator.update_agent_config(
                 agent_name, model, temperature, max_tokens
             )
-            embed = discord.Embed(  # Using qualified name
+            embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
                 title="Agent Config Updated",
-                color=discord.Color.green(),  # Using qualified name
+                color=discord.Color.green(),  # Using qualified name # type: ignore[attr-defined]
             )
             embed.add_field(name="Agent", value=agent_name)
             embed.add_field(name="Model", value=model)
@@ -90,7 +91,7 @@ class LegionCommandCog(commands.Cog):
         except Exception as e:
             await _safe_send(ctx, f"Error updating config: {e}")
 
-    @commands.hybrid_command(name="state", description="Query orchestrator state.")  # type: ignore[arg-type]
+    @commands.hybrid_command(name="state", description="Query orchestrator state.")
     async def state_query(self, ctx: commands.Context[Any], key: str) -> None:
         """/state query key"""
         await self._state_query_impl(ctx, key)
@@ -99,17 +100,17 @@ class LegionCommandCog(commands.Cog):
         assert self.orchestrator is not None, "Orchestrator not initialized"
         try:
             value = self.orchestrator.get_state_key(key)
-            embed = discord.Embed(  # Using qualified name
+            embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
                 title=f"State Query: {key}",
                 description=str(value),
-                color=discord.Color.blue(),  # Using qualified name
+                color=discord.Color.blue(),  # Using qualified name # type: ignore[attr-defined]
             )
             await _safe_send(ctx, embed=embed)
             await self._log_to_agent_logs(f"/state query by {ctx.author}: {key}")
         except Exception as e:
             await _safe_send(ctx, f"Error querying state: {e}")
 
-    @commands.hybrid_command(  # type: ignore[arg-type]
+    @commands.hybrid_command(
         name="feedback", description="Submit feedback on a message."
     )
     async def feedback(
@@ -136,9 +137,9 @@ class LegionCommandCog(commands.Cog):
                 "user": str(ctx.author),
             }
             self.orchestrator.submit_feedback(feedback_payload)
-            embed = discord.Embed(  # Using qualified name
+            embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
                 title="Feedback Received",
-                color=discord.Color.purple(),  # Using qualified name
+                color=discord.Color.purple(),  # Using qualified name # type: ignore[attr-defined]
             )
             embed.add_field(name="Message ID", value=message_id)
             embed.add_field(name="Rating", value=rating)
@@ -155,7 +156,7 @@ class LegionCommandCog(commands.Cog):
         except Exception as e:
             await _safe_send(ctx, f"Error submitting feedback: {e}")
 
-    @commands.hybrid_command(name="alert", description="Subscribe to critical alerts.")  # type: ignore[arg-type]
+    @commands.hybrid_command(name="alert", description="Subscribe to critical alerts.")
     async def alert_subscribe(self, ctx: commands.Context[Any]) -> None:
         """/alert subscribe"""
         await self._alert_subscribe_impl(ctx)

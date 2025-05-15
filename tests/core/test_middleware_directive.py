@@ -2,9 +2,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from core.middleware.directive_compliance import DirectiveCompliance
-from core.middleware.middleware import RequestMiddleware, ACCEPTABLE_SIMILARITY, THERAPIST_AGENT_THRESHOLD, REVIEW_SIMILARITY
 from core.utils.chroma_client import ChromaClient
+from middleware.src.middleware.directive_compliance import DirectiveCompliance
+from middleware.src.middleware.middleware import (
+    ACCEPTABLE_SIMILARITY,
+    REVIEW_SIMILARITY,
+    THERAPIST_AGENT_THRESHOLD,
+    RequestMiddleware,
+)
 
 
 @pytest.fixture
@@ -53,7 +58,9 @@ def test_process_request_retrieval_fails(middleware, mock_chroma_client):
     assert details["source"] == "embedding_system"
 
 
-def test_process_request_no_similar_embeddings(middleware, mock_chroma_client, mock_directive_compliance):
+def test_process_request_no_similar_embeddings(
+    middleware, mock_chroma_client, mock_directive_compliance
+):
     mock_chroma_client.retrieve_similar_embeddings.return_value = []
     mock_directive_compliance.check.return_value = ("compliant", {})
     status, details = middleware.process_request("test", {"agent_id": "test_agent"})
@@ -76,7 +83,9 @@ def test_process_request_similarity_rejected(middleware, mock_chroma_client):
 
 
 # Test for similarity between REVIEW_SIMILARITY (0.60) and THERAPIST_AGENT_THRESHOLD (0.70) - should mark for review
-def test_process_request_similarity_needs_review(middleware, mock_chroma_client, mock_directive_compliance):
+def test_process_request_similarity_needs_review(
+    middleware, mock_chroma_client, mock_directive_compliance
+):
     similarity = (REVIEW_SIMILARITY + THERAPIST_AGENT_THRESHOLD) / 2  # e.g. 0.65
     mock_chroma_client.retrieve_similar_embeddings.return_value = [
         {"id": "doc1", "similarity": similarity}
@@ -89,7 +98,9 @@ def test_process_request_similarity_needs_review(middleware, mock_chroma_client,
 
 
 # Test for similarity between THERAPIST_AGENT_THRESHOLD (0.70) and ACCEPTABLE_SIMILARITY (0.85) - should escalate to therapist
-def test_process_request_similarity_escalate_therapist(middleware, mock_chroma_client, mock_directive_compliance):
+def test_process_request_similarity_escalate_therapist(
+    middleware, mock_chroma_client, mock_directive_compliance
+):
     similarity = (THERAPIST_AGENT_THRESHOLD + ACCEPTABLE_SIMILARITY) / 2  # e.g. 0.775
     mock_chroma_client.retrieve_similar_embeddings.return_value = [
         {"id": "doc1", "similarity": similarity}
@@ -102,7 +113,9 @@ def test_process_request_similarity_escalate_therapist(middleware, mock_chroma_c
 
 
 # Test for similarity above ACCEPTABLE_SIMILARITY (0.85) - should approve
-def test_process_request_similarity_acceptable(middleware, mock_chroma_client, mock_directive_compliance):
+def test_process_request_similarity_acceptable(
+    middleware, mock_chroma_client, mock_directive_compliance
+):
     similarity = ACCEPTABLE_SIMILARITY + 0.05  # e.g. 0.90
     mock_chroma_client.retrieve_similar_embeddings.return_value = [
         {"id": "doc1", "similarity": similarity}

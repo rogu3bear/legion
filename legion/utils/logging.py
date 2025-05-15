@@ -3,8 +3,8 @@ import logging
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Optional
 from pathlib import Path
+from typing import List, Optional
 
 
 class JsonFormatter(logging.Formatter):
@@ -32,18 +32,41 @@ class JsonFormatter(logging.Formatter):
         # Add extra fields from the log record, but exclude default ones we've handled
         # to avoid duplication
         for key, value in record.__dict__.items():
-            if key not in ('args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
-                          'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
-                          'msecs', 'message', 'msg', 'name', 'pathname', 'process',
-                          'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName',
-                          'props') and not key.startswith('_'):
+            if key not in (
+                "args",
+                "asctime",
+                "created",
+                "exc_info",
+                "exc_text",
+                "filename",
+                "funcName",
+                "id",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "message",
+                "msg",
+                "name",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "thread",
+                "threadName",
+                "props",
+            ) and not key.startswith("_"):
                 log_record[key] = value
-                
+
         return json.dumps(log_record)
 
 
 def setup_legion_logging(
-    log_level_str: str = "INFO", log_to_console: bool = True, log_file_path: Optional[str] = None
+    log_level_str: str = "INFO",
+    log_to_console: bool = True,
+    log_file_path: Optional[str] = None,
 ):
     """
     Configures structured JSON logging for the Legion application.
@@ -68,7 +91,7 @@ def setup_legion_logging(
         root_logger.removeHandler(handler)
 
     # Set up handlers
-    handlers = []
+    handlers: List[logging.Handler] = []
 
     # Add file handler if path is provided
     if log_file_path:
@@ -82,7 +105,7 @@ def setup_legion_logging(
             file_handler.setFormatter(formatter)
             file_handler.setLevel(log_level)
             handlers.append(file_handler)
-            
+
         except Exception as e:
             # Fallback to console logging if file handler setup fails
             print(
@@ -112,11 +135,12 @@ def setup_legion_logging(
 
     # Override excepthook to log uncaught exceptions
     def log_uncaught_exception(exc_type, exc_value, exc_traceback):
-        root_logger.error("Uncaught exception", 
-                         exc_info=(exc_type, exc_value, exc_traceback))
+        root_logger.error(
+            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
+        )
         # Call the original exception handler
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
-    
+
     sys.excepthook = log_uncaught_exception
 
     # Configure logging for some common libraries to be less verbose or use the new format
@@ -145,41 +169,48 @@ def setup_legion_logging(
 
 
 # Test function to demonstrate logging
-def _test_logging(log_level='DEBUG'):
+def _test_logging(log_level="DEBUG"):
     """Test function to demonstrate logging at various levels."""
     logger = logging.getLogger("test.logger")
     logger.setLevel(getattr(logging, log_level.upper()))
-    
+
     logger.debug("This is a debug message")
     logger.info("This is an info message")
     logger.warning("This is a warning message")
     logger.error("This is an error message")
-    
+
     # Test exception logging
     try:
         # Example exception
         raise ValueError("This is a test exception")
     except ValueError:
         logger.exception("A ValueError occurred!")
-        
+
     # Log messages using different loggers to test hierarchical behavior
     logging.getLogger("test.sub1").info("Subsystem 1 message")
     logging.getLogger("test.sub2").warning("Subsystem 2 warning")
-    
+
     # Custom fields in extra
-    logger.info("Message with custom fields", extra={"taskName": "Task-123", "user_id": 42, "component": "API"})
-    
+    logger.info(
+        "Message with custom fields",
+        extra={"taskName": "Task-123", "user_id": 42, "component": "API"},
+    )
+
     # Example of how error handling would look in real code:
     # try:
     #    response = httpx.get("https://example.com/api")
     # except httpx.ConnectError as e:
     #      logging.getLogger("httpx.test").error(f"HTTPX connect error: {e}") # this will use root logger formatting
-    
-    print(f"Test logs generated. Check console output and '{log_file_env}' if configured.")
+
+    print(
+        f"Test logs generated. Check console output and '{log_file_env}' if configured."
+    )
 
 
 if __name__ == "__main__":
     # Example of using the logging utility
     log_file_env = os.environ.get("LEGION_LOG_FILE", "logs/legion.log")
-    logger = setup_legion_logging(log_level_str="DEBUG", log_to_console=True, log_file_path=log_file_env)
+    logger = setup_legion_logging(
+        log_level_str="DEBUG", log_to_console=True, log_file_path=log_file_env
+    )
     _test_logging()

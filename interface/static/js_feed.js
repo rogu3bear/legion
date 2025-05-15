@@ -20,4 +20,4 @@
     if (window.WebSocket) {
         startWebSocket();
     }
-})(); 
+})();

@@ -43,7 +43,8 @@ jobs:
         env:
           GENERAL_CHANNEL_ID: '0'
           AGENT_FEED_CHANNEL_ID: '0'
-          ORCHESTRATOR_API_URL: 'http://localhost:8000'
+          PORT_ALLOCATOR_WEB: 8000
+          ORCHESTRATOR_API_URL: 'http://localhost:${{ env.PORT_ALLOCATOR_WEB || 8000 }}'
         run: |
           bash scripts/activate_once.sh
           mkdir -p scripts/logs

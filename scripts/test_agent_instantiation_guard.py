@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 import unittest
-import libcst as cst
-from pathlib import Path
-import tempfile
-import shutil
-import os
 from argparse import Namespace
+
+import libcst as cst
 
 # Assuming the codemod script is saved as agent_instantiation_guard.py
 # Adjust the import path if necessary
 from scripts.agent_instantiation_guard import (
     AgentInstantiationCodemod,
+    CodemodContext,
     class_name_to_agent_key,
-    CodemodContext
 )
+
 
 # Helper to run the codemod on a string
 def run_codemod_on_string(source_code, apply_fixes=False):
     args = Namespace(apply=apply_fixes)
-    context = CodemodContext(args=args, filename="<string>")
-    context.args.repo_root = Path.cwd() # Assume running from repo root for tests
+    context = CodemodContext(filename="<string>")
+    # Pass apply flag via codemod context scratch
+    context.scratch["apply"] = apply_fixes
+    # context.args.repo_root = Path.cwd()  # Assume running from repo root for tests
     codemod_instance = AgentInstantiationCodemod(context)
     input_tree = cst.parse_module(source_code)
     output_tree = codemod_instance.transform_module(input_tree)
@@ -27,7 +27,6 @@ def run_codemod_on_string(source_code, apply_fixes=False):
 
 
 class TestAgentInstantiationCodemod(unittest.TestCase):
-
     def test_class_name_to_agent_key(self):
         self.assertEqual(class_name_to_agent_key("ArchitectAgent"), "architect")
         self.assertEqual(class_name_to_agent_key("MetricsAgent"), "metrics")
@@ -70,16 +69,21 @@ def my_func():
         # We need to parse the expected code to compare CSTs for robustness,
         # but comparing code strings is simpler for this example.
         # Note: Whitespace and comments might differ slightly depending on CST formatting.
-        
+
         fixed_code, warnings = run_codemod_on_string(code, apply_fixes=True)
-        
+
         # Basic check: Assert the instantiations are replaced
         self.assertIn("orchestrator.load_agent('architect')", fixed_code)
         self.assertIn("orchestrator.load_agent('therapist')", fixed_code)
         # Check imports are removed (this is complex to assert perfectly on string level)
-        self.assertNotIn("from legion.agents.python.architect import ArchitectAgent", fixed_code)
-        self.assertNotIn("from legion.agents.python.therapist import TherapistAgent as TA", fixed_code)
-        self.assertEqual(len(warnings), 2) # Warnings should still be generated
+        self.assertNotIn(
+            "from legion.agents.python.architect import ArchitectAgent", fixed_code
+        )
+        self.assertNotIn(
+            "from legion.agents.python.therapist import TherapistAgent as TA",
+            fixed_code,
+        )
+        self.assertEqual(len(warnings), 2)  # Warnings should still be generated
 
     def test_skip_orchestrator_file(self):
         # Simulate running on the orchestrator file
@@ -91,16 +95,16 @@ class Orchestrator:
         # This instantiation should NOT be flagged or changed
         agent = ArchitectAgent(self, None)
 """
-        args = Namespace(apply=True) # Try applying fixes
+        args = Namespace(apply=True)  # Try applying fixes
         # Simulate the context having the orchestrator path
-        context = CodemodContext(args=args, filename="legion/orchestrator.py") 
-        context.args.repo_root = Path.cwd()
+        context = CodemodContext(filename="legion/orchestrator.py")
+        # context.args.repo_root = Path.cwd()
         codemod_instance = AgentInstantiationCodemod(context)
         input_tree = cst.parse_module(code)
         output_tree = codemod_instance.transform_module(input_tree)
-        
-        self.assertEqual(output_tree.code, code) # Code should be unchanged
-        self.assertEqual(len(codemod_instance.warnings), 0) # No warnings
+
+        self.assertEqual(output_tree.code, code)  # Code should be unchanged
+        self.assertEqual(len(codemod_instance.warnings), 0)  # No warnings
 
     def test_no_change_if_no_agents(self):
         code = """
@@ -123,10 +127,12 @@ y = ArchitectAgent()
 """
         fixed_code, warnings = run_codemod_on_string(code, apply_fixes=True)
         self.assertIn("from other.module import SomeClass", fixed_code)
-        self.assertNotIn("from legion.agents.python.architect import ArchitectAgent", fixed_code)
+        self.assertNotIn(
+            "from legion.agents.python.architect import ArchitectAgent", fixed_code
+        )
         self.assertIn("y = orchestrator.load_agent('architect')", fixed_code)
         self.assertEqual(len(warnings), 1)
 
 
-if __name__ == '__main__':
-    unittest.main() 
+if __name__ == "__main__":
+    unittest.main()

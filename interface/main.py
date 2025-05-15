@@ -27,8 +27,34 @@ BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
+# Include API routers
+from interface.api.v1.endpoints import (
+    agents_router,
+    auth_router,
+    login_router,
+    memory_router,
+    system_router,
+    tasks_router,
+)
+
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
+app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
+app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
+app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
+app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
+
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []
+
+
+# Create database tables on startup
+@app.on_event("startup")
+def on_startup():
+    # Import Base and engine to initialize tables
+    from interface.db.base import Base, engine
+
+    Base.metadata.create_all(bind=engine)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

@@ -1,22 +1,25 @@
 """Integration tests for the Orchestrator dispatch message flow."""
 
-import pytest
 import json
 import time
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
-from legion.orchestrator import Orchestrator
-from legion.core.state import StateManager
+import pytest
+
 from legion.agents.python import EchoAgent
-from legion.core.di_container import container, ILLMClient, IStateManager
+from legion.core.di_container import ILLMClient, IStateManager, container
+from legion.core.state import StateManager
+from legion.orchestrator import Orchestrator
+
 
 # Mock LLM Client
 class MockLLMClient:
     async def call(self, messages: list, **kwargs) -> str:
         return "Mock LLM Response"
+
     def get_embedding(self, text: str) -> list[float]:
         return [0.1] * 1536
+
 
 @pytest.fixture
 def test_env(tmp_path):
@@ -29,13 +32,11 @@ def test_env(tmp_path):
     # Mock the LLM Client
     original_llm_client = container.get(ILLMClient)
     container.register_instance(ILLMClient, MockLLMClient())
-    yield {
-        "state_dir": state_dir,
-        "state_manager": container.get(IStateManager)
-    }
+    yield {"state_dir": state_dir, "state_manager": container.get(IStateManager)}
     # Restore original container state
     container.register_instance(IStateManager, original_state_manager)
     container.register_instance(ILLMClient, original_llm_client)
+
 
 @pytest.mark.asyncio
 async def test_dispatch_message_integration(test_env, monkeypatch):
@@ -44,7 +45,7 @@ async def test_dispatch_message_integration(test_env, monkeypatch):
     # Ensure EchoAgent is available for testing
     if "echo_agent" not in Orchestrator.CLASS_MAP:
         Orchestrator.CLASS_MAP["echo_agent"] = EchoAgent
-    
+
     # Mock post_to_discord to prevent actual Discord calls
     mock_post = AsyncMock()
     monkeypatch.setattr(EchoAgent, "post_to_discord", mock_post, raising=False)
@@ -59,10 +60,7 @@ async def test_dispatch_message_integration(test_env, monkeypatch):
     timestamp = time.time()
 
     reply = await orchestrator.dispatch_message(
-        agent_name=agent_name,
-        content=content,
-        author=author,
-        timestamp=str(timestamp)
+        agent_name=agent_name, content=content, author=author, timestamp=str(timestamp)
     )
 
     # 1. Assert correct reply from EchoAgent
@@ -75,17 +73,19 @@ async def test_dispatch_message_integration(test_env, monkeypatch):
     log_file = test_env["state_dir"] / "tasks.jsonl"
     assert log_file.exists()
     log_entries = []
-    with open(log_file, "r") as f:
+    with open(log_file) as f:
         for line in f:
             log_entries.append(json.loads(line))
-    
-    assert len(log_entries) >= 4 # dispatch, validated, response, telemetry
+
+    assert len(log_entries) >= 4  # dispatch, validated, response, telemetry
 
     event_types = [entry["type"] for entry in log_entries]
     assert "dispatch" in event_types
     assert "validated" in event_types
     assert "response" in event_types
-    assert "llm_latency" in event_types # EchoAgent doesn't call LLM, but handle_message might log 0
+    assert (
+        "llm_latency" in event_types
+    )  # EchoAgent doesn't call LLM, but handle_message might log 0
     assert "dispatch_duration" in event_types
 
     # Check dispatch event details
@@ -103,4 +103,4 @@ async def test_dispatch_message_integration(test_env, monkeypatch):
     duration_event = next(e for e in log_entries if e["type"] == "dispatch_duration")
     assert duration_event["agent"] == agent_name
     assert duration_event["latency"] > 0
-    assert duration_event["event"] == "dispatch_message" 
+    assert duration_event["event"] == "dispatch_message"

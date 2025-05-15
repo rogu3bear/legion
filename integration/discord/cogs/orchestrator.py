@@ -150,8 +150,12 @@ class OrchestratorCog(commands.Cog):
     @app_commands.command(
         name="update_config", description="Update a configuration for an agent."
     )
-    @app_commands.describe(agent_id="ID of the agent", key="Configuration key", value="New value")
-    async def update_config(self, interaction: discord.Interaction, agent_id: str, key: str, value: str):
+    @app_commands.describe(
+        agent_id="ID of the agent", key="Configuration key", value="New value"
+    )
+    async def update_config(
+        self, interaction: discord.Interaction, agent_id: str, key: str, value: str
+    ):
         agents = interaction.client.orchestrator._agent_objects
         if agent_id not in agents:
             await interaction.response.send_message(
@@ -177,8 +181,8 @@ class OrchestratorCog(commands.Cog):
                 "user": interaction.user.id,
                 "channel": interaction.channel_id,
                 "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-                "details": f"Updated {key} to {value}"
-            }
+                "details": f"Updated {key} to {value}",
+            },
         )
 
 

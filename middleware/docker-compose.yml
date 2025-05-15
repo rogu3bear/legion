@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  middleware:
+    build: .
+    env_file:
+      - .env
+      - ./scripts/ports.env
+    ports:
+      - "${SERVICE_PORT:-20010}:${SERVICE_PORT:-20010}"
+    environment:
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prom
+    depends_on:
+      - chroma
+
+  chroma:
+    image: 'chromadb/chroma:latest'
+    ports:
+      - "${CHROMA_PORT:-20032}:8000"

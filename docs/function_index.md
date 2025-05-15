@@ -75,4 +75,4 @@ The following methods lack docstrings or have unclear intent:
 
 - Consolidate all low‑level helpers (`network`, `indexing`, `prompt_builder`) under `legion/core/utils.py` for clarity.
 - Rename ambiguous orchestrator internals (`_get_channel_id`, `loop`) to more descriptive names.
-- Consider grouping agent testing stubs (`register_test_agents`) into a separate testing utility module. 
+- Consider grouping agent testing stubs (`register_test_agents`) into a separate testing utility module.

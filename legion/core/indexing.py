@@ -1,8 +1,8 @@
 """Indexing utilities for Legion."""
 
+import logging
 import re
 from typing import Dict, List
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,10 @@ def placeholder_indexing(docs: List[Dict], field: str = "text") -> Dict[str, Lis
     Build a simple inverted index for a list of docs.
     Returns a dict: word -> list of doc indices.
     """
-    logger.info("Building simple inverted index", extra={"num_docs": len(docs), "field": field})
-    index = {}
+    logger.info(
+        "Building simple inverted index", extra={"num_docs": len(docs), "field": field}
+    )
+    index: Dict[str, List[int]] = {}
     for i, doc in enumerate(docs):
         text = doc.get(field, "")
         words = set(re.findall(r"\w+", text.lower()))

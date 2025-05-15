@@ -28,7 +28,7 @@ def test_orchestrator_duplicate_lock(tmp_path, monkeypatch):
     with pytest.raises(ExitCalled):
         Orchestrator(pid_file=str(pid_path))
     # PID file should still contain the fake PID
-    with open(pid_path, "r") as f:
+    with open(pid_path) as f:
         assert f.read().strip() == "12345"
     # Release lock and check file is removed
     orch1._release_lock()

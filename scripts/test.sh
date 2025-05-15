@@ -95,4 +95,4 @@ echo "[INFO] Cleaning up..." | tee -a "$LOG_FILE"
 kill $BOT_PID
 
 echo "[SUCCESS] All tests completed successfully" | tee -a "$LOG_FILE"
-exit 0 
+exit 0

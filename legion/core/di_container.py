@@ -2,9 +2,10 @@
 
 from typing import Any, Dict, Type, TypeVar
 
-from legion.core.interfaces import ILLMClient, IStateManager, IMemoryManager
+from legion.core.interfaces import ILLMClient, IMemoryManager, IStateManager
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class DIContainer:
     """A simple dependency injection container for managing service instances."""
@@ -29,32 +30,39 @@ class DIContainer:
             instance = self._factories[service_type]()
             self._instances[service_type] = instance
             return instance
-        raise KeyError(f"Service {service_type.__name__} not registered in DI container")
+        raise KeyError(
+            f"Service {service_type.__name__} not registered in DI container"
+        )
 
     def clear(self) -> None:
         """Clear all registered instances and factories (useful for tests)."""
         self._instances.clear()
         self._factories.clear()
 
+
 # Global container instance for convenience
 container = DIContainer()
+
 
 # Helper functions for common services
 def get_llm_client() -> ILLMClient:
     """Get the registered LLM client."""
     return container.get(ILLMClient)
 
+
 def get_state_manager() -> IStateManager:
     """Get the registered state manager."""
     return container.get(IStateManager)
 
+
 def get_memory_manager() -> IMemoryManager:
     """Get the registered memory manager."""
     return container.get(IMemoryManager)
+
 
 # Default service registrations
 from legion.core.llm_client import LLMClient
 from legion.core.state import StateManager
 
 container.register_factory(ILLMClient, LLMClient)
-container.register_factory(IStateManager, StateManager) 
+container.register_factory(IStateManager, StateManager)

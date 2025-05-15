@@ -1,6 +1,5 @@
+import json
 import os
-from datetime import datetime, timedelta, timezone
-from decimal import ROUND_HALF_UP, Decimal
 
 from legion.agents.base import BaseAgent
 
@@ -24,15 +23,19 @@ class ArchitectAgent(BaseAgent):
             config_repr = f"Error getting config repr: {e}"
         self.logger.debug(f"[ARCHITECT_INIT_DEBUG] self.config = {config_repr}")
         # --- END TEMP DEBUG LOGGING ---
-        # Determine repository path: prefer config entry for key without suffix, fallback to config key with suffix '_agent'
-        if "repo_path" in self.config and self.config.get("repo_path"):
-            self.repo_path = self.config.get("repo_path")
-        else:
-            agent_key = f"{self.name}_agent"
-            # fallback to orchestrator.config for agent_key
-            self.repo_path = self.orchestrator.config.get(agent_key, {}).get(
-                "repo_path", "."
-            )
+        # Determine repository path; safely handle missing config or orchestrator
+        try:
+            if isinstance(self.config, dict) and self.config.get("repo_path"):
+                self.repo_path = self.config["repo_path"]
+            else:
+                agent_key = f"{self.name}_agent"
+                self.repo_path = (
+                    getattr(self.orchestrator, "config", {})
+                    .get(agent_key, {})
+                    .get("repo_path", ".")
+                )
+        except Exception:
+            self.repo_path = "."
         self.log_paths = []
         self.set_log_paths()
 
@@ -81,145 +84,79 @@ class ArchitectAgent(BaseAgent):
 
         return list_files(self.repo_path)
 
-    def set_log_paths(self):
-        """Set paths to log files to monitor."""
-        log_dir = os.path.join(self.repo_path, "logs")
-        if os.path.exists(log_dir):
-            self.log_paths = [
-                os.path.join(log_dir, f)
-                for f in os.listdir(log_dir)
-                if f.endswith(".log")
-            ]
+    def set_log_paths(self, log_path=None, report_path=None):
+        """Set paths to task log and report log for reading logs and metrics."""
+        # Task log path
+        if log_path:
+            self.task_log_path = log_path
+        else:
+            self.task_log_path = os.path.join(self.repo_path, "logs", "task_log.jsonl")
+        # Report (metrics) log path
+        if report_path:
+            self.report_path = report_path
+        else:
+            self.report_path = os.path.join(
+                self.repo_path, "logs", "llm_connector_test.log"
+            )
 
-    def read_logs(self, hours=24):
-        """Read recent logs within specified hours."""
-        # Use timezone aware datetime for cutoff
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
-        logs = []
-
-        # --- TEMP DEBUG LOGGING ---
-        self.logger.debug(f"[READ_LOGS_DEBUG] Cutoff time: {cutoff.isoformat()}")
-        self.logger.debug(
-            f"[READ_LOGS_DEBUG] Log paths being checked: {self.log_paths}"
-        )
-        if not self.log_paths:
-            self.logger.warning("[READ_LOGS_DEBUG] No log paths found!")
-        # --- END TEMP DEBUG LOGGING ---
-
-        for path in self.log_paths:
-            # --- TEMP DEBUG LOGGING ---
-            self.logger.debug(f"[READ_LOGS_DEBUG] Checking path: {path}")
-            if not os.path.exists(path):
-                self.logger.warning(
-                    f"[READ_LOGS_DEBUG] Log path does not exist: {path}"
-                )
-                continue
-            # --- END TEMP DEBUG LOGGING ---
-            try:
-                with open(path) as f:
-                    for line_num, line in enumerate(f, 1):
-                        # --- TEMP DEBUG LOGGING ---
-                        line_processed = False
-                        # --- END TEMP DEBUG LOGGING ---
-                        try:
-                            # Assume ISO format timestamp at start of line
-                            ts_str = line[
-                                :26
-                            ]  # Check length before slicing? No, handle ValueError
-                            ts = datetime.fromisoformat(ts_str)
-                            # Ensure ts is offset-aware for comparison
-                            ts_aware = ts
-                            if ts.tzinfo is None:
-                                # Make naive datetime timezone-aware (assuming UTC)
-                                ts_aware = ts.replace(tzinfo=timezone.utc)
-
-                            # --- TEMP DEBUG LOGGING ---
-                            is_after_cutoff = ts_aware > cutoff
-                            self.logger.debug(
-                                f"[READ_LOGS_DEBUG] Line {line_num}: Timestamp='{ts_aware.isoformat()}', Cutoff='{cutoff.isoformat()}', AfterCutoff={is_after_cutoff}"
-                            )
-                            # --- END TEMP DEBUG LOGGING ---
-
-                            if is_after_cutoff:
-                                logs.append(line.strip())
-                                # --- TEMP DEBUG LOGGING ---
-                                line_processed = True
-                                # --- END TEMP DEBUG LOGGING ---
-                        except ValueError:
-                            # --- TEMP DEBUG LOGGING ---
-                            self.logger.debug(
-                                f"[READ_LOGS_DEBUG] Line {line_num}: Skipping line, ValueError parsing timestamp '{line[:26]}...'"
-                            )
-                            # --- END TEMP DEBUG LOGGING ---
-                            continue  # Skip lines without valid timestamp prefix
-                        # --- TEMP DEBUG LOGGING ---
-                        finally:
-                            if not line_processed:
-                                self.logger.debug(
-                                    f"[READ_LOGS_DEBUG] Line {line_num}: Did not meet cutoff condition."
-                                )
-                        # --- END TEMP DEBUG LOGGING ---
-
-            except Exception as e:
-                self.logger.error(f"Error reading log {path}: {e}")
-
-        # --- TEMP DEBUG LOGGING ---
-        self.logger.debug(
-            f"[READ_LOGS_DEBUG] Finished reading logs. Found {len(logs)} entries."
-        )
-        # --- END TEMP DEBUG LOGGING ---
-        return logs
-
-    def extract_llm_metrics(self, logs):
-        """Extract LLM-related metrics from logs."""
-        metrics = {"total_calls": 0, "avg_latency": 0, "error_rate": 0}
-
-        latencies = []
-        errors = 0
-
-        for log in logs:
-            if "llm_call" in log:
-                metrics["total_calls"] += 1
-                # Extract latency if present
-                if "latency=" in log:
+    def read_logs(self):
+        """Read JSONL task log entries."""
+        entries = []
+        try:
+            with open(self.task_log_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
                     try:
-                        latency = float(log.split("latency=")[1].split()[0])
-                        latencies.append(latency)
-                    except:
-                        pass
-            if "llm_error" in log:
-                errors += 1
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        except Exception:
+            pass
+        return entries
 
-        if latencies:
-            metrics["avg_latency"] = sum(latencies) / len(latencies)
-        if metrics["total_calls"]:
-            metrics["error_rate"] = errors / metrics["total_calls"]
+    def extract_llm_metrics(self):
+        """Extract LLM-related metrics from report file."""
+        latency = None
+        errors = None
+        try:
+            with open(self.report_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("latency:"):
+                        val = line.split("latency:")[1].strip()
+                        if val.endswith("ms"):
+                            val = val[:-2]
+                        try:
+                            latency = float(val)
+                        except ValueError:
+                            latency = None
+                    elif line.startswith("errors:"):
+                        try:
+                            errors = int(line.split("errors:")[1].strip())
+                        except ValueError:
+                            errors = None
+        except Exception:
+            pass
+        return {"latency": latency, "errors": errors}
 
-        return metrics
-
-    async def compose_summary(self):
+    def compose_summary(self):
         """Compose summary of recent task logs and LLM metrics."""
-        logs = self.read_logs(hours=24)
-        metrics = self.extract_llm_metrics(logs)
-
-        # Round average latency to 2 decimal places using half-up rounding
-        avg_latency = Decimal(str(metrics["avg_latency"])).quantize(
-            Decimal("0.00"), rounding=ROUND_HALF_UP
-        )
-        summary = [
-            "System Health Summary",
-            "-------------------",
-            f"Total LLM calls: {metrics['total_calls']}",
-            f"Average latency: {avg_latency}s",
-            f"Error rate: {metrics['error_rate']:.2%}",
-            "\nRecent Logs:",
-            "------------",
-        ]
-
-        # Add last 10 logs
-        summary.extend(logs[-10:])
-
-        return "\n".join(summary)
+        logs = self.read_logs()
+        metrics = self.extract_llm_metrics()
+        lines = []
+        lines.append("**Recent Task Log:**")
+        if logs:
+            for entry in logs:
+                lines.append(f"- {entry.get('type')}: {entry.get('content')}")
+        else:
+            lines.append("No recent log entries found.")
+        lines.append("")
+        lines.append("**LLM Metrics:**")
+        lines.append(f"- latency: {metrics.get('latency')}")
+        lines.append(f"- errors: {metrics.get('errors')}")
+        return "\n".join(lines)
 
     async def retrieve_feedback(self, query, k=5):
         """Retrieve relevant feedback memories based on embeddings."""

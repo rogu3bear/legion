@@ -58,4 +58,4 @@ channels:
       - role: Operator
         allow: [VIEW_CHANNEL, SEND_MESSAGES]
       - role: Viewer
-        allow: [VIEW_CHANNEL] 
+        allow: [VIEW_CHANNEL]

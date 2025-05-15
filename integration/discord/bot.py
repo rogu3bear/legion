@@ -10,8 +10,8 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from legion.orchestrator import Orchestrator, ProcessRunningError
 from legion.core.logging_config import setup_logging
+from legion.orchestrator import Orchestrator, ProcessRunningError
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -57,9 +57,9 @@ class LegionBot(commands.Bot):
         self.agent_tasks = []
         self.orchestrator = orchestrator
         self._shutdown_event = asyncio.Event()
-        self.logger = logging.getLogger('discord.bot')
+        self.logger = logging.getLogger("discord.bot")
         setup_logging()  # Ensure logging is configured
-        self.logger.info('Discord bot initialized', extra={'bot_status': 'initialized'})
+        self.logger.info("Discord bot initialized", extra={"bot_status": "initialized"})
 
     async def setup_hook(self):
         # Try to connect to existing orchestrator or create new one
@@ -76,16 +76,20 @@ class LegionBot(commands.Bot):
 
         # Add cogs
         from integration.discord.cogs.orchestrator import OrchestratorCog
+
         await self.add_cog(OrchestratorCog(self, self.orchestrator))
 
         from legion.discord.commands import LegionCommandCog
+
         await self.add_cog(LegionCommandCog(self, self.orchestrator))
 
         await self.tree.sync()
 
         # Set up signal handlers
         for sig in (signal.SIGINT, signal.SIGTERM):
-            self.loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(self._handle_signal(s)))
+            self.loop.add_signal_handler(
+                sig, lambda s=sig: asyncio.create_task(self._handle_signal(s))
+            )
 
     async def _handle_signal(self, sig):
         """Handle shutdown signals gracefully."""
@@ -101,14 +105,17 @@ class LegionBot(commands.Bot):
 
     async def _send_agent_message(self, agent, payload):
         """Send a message to an agent's Discord channel."""
-        channel_id = self.orchestrator.agent_channel_ids.get(agent)
-        if not channel_id:
-            logger.warning(f"No channel ID found for agent {agent}")
-            return
-
+        # Determine channel ID if orchestrator provides it
+        channel_id = None
+        if getattr(self, "orchestrator", None) and hasattr(
+            self.orchestrator, "agent_channel_ids"
+        ):
+            channel_id = self.orchestrator.agent_channel_ids.get(agent)
+        # Attempt to get channel regardless of channel_id being None
         channel = self.get_channel(channel_id)
         if channel:
             try:
+                # Properly await the async call to send
                 await channel.send(payload)
             except Exception as e:
                 logger.error(f"Failed to send message to {agent}'s channel: {e}")
@@ -118,23 +125,29 @@ class LegionBot(commands.Bot):
 
         # Announce in agent-feed or general channel with agent list
         emoji_map = {
-            'architect_agent': '🏗️',
-            'metrics_agent': '📊',
-            'ux_designer_agent': '🎨',
-            'therapist_agent': '🗣️',
-            'ping_agent': '📶',
-            'echo_agent': '🔁',
-            'healthcheck_agent': '✅',
+            "architect_agent": "🏗️",
+            "metrics_agent": "📊",
+            "ux_designer_agent": "🎨",
+            "therapist_agent": "🗣️",
+            "ping_agent": "📶",
+            "echo_agent": "🔁",
+            "healthcheck_agent": "✅",
         }
 
         agent_names = list(self.orchestrator._agent_objects.keys())
-        agent_list = ", ".join(f"{emoji_map.get(name, '')} {name}" for name in agent_names)
+        agent_list = ", ".join(
+            f"{emoji_map.get(name, '')} {name}" for name in agent_names
+        )
         announcement = f"🟢 Legion bot is online! Available agents:\n{agent_list}"
 
         # Prefer agent-feed channel, fallback to general
-        feed_channel_id = self.orchestrator.agent_channel_ids.get('agent_feed_agent') or int(os.getenv('AGENT_FEED_CHANNEL_ID', 0))
-        general_channel_id = int(os.getenv('GENERAL_CHANNEL_ID', 0))
-        channel = self.get_channel(feed_channel_id) or self.get_channel(general_channel_id)
+        feed_channel_id = self.orchestrator.agent_channel_ids.get(
+            "agent_feed_agent"
+        ) or int(os.getenv("AGENT_FEED_CHANNEL_ID", 0))
+        general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID", 0))
+        channel = self.get_channel(feed_channel_id) or self.get_channel(
+            general_channel_id
+        )
 
         if channel:
             await channel.send(announcement)
@@ -143,9 +156,9 @@ class LegionBot(commands.Bot):
 
         # Patch all agent objects with the live client and correct channel IDs
         for name, agent_obj in self.orchestrator._agent_objects.items():
-            if hasattr(agent_obj, 'client'):
+            if hasattr(agent_obj, "client"):
                 agent_obj.client = self
-            if hasattr(agent_obj, 'channel_id'):
+            if hasattr(agent_obj, "channel_id"):
                 agent_obj.channel_id = self.orchestrator.agent_channel_ids.get(name, 0)
 
         # Schedule maintenance tasks
@@ -183,7 +196,9 @@ class LegionBot(commands.Bot):
         async with message_processing_lock:
             try:
                 # Map channel name to agent name (1:1)
-                channel_to_agent = {v: k for k, v in self.orchestrator.agent_channel_ids.items()}
+                channel_to_agent = {
+                    v: k for k, v in self.orchestrator.agent_channel_ids.items()
+                }
                 agent_name = channel_to_agent.get(message.channel.name)
 
                 if not agent_name:
@@ -193,7 +208,7 @@ class LegionBot(commands.Bot):
                     agent_name=agent_name,
                     content=message.content,
                     author=message.author.name,
-                    timestamp=message.created_at.isoformat()
+                    timestamp=message.created_at.isoformat(),
                 )
 
                 if response:
@@ -201,7 +216,9 @@ class LegionBot(commands.Bot):
 
             except Exception as e:
                 logger.error(f"Error processing message: {e}")
-                await message.channel.send("⚠️ An error occurred while processing your message")
+                await message.channel.send(
+                    "⚠️ An error occurred while processing your message"
+                )
 
 
 # New helper for self-assessment rounds
@@ -216,7 +233,7 @@ async def run_self_assess_all(orchestrator):
 
 async def main():
     """Main entry point for the Discord bot."""
-    token = os.getenv('DISCORD_TOKEN')
+    token = os.getenv("DISCORD_TOKEN")
     if not token:
         logger.error("DISCORD_TOKEN not set in environment or .env file")
         sys.exit(1)

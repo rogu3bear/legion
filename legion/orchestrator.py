@@ -35,6 +35,7 @@ from legion.agents.python import (
 )
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.middleware import run_middleware_pipeline
+from legion.ports import get_port  # Added for prometheus port replacement
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
@@ -694,7 +695,22 @@ class Orchestrator:
             config_path = item  # Use the Path object directly
             try:
                 with config_path.open() as f:
-                    config = yaml.safe_load(f)
+                    content = f.read()
+
+                # Replace placeholder for Prometheus port
+                prometheus_port_val = get_port("prometheus")
+                if prometheus_port_val is not None:
+                    content = content.replace(
+                        "{{LEGION_PROMETHEUS_PORT}}", str(prometheus_port_val)
+                    )
+                else:
+                    # Handle case where prometheus port is not found, e.g., log a warning or use a default
+                    # For now, if placeholder is present and port not found, it might cause YAML load error or be ignored
+                    logger.warning(
+                        "Prometheus port not found via get_port. Placeholder '{{LEGION_PROMETHEUS_PORT}}' may remain."
+                    )
+
+                config = yaml.safe_load(content)
 
                 # Check if file contains multiple agent definitions (dictionary)
                 if isinstance(config, dict):

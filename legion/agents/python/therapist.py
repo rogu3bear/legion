@@ -11,7 +11,14 @@ class TherapistAgent(BaseAgent):
     """
 
     def __init__(self, orchestrator):
-        super().__init__(orchestrator)
+        # Determine configuration from orchestrator if available, else empty
+        config = getattr(orchestrator, "config", {}) or {}
+        # Use default agent name
+        name = "therapist_agent"
+        # Initialize BaseAgent with name and config
+        super().__init__(name, config)
+        # Retain reference to orchestrator
+        self.orchestrator = orchestrator
 
     def set_log_paths(self, log_path=None):
         self._log_path = log_path

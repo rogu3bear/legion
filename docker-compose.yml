@@ -23,16 +23,22 @@ services:
     ports:
       - "${PORT_ALLOCATOR_DEV_FRONTEND}:8000"
     environment:
-      # Pass environment variables from .env file or define here
       - PYTHONUNBUFFERED=1
+      - PORT_ALLOCATOR_DEV_FRONTEND=8000
       # Ensure ZMQ communication works if orchestrator is outside docker
       # - ORCHESTRATOR_ADDRESS=tcp://host.docker.internal:5555 # Example for Docker Desktop
       # Add other necessary env vars
     depends_on:
-      # Add dependencies like a database service if needed
-      # - db
+      - chroma
     networks:
       - legion-net
+
+  chroma:
+    image: 'chromadb/chroma:latest'
+    ports:
+      - "${CHROMA_PORT:-20032}:8000"
+    environment:
+      - CHROMA_PORT=20032
 
 # Define networks
 networks:

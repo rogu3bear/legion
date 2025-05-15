@@ -1,7 +1,8 @@
-import sys
 import json
-import pytest
+import sys
 from unittest.mock import MagicMock
+
+import pytest
 
 import legion.cli as cli
 
@@ -11,16 +12,19 @@ class FakeOrchestrator:
         # Simulate loaded config
         self.config = {
             "architect": {"class": "ArchitectAgent"},
-            "echo": {"class": "EchoAgent"}
+            "echo": {"class": "EchoAgent"},
         }
         # Simulate port allocations
         self.port_allocator = MagicMock()
         self.port_allocator._allocations = {"architect": 7000, "echo": 7001}
-        self.port_allocator.get_all_resolved_ports = lambda: self.port_allocator._allocations
+        self.port_allocator.get_all_resolved_ports = (
+            lambda: self.port_allocator._allocations
+        )
 
     def load_agent(self, key):
         if key not in self.config:
             from legion.orchestrator import AgentLoadError
+
             raise AgentLoadError(f"Unknown agent key {key}")
         return object()
 
@@ -46,10 +50,13 @@ def test_list_agents(capsys):
     assert "echo\tEchoAgent" in lines
 
 
-@pytest.mark.parametrize("key,msg", [
-    ("architect", None),
-    ("echo", "hello"),
-])
+@pytest.mark.parametrize(
+    "key,msg",
+    [
+        ("architect", None),
+        ("echo", "hello"),
+    ],
+)
 def test_run_agent_success(capsys, key, msg):
     args = ["run-agent", key] + (["-m", msg] if msg else [])
     with pytest.raises(SystemExit) as exc:
@@ -99,11 +106,13 @@ def test_ports(capsys):
 def test_version(capsys, monkeypatch):
     # Monkeypatch version and git
     monkeypatch.setattr(cli, "version", lambda pkg: "1.2.3")
-    monkeypatch.setattr(cli.subprocess, "check_output", lambda *args, **kwargs: b"abcdef\n")
+    monkeypatch.setattr(
+        cli.subprocess, "check_output", lambda *args, **kwargs: b"abcdef\n"
+    )
     with pytest.raises(SystemExit) as exc:
         sys.argv = ["legion", "version"]
         cli.main()
     code = exc.value.code
     out = capsys.readouterr().out.strip()
     assert code == 0
-    assert out == "1.2.3+abcdef" 
+    assert out == "1.2.3+abcdef"

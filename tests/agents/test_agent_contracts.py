@@ -1,7 +1,7 @@
 import pytest
 
-from legion.core.prompt_builder import PromptBuilder
 from legion.agents.python.architect import ArchitectAgent
+from legion.core.prompt_builder import PromptBuilder
 
 
 class DummyOrch:

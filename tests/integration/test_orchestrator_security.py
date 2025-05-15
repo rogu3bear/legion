@@ -1,8 +1,9 @@
 """Security tests for Orchestrator: ensure dangerous commands are rejected."""
 
 import pytest
+
 from legion.orchestrator import Orchestrator
-from legion.agents.python import TherapistAgent
+
 
 @pytest.mark.asyncio
 async def test_orchestrator_rejects_dangerous_command(monkeypatch):
@@ -18,4 +19,6 @@ async def test_orchestrator_rejects_dangerous_command(monkeypatch):
         "therapist_agent", content, author=author, timestamp=timestamp
     )
     # Should not process, should return a fallback or error
-    assert "not permitted" in reply or "can't process" in reply or "error" in reply.lower() 
+    assert (
+        "not permitted" in reply or "can't process" in reply or "error" in reply.lower()
+    )

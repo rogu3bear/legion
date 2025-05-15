@@ -1,12 +1,14 @@
 """Tests for network utilities."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 import requests
-from unittest.mock import patch, MagicMock
 
 from legion.core.utils.network import fetch_with_retries
 
-@patch('requests.get')
+
+@patch("requests.get")
 def test_fetch_with_retries_success(mock_get):
     """Test successful fetch after no retries."""
     mock_response = MagicMock(spec=requests.Response)
@@ -18,8 +20,9 @@ def test_fetch_with_retries_success(mock_get):
     assert response == mock_response
     mock_get.assert_called_once_with("http://example.com")
 
-@patch('requests.get')
-@patch('time.sleep', return_value=None) # Avoid actual sleep
+
+@patch("requests.get")
+@patch("time.sleep", return_value=None)  # Avoid actual sleep
 def test_fetch_with_retries_fail_then_success(mock_sleep, mock_get):
     """Test successful fetch after one retry."""
     mock_success_response = MagicMock(spec=requests.Response)
@@ -28,7 +31,7 @@ def test_fetch_with_retries_fail_then_success(mock_sleep, mock_get):
 
     mock_get.side_effect = [
         requests.exceptions.Timeout("Timeout"),
-        mock_success_response
+        mock_success_response,
     ]
 
     response = fetch_with_retries("http://example.com", retries=3, delay=0.1)
@@ -36,8 +39,9 @@ def test_fetch_with_retries_fail_then_success(mock_sleep, mock_get):
     assert mock_get.call_count == 2
     mock_sleep.assert_called_once_with(0.1)
 
-@patch('requests.get')
-@patch('time.sleep', return_value=None) # Avoid actual sleep
+
+@patch("requests.get")
+@patch("time.sleep", return_value=None)  # Avoid actual sleep
 def test_fetch_with_retries_all_fail(mock_sleep, mock_get):
     """Test fetch fails after all retries."""
     mock_get.side_effect = requests.exceptions.RequestException("Failed")
@@ -46,4 +50,4 @@ def test_fetch_with_retries_all_fail(mock_sleep, mock_get):
         fetch_with_retries("http://example.com", retries=3, delay=0.1)
 
     assert mock_get.call_count == 3
-    assert mock_sleep.call_count == 2 # Sleeps between retries
+    assert mock_sleep.call_count == 2  # Sleeps between retries

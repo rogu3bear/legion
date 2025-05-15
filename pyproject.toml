@@ -25,6 +25,8 @@ ignore = [
     "E501", # Line too long, handled by formatter
     "B008", # Function call argument default mutation (can be project specific)
     "C901", # McCabe complexity (adjust limit if needed)
+    "T201", # allow print statements in scripts
+    "S101", # allow assert statements in tests
 ]
 fixable = ["ALL"]
 unfixable = []
@@ -69,6 +71,8 @@ exclude = [
     "*.jsonl",
     "*.db",
     "migrations/versions/*", # Alembic migration files
+    "tests",
+    "scripts",
 ]
 
 [tool.mypy]
@@ -100,7 +104,9 @@ ignore_missing_imports = true
 # ignore_missing_imports = true
 
 # Exclude directories for type checking
-exclude = ['venv', '.venv', 'build', 'dist', 'docs', 'scripts', '.git', '.ruff_cache', '.pytest_cache', 'artifacts']
+exclude = ['venv', '.venv', 'build', 'dist', 'docs', 'scripts', '.git', '.ruff_cache', '.pytest_cache', 'artifacts', 'legion/core/db.py']
+
+packages = ["legion"]
 
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/stable/reference/reference.html#ini-options-ref

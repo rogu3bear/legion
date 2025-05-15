@@ -103,14 +103,15 @@ async def orchestrator_instance(mock_dependencies):
     def mock_load_agent_configs_side_effect(self_orch_param):
         self_orch_param.config = mock_agent_configs_dict
         return mock_agent_configs_dict
-    
+
     # Patch Orchestrator.load_agent_configs to use our side effect.
     # Patch CLASS_MAP in the orchestrator module to include MockAgent.
-    with patch.object(Orchestrator, 
-                    'load_agent_configs', 
-                    side_effect=mock_load_agent_configs_side_effect, 
-                    autospec=True), \
-         patch('legion.orchestrator.CLASS_MAP', {"MockAgent": MockAgent}):
+    with patch.object(
+        Orchestrator,
+        "load_agent_configs",
+        side_effect=mock_load_agent_configs_side_effect,
+        autospec=True,
+    ), patch("legion.orchestrator.CLASS_MAP", {"MockAgent": MockAgent}):
         # Initialize orchestrator. Inside __init__, our patched load_agent_configs will run,
         # setting self.config. Then, the agent instantiation loop will run using this
         # self.config and the patched CLASS_MAP.

@@ -15,4 +15,4 @@ version_pins:
   - openai: "^1.0"    # Placeholder, check requirements.txt
   - pyyaml: "^6.0"    # Placeholder, check requirements.txt
   - alembic: "^1.9"   # Placeholder, check requirements.txt
-  - bandit: "^1.7"    # Security linter 
+  - bandit: "^1.7"    # Security linter

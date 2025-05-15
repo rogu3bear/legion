@@ -57,4 +57,4 @@ echo "Use 'source scripts/activate_once.sh' to activate the virtual environment 
 echo "Run 'mypy legion/' and 'flake8 legion/' to check for validation issues."
 echo ""
 echo "To create a deterministic lock file, run: ./scripts/dev_setup.sh --lock"
-echo "To deactivate the virtual environment, run: deactivate" 
+echo "To deactivate the virtual environment, run: deactivate"

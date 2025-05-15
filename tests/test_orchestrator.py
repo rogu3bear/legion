@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import tempfile
+
 import pytest
 
 from legion.orchestrator import Orchestrator
@@ -11,9 +12,9 @@ def test_agent_channel_ids_not_empty():
     from legion.orchestrator import Orchestrator
 
     orchestrator = Orchestrator()
-    assert (
-        orchestrator.agent_channel_ids
-    ), "agent_channel_ids should not be empty after startup"
+    assert orchestrator.agent_channel_ids, (
+        "agent_channel_ids should not be empty after startup"
+    )
 
 
 def test_duplicate_startup_and_cleanup(monkeypatch, caplog):
@@ -67,16 +68,20 @@ def test_orchestrator_custom_dependencies():
     class DummyStateManager:
         def __init__(self):
             self.touched = False
+
         def log_task(self, task):
             self.touched = True
+
     class DummyLLMClient:
         def __init__(self):
             self.touched = False
             self.model = "dummy"
             self.default_kwargs = {}
+
         def generate(self, *a, **k):
             self.touched = True
             return "ok"
+
     dummy_state = DummyStateManager()
     dummy_llm = DummyLLMClient()
     orch = Orchestrator(state_manager=dummy_state, llm_client=dummy_llm)
@@ -95,11 +100,11 @@ async def test_orchestrator_agent_interaction():
     """Test interaction between orchestrator and multiple agents."""
     orchestrator = Orchestrator()
     orchestrator.register_test_agents()
-    
+
     # Simulate message dispatch to multiple agents
     response1 = await orchestrator.dispatch_message("TestAgent1", "Hello Agent 1")
     response2 = await orchestrator.dispatch_message("TestAgent2", "Hello Agent 2")
-    
+
     assert response1 is not None, "Orchestrator should return response from Agent 1"
     assert response2 is not None, "Orchestrator should return response from Agent 2"
     assert "Agent 1" in response1, "Response should mention Agent 1"
@@ -111,9 +116,11 @@ async def test_orchestrator_error_handling():
     """Test orchestrator's error handling for invalid agent or message."""
     orchestrator = Orchestrator()
     orchestrator.register_test_agents()
-    
+
     try:
         response = await orchestrator.dispatch_message("InvalidAgent", "Test message")
-        assert response is not None, "Orchestrator should handle invalid agent gracefully"
+        assert response is not None, (
+            "Orchestrator should handle invalid agent gracefully"
+        )
     except Exception as e:
-        pytest.fail(f"Orchestrator failed to handle error: {str(e)}")
+        pytest.fail(f"Orchestrator failed to handle error: {e!s}")

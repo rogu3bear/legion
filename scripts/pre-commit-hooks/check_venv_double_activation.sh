@@ -3,7 +3,7 @@
 # This can be symlinked to .git/hooks/pre-commit
 
 # Check if PS1 has multiple venv indicators
-if [[ "$PS1" == *"(venv) (venv)"* ]] || [[ "$PS1" == *"(.venv) (.venv)"* ]] || 
+if [[ "$PS1" == *"(venv) (venv)"* ]] || [[ "$PS1" == *"(.venv) (.venv)"* ]] ||
    [[ "$PS1" == *"((.venv"* ]] || [[ "$(echo "$PS1" | grep -o "venv" | wc -l)" -gt 1 ]]; then
     echo "ERROR: Double virtual environment activation detected!"
     echo "You have activated the virtual environment multiple times."

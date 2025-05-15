@@ -21,4 +21,4 @@ export PYTHONPATH="$(pwd)"
 
 # Start the orchestrator
 echo "[INFO] Starting Legion orchestrator..."
-exec python -m legion.orchestrator 
+exec python -m legion.orchestrator

@@ -35,7 +35,7 @@ Current development focus is on completing the web interface backend according t
    ```bash
    # Start Discord bot
    ./scripts/start_bot.sh
-   
+
    # Start web interface
    ./scripts/start_web.sh
    ```
@@ -88,4 +88,4 @@ python scripts/agent_instantiation_guard.py --apply legion/
 Use the `orchestrator.load_agent()` API to instantiate agents correctly.
 
 ## License
-All rights reserved. This codebase is proprietary and confidential. 
+All rights reserved. This codebase is proprietary and confidential.

@@ -17,6 +17,7 @@ PORT_ALLOCATOR_POSTGRES=5678
 INVALID_LINE
 PORT_ALLOCATOR_GRAFANA=INVALID_PORT_VALUE
 PORT_ALLOCATOR_WEB=8001
+PORT_ALLOCATOR_CHROMA=27777 # Test override for chroma
 """
 
 ENV_PORTS_CONTENT_EMPTY = """
@@ -53,6 +54,8 @@ def test_port_loading_with_valid_env_file(tmp_path):
         assert legion_ports.get_port("web") == 8001  # Overrides default 8000
         # Grafana had an invalid port value, should use default
         assert legion_ports.get_port("grafana") == legion_ports.DEFAULT_PORTS["grafana"]
+        # Chroma is in .env.ports, should use the override
+        assert legion_ports.get_port("chroma") == 27777
         # Prometheus was not in .env.ports, should use default
         assert (
             legion_ports.get_port("prometheus")
@@ -85,6 +88,9 @@ def test_port_loading_with_empty_env_file(tmp_path):
         )
         assert legion_ports.get_port("grafana") == legion_ports.DEFAULT_PORTS["grafana"]
         assert legion_ports.get_port("web") == legion_ports.DEFAULT_PORTS["web"]
+        assert (
+            legion_ports.get_port("chroma") == legion_ports.DEFAULT_PORTS["chroma"]
+        )  # Should use default
 
 
 def test_port_loading_no_env_file():
@@ -100,6 +106,9 @@ def test_port_loading_no_env_file():
             legion_ports.get_port("postgres") == legion_ports.DEFAULT_PORTS["postgres"]
         )
         assert legion_ports.get_port("web") == legion_ports.DEFAULT_PORTS["web"]
+        assert (
+            legion_ports.get_port("chroma") == legion_ports.DEFAULT_PORTS["chroma"]
+        )  # Should use default
 
 
 @patch.dict(os.environ, {"LEGION_DEBUG_PORTS": "true"})
@@ -107,7 +116,9 @@ def test_port_loading_no_env_file():
 def test_orchestrator_startup_logs_banner(mock_logger, tmp_path):
     """Test that orchestrator logs the port banner when LEGION_DEBUG_PORTS is true."""
     env_file = tmp_path / ".env.ports"
-    env_file.write_text("PORT_ALLOCATOR_REDIS=1111\nPORT_ALLOCATOR_WEB=2222")
+    env_file.write_text(
+        "PORT_ALLOCATOR_REDIS=1111\\nPORT_ALLOCATOR_WEB=2222\\nPORT_ALLOCATOR_CHROMA=3333"
+    )
 
     with patch.object(Orchestrator, "_acquire_lock"), patch.object(
         Orchestrator, "init_zmq_pub_server"
@@ -118,7 +129,12 @@ def test_orchestrator_startup_logs_banner(mock_logger, tmp_path):
 
     # Check if logger.info was called and if the banner is in the log messages
     banner_found = False
-    expected_substrings = ["[orchestrator] dynamic ports ->", "redis:1111", "web:2222"]
+    expected_substrings = [
+        "[orchestrator] dynamic ports ->",
+        "redis:1111",
+        "web:2222",
+        "chroma:3333",
+    ]
     for call_args in mock_logger.info.call_args_list:
         log_message = call_args[0][0]
         if all(sub in log_message for sub in expected_substrings):

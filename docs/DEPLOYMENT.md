@@ -54,4 +54,4 @@ Follows GitHub Flow principles [[Cite: GitHub Flow](https://docs.github.com/en/g
 4.  Consult this guide, `README.md`, and `architecture.md`.
 
 ---
-Submit PRs for documentation updates. Vague or incorrect docs will be rejected. 
+Submit PRs for documentation updates. Vague or incorrect docs will be rejected.
