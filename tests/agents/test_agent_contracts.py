@@ -7,6 +7,12 @@ from legion.agents.python.architect import ArchitectAgent
 class DummyOrch:
     agent_channel_ids = {"architect_agent": 1}
 
+    def __init__(self):
+        self.config = {"architect_agent": {"repo_path": "."}}
+
+    def __str__(self):
+        return "DummyOrch"
+
 
 @pytest.mark.asyncio
 async def test_prompt_builder_simple():
