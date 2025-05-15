@@ -417,7 +417,9 @@ class Orchestrator:
             # Schedule the shutdown coroutine to be run by the loop.
             # asyncio.create_task is generally preferred over ensure_future directly.
             # If self.shutdown() is async:
-            task = asyncio.create_task(self.shutdown(signal_name=signal.Signals(signum).name))
+            task = asyncio.create_task(
+                self.shutdown(signal_name=signal.Signals(signum).name)
+            )
             # Track the task if needed
             # self._background_tasks.add(task)
             # task.add_done_callback(self._background_tasks.discard)
@@ -614,7 +616,10 @@ class Orchestrator:
                 if isinstance(result, asyncio.CancelledError):
                     logger.info(f"{task_name} successfully cancelled.")
                 elif isinstance(result, Exception):
-                    logger.error(f"Exception in {task_name} during shutdown: {result}", exc_info=result)
+                    logger.error(
+                        f"Exception in {task_name} during shutdown: {result}",
+                        exc_info=result,
+                    )
                 else:
                     logger.info(f"{task_name} completed with result: {result}")
             logger.info("Finished awaiting ZMQ background tasks.")
@@ -2036,6 +2041,23 @@ class Orchestrator:
         }
         context = {**default_context, **kwargs}
         return context
+
+    # --- Therapist communication stubs ---------------------------------
+    def send_to_therapist(self, task_id: str, payload: dict) -> None:
+        """Queue a message for the Therapist agent."""
+        pass  # TODO: implement routing
+
+    def receive_from_therapist(self, message: dict) -> None:
+        """Handle Therapist → Orchestrator callbacks."""
+        pass  # TODO: integrate with dispatch pipeline
+
+    def agent_comm_router(self, msg: dict) -> None:
+        """Central router deciding which agent receives a message."""
+        pass  # TODO: unify dispatch rules
+
+    def call_directive(self, directive_name: str, **kwargs) -> None:
+        """Invoke a registered directive on an agent."""
+        pass  # TODO: directive registry hookup
 
 
 # Allow direct execution to start the orchestrator loop
