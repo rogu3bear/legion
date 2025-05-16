@@ -65,18 +65,10 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-    -   id: gen-env-ports
-        name: Regenerate .env.ports.example
-        entry: bash -c "python scripts/gen_env_ports.py legacy/ports.yaml > .env.ports.example"
-        language: system
-        # This hook modifies a file. If it changes .env.ports.example,
-        # the change needs to be staged (`git add .env.ports.example`) for the commit.
-        # CI will verify if the committed version is up-to-date.
-        pass_filenames: false # Does not operate on specific files, but generates one.
-        always_run: true # Ensure it runs to check/generate.
     -   id: check-env-ports-example
         name: Update .env.ports.example
         language: system
-        entry: bash -c "echo '# Development port allocations (27000-28000 range)' > .env.ports.example && echo 'LMSTUDIO_API_URL=http://127.0.0.1:1234/v1' >> .env.ports.example && cat .env.development | grep PORT_ALLOCATOR >> .env.ports.example"
+        entry: bash -c "echo '# Development port allocations (27000-28000 range)' > .env.ports.example && echo '# External services' >> .env.ports.example && echo '# LMStudio - Port 1234 is excluded from conflict checking' >> .env.ports.example && echo 'LMSTUDIO_API_URL=http://127.0.0.1:1234/v1' >> .env.ports.example && sed -n '/^# Port allocations for development/,/^$/p' .env.development | grep PORT_ALLOCATOR >> .env.ports.example"
         files: .env.development
         pass_filenames: false
+        always_run: true # Ensure it runs every time to keep .env.ports.example in sync

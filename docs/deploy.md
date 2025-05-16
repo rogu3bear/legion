@@ -39,7 +39,7 @@ Legion uses a unified port management system to prevent conflicts and ensure con
    ```bash
    # Generate .env.ports from defaults
    python scripts/gen_env_ports.py > .env.ports
-   
+
    # Start services
    docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up
    ```
@@ -95,15 +95,18 @@ Legion uses a unified port management system to prevent conflicts and ensure con
 ## Port Management
 
 Ports for various services used by Legion are managed dynamically through `legion/ports.py`.
-Configuration is primarily sourced from an `.env.ports` file, which should be generated from `ports.yaml` (legacy) using the `scripts/gen_env_ports.py` script:
+Configuration is primarily sourced from environment-specific files like `.env.development` or `.env.production`, or a general `.env.ports` file.
+An example structure for these files can be found in `.env.ports.example`.
 
 ```bash
-python scripts/gen_env_ports.py ports.yaml > .env.ports.example
-cp .env.ports.example .env.ports
+# Example: Content of .env.ports or .env.development
+PORT_ALLOCATOR_WEB_UI=27001
+PORT_ALLOCATOR_CHROMA=27020
+# ... other port allocations
 ```
 
-`.env.ports` contains entries like `PORT_ALLOCATOR_SERVICE_NAME=12345`.
-`legion/ports.py` provides default fallbacks if a port is not defined in `.env.ports`.
+These files contain entries like `PORT_ALLOCATOR_SERVICE_NAME=12345`.
+`legion/ports.py` provides default fallbacks if a port is not defined in the loaded environment files.
 
 ## Agent Configuration Placeholders
 

@@ -41,15 +41,6 @@ As of the last update, the following service keys are defined with their default
 *   The middleware service (`middleware/src/config.py`) retrieves the Chroma API URL by calling `legion.ports.get_chroma_url()`. This helper function internally uses `legion.ports.get_port('chroma')` to construct the full URL (e.g., `http://localhost:27020`).
 *   This allows the Chroma URL to be consistently configured via the unified port management system and overridden by `PORT_ALLOCATOR_CHROMA` in `.env.ports` if needed.
 
-## `ports.yaml` (Legacy/Reference)
-
-The file `ports.yaml` exists in the project root and contains a static, hierarchical mapping of ports. While the core runtime port resolution **does not** use `ports.yaml` (it uses `legion/ports.py` and `.env.ports`), this YAML file can serve as:
-
-*   A human-readable overview of intended port assignments.
-*   A source for utility scripts that might need to understand the port layout, although such scripts are encouraged to use `legion.ports.get_port()` where possible for consistency with the runtime.
-
-The `scripts/generate_docker_env.py` script was previously more reliant on `ports.yaml` but has been refactored to primarily use `legion.ports.get_port()`.
-
 ## Viewing Resolved Ports
 
 The Legion CLI provides a command to view the currently resolved ports:
@@ -58,4 +49,4 @@ The Legion CLI provides a command to view the currently resolved ports:
 legion ports
 ```
 
-This command internally calls `legion.ports.get_all_resolved_ports()` (if available, or iterates through known keys) to display the active port for each configured service, reflecting `DEFAULT_PORTS` and any `.env.ports` overrides.
+This command internally calls `legion.ports.load_runtime_ports()` and then accesses `legion.ports.RUNTIME_PORTS` to display the active port for each configured service, reflecting `DEFAULT_PORTS` and any `.env.ports` (or environment-specific `.env.*`) overrides.

@@ -59,22 +59,14 @@ Legion's services, including Prometheus, web interfaces, and internal components
 *   **`legion/ports.py`**: Contains the `DEFAULT_PORTS` dictionary with default port assignments for various services. It also includes the `load_runtime_ports()` function that merges these defaults with overrides from `.env.ports`, and the `get_port(service_key)` utility to retrieve the currently active port for a service.
 *   **`.env.ports`**: An optional file in the project root. If it exists, it can override default ports. Variables should be in the format `PORT_ALLOCATOR_SERVICEKEY=port_number` (e.g., `PORT_ALLOCATOR_PROMETHEUS=9091`).
 *   **`get_port(service_key)`**: The canonical way to get a service's port at runtime (e.g., `from legion.ports import get_port; port = get_port('prometheus')`).
-*   **`ports.yaml`**: This file contains a static map of ports, often with a group/key structure. While not directly used by the core runtime for port resolution (which uses `legion/ports.py`), it can serve as a reference or be used by utility scripts that generate specific environment configurations (like an older version of `scripts/generate_docker_env.py`). The primary runtime truth comes from `legion/ports.py` and `.env.ports`.
 
-To find the currently configured port for a service like Prometheus, you should check `legion/ports.py` for its default and then see if `.env.ports` overrides it. The `legion cli ports` command can also show currently resolved ports at runtime if the orchestrator components are accessible.
+To find the currently configured port for a service like Prometheus, you should check `legion/ports.py` for its default and then see if `.env.ports` (or `.env.development` / `.env.production`) overrides it. The `legion cli ports` command can also show currently resolved ports at runtime if the orchestrator components are accessible.
 
 For more detailed information on the port strategy, including a list of all default service keys, see `docs/port_strategy.md`.
 
 ## Launching Services
 
-When launching services (e.g., via `docker-compose` or other means), ensure they are configured to use the ports defined in `ports.yaml`.
-
-For example, if Prometheus is defined in `ports.yaml` as:
-```yaml
-services:
-  prometheus: 9090
-```
-Your `docker-compose.yml` or service startup script should use port `9090` for Prometheus.
+When launching services (e.g., via `docker-compose` or other means), ensure they are configured to use the ports as defined by `legion/ports.py` and the relevant `.env` files.
 
 Then verify readiness (e.g., Prometheus):
 
