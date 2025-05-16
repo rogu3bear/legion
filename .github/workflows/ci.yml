@@ -23,6 +23,10 @@ jobs:
           pip install -U pip
           pip install -r requirements.txt
           pip install flake8
+      - name: Generate and Check .env.ports.example
+        run: |
+          python scripts/gen_env_ports.py legacy/ports.yaml > .env.ports.example
+          git diff --exit-code .env.ports.example || (echo ".env.ports.example is not up to date. Please run scripts/gen_env_ports.py and commit the result." && exit 1)
       - name: Lint code
         run: |
           bash scripts/activate_once.sh
@@ -44,6 +48,11 @@ jobs:
           GENERAL_CHANNEL_ID: '0'
           AGENT_FEED_CHANNEL_ID: '0'
           PORT_ALLOCATOR_WEB: 8000
+          PORT_ALLOCATOR_CHROMA: 27020
+          PORT_ALLOCATOR_PROMETHEUS: 9090
+          PORT_ALLOCATOR_REDIS: 6379
+          PORT_ALLOCATOR_POSTGRES: 5432
+          PORT_ALLOCATOR_GRAFANA: 3000
           ORCHESTRATOR_API_URL: 'http://localhost:${{ env.PORT_ALLOCATOR_WEB || 8000 }}'
         run: |
           bash scripts/activate_once.sh
@@ -89,6 +98,13 @@ jobs:
     - name: Check port generation
       run: bash scripts/gen_ports_env.sh > /dev/null
     - name: Check service health
+      env:
+        PORT_ALLOCATOR_WEB: 8000
+        PORT_ALLOCATOR_CHROMA: 27020
+        PORT_ALLOCATOR_PROMETHEUS: 9090
+        PORT_ALLOCATOR_REDIS: 6379
+        PORT_ALLOCATOR_POSTGRES: 5432
+        PORT_ALLOCATOR_GRAFANA: 3000
       run: |
         bash scripts/gen_ports_env.sh
         docker compose up -d --no-build

@@ -65,3 +65,16 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+    -   id: gen-env-ports
+        name: Regenerate .env.ports.example
+        entry: python scripts/gen_env_ports.py legacy/ports.yaml > .env.ports.example
+        language: system
+        # This hook modifies a file, so it should ideally run before commit or be staged.
+        # If it runs and changes .env.ports.example, the change needs to be added to the commit.
+        # Consider adding `stages: [manual]` and instructing users to run `pre-commit run gen-env-ports --all-files`
+        # and then `git add .env.ports.example` if it changes.
+        # For now, let it run on commit. If it changes the file, the commit will proceed
+        # but the changed file won't be part of that commit unless added.
+        # A better approach for auto-updating generated files is often a CI check that fails if not current.
+        pass_filenames: false # Does not operate on specific files, but generates one.
+        always_run: true # Ensure it runs to check/generate.
