@@ -48,7 +48,9 @@ async def test_config_command_end_to_end(monkeypatch):
     bot.get_channel = lambda cid: (
         DummyConfigChan()
         if cid == 123
-        else logs_channel if cid == 42 else invoking_channel
+        else logs_channel
+        if cid == 42
+        else invoking_channel
     )
     await cog._config_agent_impl(ctx, "echo_agent", "gpt-4", 0.7, 256)
     # Should have a reply in invoking channel

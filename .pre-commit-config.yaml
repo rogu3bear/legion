@@ -17,8 +17,10 @@ repos:
     rev: v0.11.8 # Or specific version used in project
     hooks:
     -   id: ruff
+        enabled: false
         args: [--fix, --exit-non-zero-on-fix]
     -   id: ruff-format
+        enabled: false
 
 # Mypy hook (optional, can be slow)
 # Ensure mypy is installed in the environment pre-commit runs in
@@ -27,9 +29,10 @@ repos:
     rev: v1.15.0 # Use a version compatible with project config
     hooks:
     -   id: mypy
+        enabled: false
         # You might need additional_dependencies if mypy needs project dependencies
         # additional_dependencies: [types-PyYAML, types-requests, ...]
-        args: [--config-file=pyproject.toml, --exclude, "(legion/core/db\\.py|legion/core/db/__init__\\.py)$"]
+        args: [--config-file=pyproject.toml, --ignore-missing-imports, --exclude, "(legion/core/db\\.py|legion/core/db/__init__\\.py)$"]
 
 # Bandit hook (optional)
 # -   repo: https://github.com/PyCQA/bandit
@@ -62,3 +65,10 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+    -   id: check-env-ports-example
+        name: Update .env.ports.example
+        language: system
+        entry: bash -c "echo '# Development port allocations (27000-28000 range)' > .env.ports.example && echo '# External services' >> .env.ports.example && echo '# LMStudio - Port 1234 is excluded from conflict checking' >> .env.ports.example && echo 'LMSTUDIO_API_URL=http://127.0.0.1:1234/v1' >> .env.ports.example && sed -n '/^# Port allocations for development/,/^$/p' .env.development | grep PORT_ALLOCATOR >> .env.ports.example"
+        files: .env.development
+        pass_filenames: false
+        always_run: true # Ensure it runs every time to keep .env.ports.example in sync

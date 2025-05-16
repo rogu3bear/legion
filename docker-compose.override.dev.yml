@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  web_ui:
+    # Example: Override command for hot-reloading if your framework supports it
+    # command: uvicorn interface.main:app --host 0.0.0.0 --port ${PORT_ALLOCATOR_SERVICES_WEB_UI:-27000} --reload
+    volumes:
+      - ./interface:/app/interface
+      - ./legion:/app/legion
+      - ./core:/app/core
+      - ./skills:/app/skills
+      - ./memory:/app/memory
+    # environment:
+      # - RELOAD=true # Or any other dev-specific env vars
+    # ports:
+      # - "${PORT_ALLOCATOR_SERVICES_WEB_UI:-27000}:${PORT_ALLOCATOR_SERVICES_WEB_UI:-27000}" # Already in main docker-compose.yml, ensure consistency
+
+  # orchestrator:
+  #   volumes:
+  #     - ./legion:/app/legion
+  #     - ./core:/app/core
+  #     - ./skills:/app/skills
+  #     - ./memory:/app/memory
+  #   # environment:
+  #     # - DEV_MODE=true
+
+  # Add other services that need dev-specific overrides (e.g., bind mounts for code)
+
+# Example for a potential 'middleware' service if it has Python code
+  # middleware:
+  #   volumes:
+  #     - ./middleware/src:/app/src # Assuming Python code is in middleware/src
+  #   # command: uvicorn src.main:app --host 0.0.0.0 --port ${PORT_ALLOCATOR_CORE_SERVICES_MIDDLEWARE:-27010} --reload
+
+# Note: Ensure that any ports exposed here use the ${PORT_ALLOCATOR_*} variables
+# defined in your .env.ports file (or .env for fallbacks if .env.ports is not present). 

@@ -9,21 +9,29 @@ import os
 import shutil
 import sqlite3
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
 
 class LegionAgentMemory:
     def __init__(self, agent_name: str, base_dir: str = "memory") -> None:
         """Initialize memory for a specific agent."""
-        logger.info("Initializing LegionAgentMemory", extra={"agent_name": agent_name, "base_dir": base_dir})
+        logger.info(
+            "Initializing LegionAgentMemory",
+            extra={"agent_name": agent_name, "base_dir": base_dir},
+        )
         self.agent_name = agent_name
-        self.base_dir = os.path.join(base_dir, agent_name)
-        self.data_file = os.path.join(self.base_dir, "memory.json")
-        self.log_file = os.path.join(self.base_dir, "task_log.jsonl")
-        self.docs_dir = os.path.join(self.base_dir, "docs")
+        # Ensure agent_name is a string for path composition
+        safe_agent_name = str(agent_name)
+        self.base_dir: Path = Path(base_dir) / safe_agent_name
+        self.data_file: Path = self.base_dir / "memory.json"
+        self.log_file: Path = self.base_dir / "task_log.jsonl"
+        self.docs_dir: Path = self.base_dir / "docs"
         os.makedirs(self.docs_dir, exist_ok=True)
         os.makedirs(self.base_dir, exist_ok=True)
-        self.db_path = os.path.join(os.path.dirname(__file__), "db", "legion.db")
+        self.db_path: str = str(Path(os.path.dirname(__file__)) / "db" / "legion.db")
         self._ensure_db()
         self._data = self._load_data()
 
@@ -45,7 +53,7 @@ class LegionAgentMemory:
         """Loads agent memory data from disk."""
         if os.path.exists(self.data_file):
             try:
-                with open(self.data_file, "r", encoding="utf-8") as f:
+                with open(self.data_file, encoding="utf-8") as f:
                     return json.load(f)
             except Exception:
                 return {}
@@ -90,39 +98,38 @@ class LegionAgentMemory:
     def save_document(self, name, content):
         """Saves a versioned document for the agent."""
         ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-        base = os.path.join(self.docs_dir, name)
-        versioned = f"{base}.{ts}"
+        base: Path = self.docs_dir / name
+        versioned: Path = self.docs_dir / f"{name}.{ts}"
         with open(base, "w", encoding="utf-8") as f:
             f.write(content)
         shutil.copy(base, versioned)
-        return versioned
+        return str(versioned)
 
     def get_document(self, name, version=None):
         """Retrieves a document (optionally by version)."""
-        base = os.path.join(self.docs_dir, name)
+        base: Path = self.docs_dir / name
         if version:
-            path = f"{base}.{version}"
+            path: Path = self.docs_dir / f"{name}.{version}"
         else:
-            path = base
-        if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
+            path: Path = base
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
                 return f.read()
         return None
 
     def list_documents(self):
         """Lists all documents for the agent."""
-        return [f for f in os.listdir(self.docs_dir) if not f.startswith(".")]
+        return [f.name for f in self.docs_dir.iterdir() if not f.name.startswith(".")]
 
     def list_versions(self, name):
         """Lists all versions of a document."""
-        base = os.path.join(self.docs_dir, name)
-        prefix = os.path.basename(base) + "."
-        return [f for f in os.listdir(self.docs_dir) if f.startswith(prefix)]
+        prefix = name + "."
+        return [f.name for f in self.docs_dir.iterdir() if f.name.startswith(prefix)]
 
     @staticmethod
-    def _vector_store_path(agent_name, base_dir="memory"):
+    def _vector_store_path(agent_name: str, base_dir: str = "memory") -> Path:
         """Returns the path to the agent's vector store JSONL file."""
-        return os.path.join(base_dir, agent_name, "vector_store.jsonl")
+        return Path(base_dir) / agent_name / "vector_store.jsonl"
 
     @staticmethod
     def _cosine_similarity(vec1, vec2):
@@ -137,17 +144,23 @@ class LegionAgentMemory:
         return dot / (norm1 * norm2)
 
     @classmethod
-    def retrieve_memories(cls, agent_name, embedding, top_k, base_dir="memory"):
+    def retrieve_memories(
+        cls,
+        agent_name: str,
+        embedding: List[float],
+        top_k: int,
+        base_dir: str = "memory",
+    ) -> List[str]:
         """
         Loads or creates the vector index for that agent. Returns up to topK text snippets most similar to the embedding.
         Returns an empty list if nothing is there.
         """
-        path = cls._vector_store_path(agent_name, base_dir)
-        if not os.path.exists(path):
+        path: Path = cls._vector_store_path(agent_name, base_dir)
+        if not path.exists():
             return []
         try:
             items = []
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 for line in f:
                     try:
                         obj = json.loads(line)
@@ -165,13 +178,15 @@ class LegionAgentMemory:
             return []
 
     @classmethod
-    def store_memories(cls, agent_name, snippets, base_dir="memory"):
+    def store_memories(
+        cls, agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory"
+    ) -> None:
         """
         Upserts the given snippets into the agent's vector store. Retries once on failure, logs error if still failing.
         Each snippet should be a dict with 'text' and 'embedding'.
         """
-        path = cls._vector_store_path(agent_name, base_dir)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        path: Path = cls._vector_store_path(agent_name, base_dir)
+        os.makedirs(path.parent, exist_ok=True)
 
         def _write():
             with open(path, "a", encoding="utf-8") as f:
@@ -196,25 +211,32 @@ class LegionAgentMemory:
                     f"[LegionAgentMemory] Store failed again for {agent_name}: {e2}"
                 )
 
-    def add_raw_memory(self, text: str, metadata: dict = None):
+    def add_raw_memory(
+        self, text: str, metadata: Optional[Dict[Any, Any]] = None
+    ) -> None:
         """Adds raw text to the memory, potentially for later processing."""
         metadata = metadata or {}
         metadata["source_type"] = "raw_text"
         # Simple timestamped filename for raw dumps
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S_%f") # Use timezone.utc, add microseconds
-        raw_path = self.memory_dir / "raw"
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S_%f")
+        raw_path: Path = self.base_dir / "raw"
         raw_path.mkdir(exist_ok=True)
         with open(raw_path / f"raw_{ts}.txt", "w") as f:
-            f.write(text)  # Added file write logic
-            # Optionally, write metadata as JSON header or separate file
-            logging.info(f"Saved raw memory to raw_{ts}.txt")
+            f.write(text)
+            logging.info(
+                f"Saved raw memory to raw_{ts}.txt", extra={"metadata": metadata}
+            )
 
 
-def retrieve_memories(agent_name, embedding, top_k, base_dir="memory"):
+def retrieve_memories(
+    agent_name: str, embedding: List[float], top_k: int, base_dir: str = "memory"
+) -> List[str]:
     return LegionAgentMemory.retrieve_memories(
         agent_name, embedding, top_k, base_dir=base_dir
     )
 
 
-def store_memories(agent_name, snippets, base_dir="memory"):
+def store_memories(
+    agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory"
+) -> None:
     return LegionAgentMemory.store_memories(agent_name, snippets, base_dir=base_dir)

@@ -1,7 +1,7 @@
 import openai
 import pytest
-
-from core.utils.chroma_client import ChromaClient
+from unittest.mock import MagicMock, patch
+from legion.core.utils.chroma_client import ChromaClient
 
 
 class DummyCollection:

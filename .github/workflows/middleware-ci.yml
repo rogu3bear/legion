@@ -1,0 +1,43 @@
+name: Middleware CI
+on:
+  push:
+    paths:
+      - 'middleware/**'
+  pull_request:
+    paths:
+      - 'middleware/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install middleware deps
+        run: |
+          cd middleware
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run pytest
+        run: |
+          cd middleware
+          pytest -q
+      - name: Start middleware service
+        run: |
+          cd middleware
+          scripts/gen_ports_env.sh
+          docker-compose up -d --build
+      - name: Wait for health
+        run: |
+          sleep 5
+          curl -f http://localhost:$SERVICE_PORT/health
+      - name: Invoke sample
+        run: |
+          curl -X POST -H "Authorization: Bearer $API_TOKEN" -H "Content-Type: application/json" \
+            -d '{"data": {"agent_name":"test","interaction_id":"1","role":"user","tokens":1,"embedding":[0.1,0.2],"timestamp":"2025-01-01T00:00:00Z","tags":[]}}' \
+            http://localhost:$SERVICE_PORT/invoke
+      - name: Fetch context
+        run: |
+          curl -f http://localhost:$SERVICE_PORT/context/test/1

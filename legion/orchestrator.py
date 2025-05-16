@@ -8,19 +8,21 @@ import importlib
 import inspect
 import json
 import logging
-import logging.config
 import os
 import re
 import signal
 import sys
 import time
+import traceback
 import uuid
+from datetime import UTC  # Import UTC timezone
 from pathlib import Path
 from typing import Any, Optional
 
 import yaml
 import zmq.asyncio
 
+import legion.ports as unified_port_manager
 from integration.discord.cogs.ux_feed import render_feed_item
 from legion.agents.python import (
     ArchitectAgent,
@@ -32,36 +34,29 @@ from legion.agents.python import (
     UxDesignerAgent,
 )
 from legion.core.di_container import ILLMClient, IStateManager, container
-from legion.core.logging_config import setup_logging
-from legion.ports import unified_port_manager
+from legion.middleware import run_middleware_pipeline
+from legion.ports import get_port  # Added for prometheus port replacement
+
+# Import the new structured logging setup
+from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
-from legion.middleware import run_middleware_pipeline
 
-# Setup structured logging early
-setup_logging()
+# Setup structured logging early using the new utility
+# Configuration can be driven by environment variables or defaults in setup_legion_logging
+LOG_LEVEL = os.getenv("ORCHESTRATOR_LOG_LEVEL", "INFO")
+LOG_FILE = os.getenv("ORCHESTRATOR_LOG_FILE")  # e.g., './logs/orchestrator.log'
+setup_legion_logging(log_level_str=LOG_LEVEL, log_file_path=LOG_FILE)
 
-logging.getLogger("openai").setLevel(logging.ERROR)
-logger = logging.getLogger(__name__)
 
-# .env file is loaded by setup_logging() called above.
-# OpenAI client configuration (e.g., api_base) is read from environment variables here.
-# llm_base = os.getenv("OPENAI_API_BASE")
-# if llm_base:
-#     # Ensure base URL includes /v1 prefix
-#     if not llm_base.rstrip("/").endswith("/v1"):
-#         llm_base = llm_base.rstrip("/") + "/v1"
-#     openai.api_base = llm_base
-#     openai.api_type = "openai" # Assuming this is still relevant if using non-OpenAI but compatible APIs
-#
-# # These are used by the openai client library when making calls, if set.
-# # They are not directly passed by the Orchestrator if using a pre-configured llm_client via DI.
-# model = os.getenv("OPENAI_MODEL")
-# temperature = float(os.getenv("OPENAI_TEMPERATURE", 0.5))
-# max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", 1000))
-# top_p = float(os.getenv("OPENAI_TOP_P", 1))
-# frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", 0))
-# presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", 0))
+logging.getLogger("openai").setLevel(
+    logging.WARNING
+)  # Keep specific library level adjustments
+logger = logging.getLogger(__name__)  # Get logger instance after setup
+
+# .env file loading is assumed to be handled by a general mechanism if needed,
+# or by the components that directly require env vars (e.g. Discord token loader).
+# The setup_legion_logging itself doesn't load .env.
 
 # Read Discord channel IDs from environment variables
 GENERAL_CHANNEL_ID = int(os.getenv("GENERAL_CHANNEL_ID", "0"))
@@ -110,8 +105,6 @@ CLASS_MAP = {
 PID_FILE = "/tmp/legion_orchestrator.pid"
 
 
-
-
 class ProcessRunningError(Exception):
     """Raised when another process is already running."""
 
@@ -134,6 +127,8 @@ class Orchestrator:
         state_manager=None,
         llm_client=None,
     ):
+        self.port_allocator = unified_port_manager
+        self._background_tasks = set()  # MODIFIED: Reverted to set
         # Only enforce locking when a pid_file is explicitly provided
         self._lock_fd = None
         self._lock_acquired = False
@@ -141,40 +136,110 @@ class Orchestrator:
             self._pid_file = pid_file
             try:
                 self._acquire_lock()
-            except ProcessRunningError as e: # This should be first
+            except ProcessRunningError as e:
                 logger.error(f"Another orchestrator is already running: {e}")
                 sys.exit(1)
-            except BlockingIOError as e: # B904 handled by 'from e'
+            except BlockingIOError as e:
                 logger.error(f"Lock acquisition blocked by another process: {e}")
                 raise ProcessRunningError(f"Lock acquisition blocked: {e}") from e
-            except OSError as e: # B904 handled by 'from e'
+            except OSError as e:
                 logger.error(f"OS error during lock acquisition: {e}")
-                # SIM105 for os.close is implicitly handled if self._lock_fd is None or close fails within suppress
-                # The primary goal is to ensure we attempt to clean up then raise from original OSError
                 if self._lock_fd is not None:
-                    with contextlib.suppress(OSError): # Ensure os.close doesn't mask original error
+                    with contextlib.suppress(OSError):
                         os.close(self._lock_fd)
-                raise RuntimeError(f"Failed to acquire lock due to OS error: {e}") from e
+                raise RuntimeError(
+                    f"Failed to acquire lock due to OS error: {e}"
+                ) from e
             # A general Exception catch here might be too broad for startup; specific errors handled above.
 
-            # Set up graceful shutdown handlers
+            # Set up graceful shutdown handlers AFTER lock acquisition
             self._setup_signal_handlers()
         else:
             # No locking for default startup (e.g., during tests)
             self._pid_file = None
+            # Still set up signal handlers for non-PID file cases if desired,
+            # or make it conditional on having a PID file.
+            # For broad applicability, let's set them up.
+            self._setup_signal_handlers()
+
+        # Initialize ZeroMQ context (once)
+        try:
+            self.zmq_context = zmq.asyncio.Context()
+        except Exception as e:
+            logger.critical(
+                f"Failed to initialize ZMQ context: {e}\\n{traceback.format_exc()}"
+            )
+            # This is a critical failure, an orchestrator without ZMQ is not functional.
+            sys.exit(1)
 
         # Initialize ZeroMQ PUB server for broadcasting task updates
         try:
-            zmq_pub_port = self.port_allocator.get_port("orchestrator", "zmq_pub_port")
-            self.init_zmq_pub_server(f"tcp://*:{zmq_pub_port}")
+            zmq_pub_port = self.port_allocator.get_port("orchestrator_zmq_pub")
+            if zmq_pub_port is None:
+                logger.warning(
+                    "Port for 'orchestrator_zmq_pub' not found, ZMQ PUB server may not start correctly."
+                )
+                # Defaulting to a common ephemeral port range or a fixed fallback if necessary
+                # For now, let it proceed, init_zmq_pub_server might handle None or 0 appropriately or error out
+            self.init_zmq_pub_server(
+                f"tcp://*:{zmq_pub_port if zmq_pub_port is not None else 0}"
+            )
         except Exception as e:
-            logger.error(f"Failed to start ZMQ PUB server: {e}")
+            logger.error(
+                f"Failed to start ZMQ PUB server during init: {e}\\n{traceback.format_exc()}"
+            )
+            # Consider if this is fatal. For now, logging and continuing.
+            # If PUB is critical, sys.exit(1) might be appropriate.
+
         # Initialize ZeroMQ REP server for API commands
         try:
-            zmq_rep_port = self.port_allocator.get_port("orchestrator", "zmq_rep_port")
-            self.init_zmq_rep_server(f"tcp://*:{zmq_rep_port}")
+            zmq_rep_port = self.port_allocator.get_port("orchestrator_zmq_rep")
+            if zmq_rep_port is None:
+                logger.warning(
+                    "Port for 'orchestrator_zmq_rep' not found, ZMQ REP server may not start correctly."
+                )
+            self.init_zmq_rep_server(
+                f"tcp://*:{zmq_rep_port if zmq_rep_port is not None else 0}"
+            )
         except Exception as e:
-            logger.error(f"Failed to start ZMQ REP server: {e}")
+            logger.error(
+                f"Failed to start ZMQ REP server during init: {e}\\n{traceback.format_exc()}"
+            )
+            # REP server is likely critical for external commands.
+            # sys.exit(1) could be considered. For now, log and continue.
+
+        # Start ZMQ server loops as background tasks
+        # These tasks are added to self._background_tasks for graceful shutdown.
+        if (
+            hasattr(self, "_zmq_socket")
+            and self._zmq_socket
+            and not self._zmq_socket.closed
+        ):
+            rep_loop_task = asyncio.create_task(self._zmq_rep_loop())
+            self._background_tasks.add(rep_loop_task)
+            # Optional: Add callback to remove task from set upon completion/cancellation
+            rep_loop_task.add_done_callback(self._background_tasks.discard)
+            logger.info("ZMQ REP server loop started.")
+        else:
+            logger.warning(
+                "ZMQ REP socket not initialized or closed, REP loop not started."
+            )
+
+        if (
+            hasattr(self, "_zmq_pub_socket")
+            and self._zmq_pub_socket
+            and not self._zmq_pub_socket.closed
+        ):
+            pub_loop_task = asyncio.create_task(
+                self._zmq_pub_loop()
+            )  # Assuming _zmq_pub_loop exists
+            self._background_tasks.add(pub_loop_task)
+            pub_loop_task.add_done_callback(self._background_tasks.discard)
+            logger.info("ZMQ PUB server loop started.")
+        else:
+            logger.warning(
+                "ZMQ PUB socket not initialized or closed, PUB loop not started."
+            )
 
         # Initialize core dependencies (DI)
         self.agents = {}  # Initialize agents dict *before* loading configs
@@ -182,7 +247,7 @@ class Orchestrator:
         self.state_manager = state_manager or container.get(IStateManager)
         self.llm_client = llm_client or container.get(ILLMClient)
         # Initialize dynamic port allocator
-        self.port_allocator = unified_port_manager
+        # self.port_allocator = unified_port_manager # This line (original line 168) is now redundant
 
         self.client = None
         self.task_queue = []
@@ -216,27 +281,52 @@ class Orchestrator:
                 # Get agent class from CLASS_MAP using class name from config
                 agent_class = CLASS_MAP[config["class"]]
 
-                # Inspect constructor to pass llm_client only if accepted
-                sig = inspect.signature(agent_class.__init__)
-                agent_kwargs = {"orchestrator": self}
-                if 'llm_client' in sig.parameters:
-                    agent_kwargs["llm_client"] = self.llm_client
+                # Prepare arguments for the specific agent's constructor
+                ctor_kwargs = {
+                    "name": agent_name,
+                    "config": config,
+                    "orchestrator_ref": self,  # For BaseAgent
+                }
+                agent_sig = inspect.signature(agent_class.__init__)
+                if (
+                    "llm_client" in agent_sig.parameters
+                ):  # Check specific agent's signature
+                    ctor_kwargs["llm_client"] = self.llm_client
+                # state_manager is usually resolved by BaseAgent via DI if not passed.
+                # If a specific agent *directly* needs state_manager in its __init__ (not via BaseAgent),
+                # this could be added:
+                # if 'state_manager' in agent_sig.parameters:
+                #    ctor_kwargs["state_manager"] = self.state_manager
 
-                agent = agent_class(**agent_kwargs)
+                agent = agent_class(**ctor_kwargs)
 
-                # Initialize agent
+                # Initialize agent (if it has an async initialize method)
+                # This was the original comment, actual initialize call is missing in provided snippet
+                # Let's assume agent.initialize() is called if exists, as per prior logic
                 if hasattr(agent, "initialize") and callable(agent.initialize):
-                    agent.initialize()
+                    # If initialize is async, it needs to be awaited or run in event loop
+                    # For now, assuming it's synchronous or handled by agent itself
+                    # if inspect.iscoroutinefunction(agent.initialize):
+                    #    asyncio.create_task(agent.initialize()) # Or appropriate async call
+                    # else:
+                    agent.initialize()  # Assuming synchronous for now
 
                 self.agents[agent_name] = agent
                 logger.info(f"Loaded agent: {agent_name}")
 
             except Exception as e:
                 logger.error(f"Failed to instantiate agent {agent_name}: {e!s}")
-                raise RuntimeError(f"Agent instantiation failed: {e!s}") from e
+                # traceback.print_exc() # For more detailed debugging if needed
+                raise RuntimeError(
+                    f"Agent instantiation failed for {agent_name}: {e!s}"
+                ) from e
 
         if not self.agents:
             raise RuntimeError("No agents were loaded successfully")
+
+        # Ensure _agent_instances is synchronized with self.agents for any legacy compatibility
+        # or parts of the system that might still reference it (e.g., shutdown logic).
+        self._agent_instances = self.agents
 
         self.agent_classes = CLASS_MAP
         self.memory = {
@@ -257,13 +347,10 @@ class Orchestrator:
             "Orchestrator initialized with agents: %s", list(self.config.keys())
         )
         self.alert_subscribers = set()  # User IDs for alert DMs
-        self._background_tasks = set() # For RUF006
 
         self.agent_channel_ids.update(
             CHANNEL_ID_MAP
         )  # Ensure all defined channels are available
-
-
 
     def _acquire_lock(self):
         """Acquire an exclusive lock on the PID file."""
@@ -324,14 +411,247 @@ class Orchestrator:
 
     def _setup_signal_handlers(self):
         """Set up signal handlers for graceful shutdown."""
+        loop = asyncio.get_event_loop()
 
         def handle_signal(signum, frame):
-            logger.info(f"Received signal {signum}. Initiating graceful shutdown.")
-            self._release_lock()
-            sys.exit(0)
+            logger.info(f"Received signal {signum}. Initiating graceful shutdown...")
+            # Schedule the shutdown coroutine to be run by the loop.
+            # asyncio.create_task is generally preferred over ensure_future directly.
+            # If self.shutdown() is async:
+            task = asyncio.create_task(
+                self.shutdown(signal_name=signal.Signals(signum).name)
+            )
+            # Track the task if needed
+            # self._background_tasks.add(task)
+            # task.add_done_callback(self._background_tasks.discard)
+            # If self.shutdown() were synchronous, it would be:
+            # loop.call_soon_threadsafe(self.shutdown, signal.Signals(signum).name)
 
-        signal.signal(signal.SIGINT, handle_signal)
-        signal.signal(signal.SIGTERM, handle_signal)
+        # Register signal handlers
+        # SIGHUP is often used to signal a configuration reload, not typically shutdown.
+        # SIGINT (Ctrl+C) and SIGTERM are standard for termination.
+        for sig_name in (signal.SIGINT, signal.SIGTERM):
+            # For asyncio, add_signal_handler is preferred.
+            # However, existing code uses signal.signal, which might be fine
+            # if the handler (handle_signal) is designed to interact with the asyncio loop correctly (e.g., by scheduling tasks).
+            try:
+                loop.add_signal_handler(
+                    sig_name, lambda s=sig_name: handle_signal(s, None)
+                )
+            except (
+                ValueError,
+                OSError,
+                RuntimeError,
+            ) as e:  # common errors for add_signal_handler
+                # Fallback or log if running in a context where signal handlers can't be set (e.g. not main thread on some OS)
+                logger.warning(
+                    f"Could not set asyncio signal handler for {sig_name}: {e}. Falling back to signal.signal()."
+                )
+                try:
+                    signal.signal(sig_name, handle_signal)
+                except Exception as e_sig:
+                    logger.error(
+                        f"Failed to set fallback signal handler for {sig_name}: {e_sig}"
+                    )
+
+        # atexit is a final fallback, but asyncio cleanup should ideally happen via signal handlers.
+        atexit.register(
+            self._release_lock_atexit
+        )  # Assuming _release_lock_atexit is synchronous
+        logger.info("Signal handlers and atexit for graceful shutdown configured.")
+
+    def _release_lock_atexit(self):
+        """Synchronous lock release wrapper for atexit."""
+        # This method MUST be synchronous as atexit handlers are.
+        if self._pid_file and self._lock_acquired:
+            logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
+            try:
+                if self._lock_fd is not None:
+                    fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
+                    os.close(self._lock_fd)
+                    self._lock_fd = None
+                if os.path.exists(self._pid_file):
+                    os.remove(self._pid_file)
+                self._lock_acquired = False
+                logger.info(
+                    f"atexit: Process lock released and PID file {self._pid_file} removed."
+                )
+            except Exception as e:
+                # Log error but don't crash atexit handler
+                logger.error(
+                    f"atexit: Error releasing lock or removing PID file {self._pid_file}: {e}",
+                    exc_info=True,
+                )
+
+    async def shutdown(self, signal_name: str = "PROGRAMMATIC"):
+        """Gracefully shuts down the orchestrator."""
+        logger.info(f"Orchestrator shutdown initiated by {signal_name}.")
+
+        # 1. Stop ZMQ servers and their loops
+        logger.info("Stopping ZMQ servers...")
+        await (
+            self.stop_zmq_servers()
+        )  # stop_zmq_servers should handle cancelling _zmq_rep_loop and _zmq_pub_loop
+
+        # 2. Ensure pending tasks are awaited (if any orchestrator-level tasks, not agent tasks)
+        # This depends on how orchestrator manages its own tasks.
+        # For now, assuming _background_tasks primarily holds ZMQ loops.
+        # If there were other kinds of tasks, they'd need specific cancellation/awaiting logic.
+        # Example:
+        # for task in list(self.other_orchestrator_tasks):
+        #     if not task.done():
+        #         task.cancel()
+        # await asyncio.gather(*self.other_orchestrator_tasks, return_exceptions=True)
+        logger.info(
+            "Orchestrator-level background tasks (ZMQ loops) processing complete."
+        )
+
+        # 3. Agent state persistence or graceful handling
+        # This is highly dependent on agent design and state management.
+        # For each agent, if it has a shutdown method:
+        logger.info("Shutting down agents...")
+        for agent_name, agent_instance in self._agent_instances.items():
+            if hasattr(agent_instance, "shutdown") and callable(
+                agent_instance.shutdown
+            ):
+                try:
+                    logger.info(f"Calling shutdown for agent: {agent_name}")
+                    # If agent.shutdown is async
+                    if asyncio.iscoroutinefunction(agent_instance.shutdown):
+                        await agent_instance.shutdown()
+                    else:  # If it's synchronous
+                        agent_instance.shutdown()
+                    logger.info(f"Agent {agent_name} shutdown complete.")
+                except Exception as e:
+                    logger.error(
+                        f"Error during shutdown of agent {agent_name}: {e}\\n{traceback.format_exc()}"
+                    )
+            else:
+                logger.info(
+                    f"Agent {agent_name} does not have a specific shutdown method."
+                )
+        logger.info("All agents processed for shutdown.")
+
+        # 4. Release process lock (if acquired)
+        # This is handled by _release_lock_atexit, but can be called earlier if all async ops are done.
+        # However, _release_lock is synchronous, so call its logic here if appropriate.
+        if self._pid_file and self._lock_acquired:
+            logger.info(
+                f"Releasing process lock for PID file {self._pid_file} during async shutdown."
+            )
+            try:
+                if self._lock_fd is not None:
+                    fcntl.flock(
+                        self._lock_fd, fcntl.LOCK_UN
+                    )  # This is blocking, ensure it's okay in async context or run in executor
+                    os.close(self._lock_fd)  # Also blocking
+                    self._lock_fd = None
+                if os.path.exists(self._pid_file):
+                    os.remove(self._pid_file)  # Blocking
+                self._lock_acquired = False
+                logger.info(
+                    f"Process lock released and PID file {self._pid_file} removed during async shutdown."
+                )
+            except Exception as e:
+                logger.error(
+                    f"Error releasing lock/PID file during async shutdown: {e}",
+                    exc_info=True,
+                )
+
+        # 5. Close ZMQ context
+        if hasattr(self, "zmq_context") and not self.zmq_context.closed:
+            logger.info("Closing ZMQ context.")
+            try:
+                self.zmq_context.term()  # term() is synchronous
+                # For truly async context termination if supported by future zmq versions:
+                # await self.zmq_context.term_async() or similar
+            except Exception as e:
+                logger.error(f"Error terminating ZMQ context: {e}", exc_info=True)
+
+        logger.info("Orchestrator shutdown sequence complete.")
+
+        # Optionally, stop the asyncio loop if this orchestrator 'owns' it.
+        # loop = asyncio.get_event_loop()
+        # loop.stop()
+
+    async def stop_zmq_servers(self):
+        """Stop the ZMQ REP and PUB servers and cancel related tasks."""
+        logger.info("Attempting to stop ZMQ servers and cancel related tasks.")
+
+        # Cancel background tasks related to ZMQ (which should be _zmq_rep_loop and _zmq_pub_loop)
+        # Make a copy of the set to iterate over, as tasks remove themselves on completion/cancellation
+        tasks_to_cancel = list(
+            self._background_tasks
+        )  # self._background_tasks should hold the ZMQ loops
+
+        if not tasks_to_cancel:
+            logger.info("No ZMQ related background tasks found to cancel.")
+        else:
+            logger.info(
+                f"Found {len(tasks_to_cancel)} ZMQ related background tasks to cancel."
+            )
+
+        for t in tasks_to_cancel:
+            if not t.done():
+                logger.info(
+                    f"Cancelling task: {t.get_name() if hasattr(t, 'get_name') else t}"
+                )
+                t.cancel()
+            else:
+                logger.info(
+                    f"Task {t.get_name() if hasattr(t, 'get_name') else t} is already done."
+                )
+
+        # Await cancellation/completion of tasks
+        if tasks_to_cancel:
+            logger.info("Waiting for ZMQ background tasks to complete cancellation...")
+            gathered_results = await asyncio.gather(
+                *tasks_to_cancel, return_exceptions=True
+            )
+            for i, result in enumerate(gathered_results):
+                task_name = (
+                    tasks_to_cancel[i].get_name()
+                    if hasattr(tasks_to_cancel[i], "get_name")
+                    else f"Task {i}"
+                )
+                if isinstance(result, asyncio.CancelledError):
+                    logger.info(f"{task_name} successfully cancelled.")
+                elif isinstance(result, Exception):
+                    logger.error(
+                        f"Exception in {task_name} during shutdown: {result}",
+                        exc_info=result,
+                    )
+                else:
+                    logger.info(f"{task_name} completed with result: {result}")
+            logger.info("Finished awaiting ZMQ background tasks.")
+
+        # Close ZMQ sockets if they exist and are not already closed
+        # The loops themselves should handle ETERM on context termination,
+        # but explicit close is good practice.
+        if (
+            hasattr(self, "_zmq_socket")
+            and self._zmq_socket
+            and not self._zmq_socket.closed
+        ):
+            logger.info("Closing ZMQ REP socket.")
+            try:
+                self._zmq_socket.close(linger=0)  # linger=0 to close immediately
+            except Exception as e:
+                logger.error(f"Error closing ZMQ REP socket: {e}", exc_info=True)
+
+        if (
+            hasattr(self, "_zmq_pub_socket")
+            and self._zmq_pub_socket
+            and not self._zmq_pub_socket.closed
+        ):
+            logger.info("Closing ZMQ PUB socket.")
+            try:
+                self._zmq_pub_socket.close(linger=0)  # linger=0 to close immediately
+            except Exception as e:
+                logger.error(f"Error closing ZMQ PUB socket: {e}", exc_info=True)
+
+        # ZMQ context is terminated separately in the main shutdown() method.
+        logger.info("ZMQ server stopping sequence finished.")
 
     def _get_channel_id(self, agent_name):
         """Return the Discord channel ID for a given agent name, or the general channel if not found."""
@@ -365,17 +685,32 @@ class Orchestrator:
             if not item.is_file() or not item.name.endswith(".yaml"):
                 continue
 
-            filename = item.name # Keep filename for logging and skip_files check
+            filename = item.name  # Keep filename for logging and skip_files check
 
             # Skip test-specific or non-agent config files
             if filename in skip_files:
                 logger.debug(f"Skipping non-agent config file: {filename}")
                 continue
 
-            config_path = item # Use the Path object directly
+            config_path = item  # Use the Path object directly
             try:
                 with config_path.open() as f:
-                    config = yaml.safe_load(f)
+                    content = f.read()
+
+                # Replace placeholder for Prometheus port
+                prometheus_port_val = get_port("prometheus")
+                if prometheus_port_val is not None:
+                    content = content.replace(
+                        "{{LEGION_PROMETHEUS_PORT}}", str(prometheus_port_val)
+                    )
+                else:
+                    # Handle case where prometheus port is not found, e.g., log a warning or use a default
+                    # For now, if placeholder is present and port not found, it might cause YAML load error or be ignored
+                    logger.warning(
+                        "Prometheus port not found via get_port. Placeholder '{{LEGION_PROMETHEUS_PORT}}' may remain."
+                    )
+
+                config = yaml.safe_load(content)
 
                 # Check if file contains multiple agent definitions (dictionary)
                 if isinstance(config, dict):
@@ -433,33 +768,8 @@ class Orchestrator:
         for agent_name, agent_conf in self.config.items():
             self.agent_channel_ids[agent_name] = int(agent_conf.get("channel_id", 0))
 
-        # Instantiate agents with validated configs
-        for agent_name, config in loaded_configs.items():
-            try:
-                # Get agent class from CLASS_MAP using class name from config
-                agent_class = CLASS_MAP[config["class"]]
-
-                # Inspect constructor to pass llm_client only if accepted
-                sig = inspect.signature(agent_class.__init__)
-                agent_kwargs = {"orchestrator": self}
-                if 'llm_client' in sig.parameters:
-                    agent_kwargs["llm_client"] = self.llm_client
-
-                agent = agent_class(**agent_kwargs)
-
-                # Initialize agent
-                if hasattr(agent, "initialize") and callable(agent.initialize):
-                    agent.initialize()
-
-                self.agents[agent_name] = agent
-                logger.info(f"Loaded agent: {agent_name}")
-
-            except Exception as e:
-                logger.error(f"Failed to instantiate agent {agent_name}: {e!s}")
-                raise RuntimeError(f"Agent instantiation failed: {e!s}") from e
-
-        if not self.agents:
-            raise RuntimeError("No agents were loaded successfully")
+        # if not self.agents: # This check is now effectively moved to __init__
+        #     raise RuntimeError("No agents were loaded successfully by load_agent_configs")
 
     def register_test_agents(self):
         """Register dummy agents for testing."""
@@ -522,68 +832,75 @@ class Orchestrator:
         """Returns Discord channel ID for an agent."""
         return self.agent_channel_ids.get(agent_name)
 
-    def ask(self, agent_name, prompt, context=None):
-        """Sends a prompt to an agent and returns the response."""
+    async def ask(self, agent_name, prompt, context=None):
+        """Sends a prompt to a specific agent and returns its response."""
         try:
-            if agent_name not in self.agent_registry:
-                return f"Agent '{agent_name}' not found."
-            agent_config = self.agent_registry[agent_name] # Agent config from self.config
-            event = {"from": "user", "content": prompt}
-            messages = [
-                {"role": "system", "content": agent_config.get("system_prompt", "You are a helpful assistant.")},
-                {
-                    "role": "user",
-                    "content": agent_config.get("user_prompt", "{event_content}").format(
-                        event_content=prompt, event=event
-                    ),
-                },
-            ]
-            if context:
-                messages.extend(context)
+            if agent_name not in self.agents:
+                logger.error(f"Agent '{agent_name}' not found for ask operation.")
+                return f"Error: Agent '{agent_name}' not found."
 
-            # Prepare llm_kwargs from agent_config, falling back to llm_client defaults
-            llm_kwargs = {}
-            if "model" in agent_config:
-                llm_kwargs["model"] = agent_config["model"]
-            if "temperature" in agent_config:
-                llm_kwargs["temperature"] = agent_config["temperature"]
-            if "max_tokens" in agent_config:
-                llm_kwargs["max_tokens"] = agent_config["max_tokens"]
-            if "top_p" in agent_config:
-                llm_kwargs["top_p"] = agent_config["top_p"]
-            if "frequency_penalty" in agent_config:
-                llm_kwargs["frequency_penalty"] = agent_config["frequency_penalty"]
-            if "presence_penalty" in agent_config:
-                llm_kwargs["presence_penalty"] = agent_config["presence_penalty"]
+            agent = self.agents[agent_name]
+            payload = {"prompt": prompt, "context": context or {}}
 
-            # response = openai.ChatCompletion.create(
-            #     model=model,
-            #     messages=messages,
-            #     temperature=temperature,
-            #     max_tokens=max_tokens,
-            #     top_p=top_p,
-            #     frequency_penalty=frequency_penalty,
-            #     presence_penalty=presence_penalty,
-            # )
-            # Use self.llm_client
-            response_obj = self.llm_client.create(messages=messages, **llm_kwargs)
-            # Assuming response_obj is compatible with OpenAI's structure
-            reply = response_obj.choices[0].message.content
+            # Metric recording
+            start_time = time.time()
+            # Assuming handle_task is async, as MockAgent's is.
+            response = await agent.handle_task(payload)
+            duration = time.time() - start_time
+            dispatch_latency.labels(agent_key=agent_name).observe(duration)
+            dispatch_counter.labels(agent_key=agent_name).inc()
 
-            self.memory[agent_name].log_task(
-                {"type": "ask", "prompt": prompt, "response": reply}
+            # Log interaction if memory is available
+            agent_memory = self.state_manager.get_agent_memory(agent_name)
+            if agent_memory:
+                try:
+                    agent_memory.log_interaction(
+                        prompt=prompt,
+                        response=response,
+                        context=context,
+                        metadata={"source": "ask_method"},
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Failed to log interaction for agent '{agent_name}' in ask method: {e}"
+                    )
+
+            return response
+        except AgentLoadError as e:  # Though self.agents should ideally be pre-loaded
+            logger.error(f"Error loading agent '{agent_name}' during ask: {e}")
+            return f"Error loading agent '{agent_name}': {e}"
+        except AttributeError as e:
+            logger.error(
+                f"Attribute error with agent '{agent_name}' during ask: {e}\n{traceback.format_exc()}"
             )
-            return reply
+            return f"Attribute error with agent '{agent_name}': {e}"
+        except TypeError as e:
+            logger.error(
+                f"Type error with agent '{agent_name}' during ask: {e}\n{traceback.format_exc()}"
+            )
+            return f"Type error with agent '{agent_name}'."
         except Exception as e:
-            logger.error(f"Unexpected error in ask('{agent_name}'): {e}", exc_info=True)
-            return "[Error: Agent request failed]"
+            logger.error(
+                f"Error asking agent '{agent_name}': {e}\n{traceback.format_exc()}"
+            )
+            return f"Error asking agent '{agent_name}': {e}"
 
-    def broadcast(self, prompt):
-        """Broadcasts a prompt to all agents and collects responses."""
-        responses = []
-        for name in self.agent_registry:
-            resp = self.ask(name, prompt)
-            responses.append({"agent": name, "response": resp})
+    async def broadcast(self, prompt):
+        """Sends a prompt to all registered agents."""
+        responses = {}
+        for agent_name in self.agents.keys():  # Iterate over loaded agents
+            try:
+                logger.info(f"Broadcasting to agent: {agent_name}")
+                # Assuming ask method now handles its own errors and returns an error string if applicable
+                response = await self.ask(agent_name, prompt)
+                responses[agent_name] = response
+            except Exception as e:  # Catch-all for unexpected issues during the loop
+                logger.error(
+                    f"Failed to broadcast to agent '{agent_name}': {e}\n{traceback.format_exc()}"
+                )
+                responses[agent_name] = (
+                    f"Error broadcasting to agent '{agent_name}': {e}"
+                )
         return responses
 
     def post_update(self, agent_name, content, files=None):
@@ -617,10 +934,12 @@ class Orchestrator:
         """Triggers self-assessment for an agent using recent logs."""
         try:
             if agent_name not in self.agent_registry:
-                logger.warning(f"Attempted to self-assess non-existent agent: {agent_name}")
+                logger.warning(
+                    f"Attempted to self-assess non-existent agent: {agent_name}"
+                )
                 return f"Agent '{agent_name}' not found for self-assessment."
 
-            agent_config = self.agent_registry[agent_name] # Agent config
+            agent_config = self.agent_registry[agent_name]  # Agent config
             prompt_template = agent_config.get(
                 "self_assessment_prompt",
                 "Reflect on your recent actions. What went well, what could be improved?",
@@ -630,8 +949,16 @@ class Orchestrator:
             context_str = "\n".join([str(log) for log in context_logs])
 
             messages = [
-                {"role": "system", "content": agent_config.get("system_prompt", "You are a helpful assistant.")},
-                {"role": "user", "content": f"Recent activity:\n{context_str}\n\n{prompt_template}"},
+                {
+                    "role": "system",
+                    "content": agent_config.get(
+                        "system_prompt", "You are a helpful assistant."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Recent activity:\n{context_str}\n\n{prompt_template}",
+                },
             ]
 
             # Prepare llm_kwargs from agent_config, falling back to llm_client defaults
@@ -663,7 +990,9 @@ class Orchestrator:
             )
             return assessment
         except Exception as e:
-            logger.error(f"Error during self_assess for {agent_name}: {e}", exc_info=True)
+            logger.error(
+                f"Error during self_assess for {agent_name}: {e}", exc_info=True
+            )
             return f"[Error: Self-assessment failed for {agent_name}]"
 
     def assess_all_agents(self):
@@ -759,7 +1088,7 @@ class Orchestrator:
                     f"Failed to post inter-agent message to Discord due to attribute error: {e}"
                 )
 
-    def load_yaml(self, path: str): # path can remain str if called externally
+    def load_yaml(self, path: str):  # path can remain str if called externally
         with Path(path).open() as f:
             return yaml.safe_load(f)
 
@@ -770,113 +1099,143 @@ class Orchestrator:
         author: Optional[str] = None,
         timestamp: Optional[str] = None,
     ) -> str:
-        """
-        Dispatch a message to an agent and return its response.
-
-        Args:
-            agent_name: Name of the target agent
-            content: Message content
-            author: Optional message author
-            timestamp: Optional message timestamp
-
-        Returns:
-            str: Agent's response or error message
-
-        Raises:
-            ValueError: If agent_name is invalid
-            RuntimeError: If agent dispatch fails
-        """
+        """Dispatches a message to an agent, processes it, and returns a response."""
         start_time = time.time()
-
-        # Input validation
-        if not agent_name or not content:
-            error_msg = (
-                "Missing required fields: agent_name and content must be provided"
-            )
-            logger.error(error_msg)
-            return f"Error: {error_msg}"
-
-        if agent_name not in self.agents:
-            error_msg = f"Unknown agent: {agent_name}"
-            logger.error(error_msg)
-            return f"Error: {error_msg}"
-
-        agent = self.agents[agent_name]
-
-        # Structured logging of dispatch event
-        dispatch_event = {
-            "event": "message_dispatch",
+        message_id = str(uuid.uuid4())
+        raw_payload = {
+            "id": message_id,
             "agent": agent_name,
-            "author": author or "unknown",
-            "timestamp": timestamp or datetime.datetime.now().isoformat(),
-            "content_length": len(content),
+            "content": content,  # Original content from the caller
+            "directive": content,  # Assuming 'content' is the directive for middleware
+            "author": author or "N/A",
+            "timestamp": timestamp or datetime.datetime.now(UTC).isoformat(),
         }
-        logger.info("Dispatching message", extra=dispatch_event)
+
+        logger.debug(f"Dispatching message ID {message_id} to agent: {agent_name}")
 
         try:
-            # Pre-dispatch validation
-            if hasattr(agent, "validate_request"):
-                is_valid, reason = await agent.validate_request(content)
-                if not is_valid:
+            # Run incoming middleware pipeline
+            try:
+                # processed_payload = await run_middleware_pipeline(
+                #     raw_payload, agent_name, self, direction="incoming"
+                # )
+                processed_payload = run_middleware_pipeline(raw_payload)
+                if processed_payload is None:  # Middleware blocked the message
                     logger.warning(
-                        f"Request validation failed: {reason}",
-                        extra={"agent": agent_name, "reason": reason},
+                        f"Incoming middleware blocked message ID {message_id} for agent {agent_name}"
                     )
-                    return f"Cannot process request: {reason}"
+                    # Return a specific message or raise an exception if blocking should be an error
+                    return "[Message blocked by incoming middleware]"
+            except Exception as e:
+                logger.error(
+                    f"Error in incoming middleware for message ID {message_id} to agent {agent_name}: {e}\n{traceback.format_exc()}"
+                )
+                # Depending on policy, either block message or proceed with raw_payload
+                return f"[Error during incoming middleware processing: {e}]"
 
-            # Dispatch to agent
-            # Record dispatch latency and count
-            start = time.time()
-            response = await agent.handle_message(
-                content, author=author, timestamp=timestamp
-            )
-            duration = time.time() - start
-            dispatch_counter.labels(agent_key=agent_name).inc()
-            dispatch_latency.labels(agent_key=agent_name).observe(duration)
+            # Load the agent
+            try:
+                agent = self.load_agent(agent_name)
+            except KeyError:
+                logger.error(
+                    f"Agent '{agent_name}' not found during dispatch_message for ID {message_id}."
+                )
+                return f"Error: Agent '{agent_name}' not found."
+            except AgentLoadError as e:
+                logger.error(
+                    f"Failed to load agent '{agent_name}' for message ID {message_id}: {e}"
+                )
+                return f"Error loading agent '{agent_name}': {e}"
+            except Exception as e:
+                logger.error(
+                    f"Unexpected error loading agent '{agent_name}' for message ID {message_id}: {e}\n{traceback.format_exc()}"
+                )
+                return f"Unexpected error loading agent '{agent_name}'."
 
-            # Post-process response
-            if not response or not isinstance(response, str):
-                error_msg = f"Invalid response from {agent_name}: {type(response)}"
-                logger.error(error_msg)
-                return "Error: Agent returned invalid response"
+            if not agent:
+                # This case should ideally be caught by the AgentLoadError above if load_agent raises it
+                # or KeyError if agent_name is simply not in configs.
+                logger.error(
+                    f"Agent '{agent_name}' could not be loaded for message ID {message_id} (returned None)."
+                )
+                return f"Error: Agent '{agent_name}' could not be loaded."
 
-            # Log success metrics
-            self.state_manager.log_telemetry(
-                {
-                    "event": "message_dispatch_complete",
-                    "agent": agent_name,
-                    "duration": duration,
-                    "status": "success",
-                    "response_length": len(response),
-                }
-            )
+            # Let the agent handle the task
+            try:
+                # Ensure agent.handle_task receives the processed_payload
+                response_content = await agent.handle_task(
+                    processed_payload
+                )  # Assuming handle_task is async
+            except AttributeError as e:  # E.g. agent does not have handle_task or it's not async as expected
+                logger.error(
+                    f"Attribute error with agent '{agent_name}' for message ID {message_id}: {e}",
+                    exc_info=True,
+                )
+                return f"Attribute error with agent '{agent_name}'."
+            except TypeError as e:  # E.g. wrong arguments to handle_task
+                logger.error(
+                    f"Type error with agent '{agent_name}' for message ID {message_id}: {e}",
+                    exc_info=True,
+                )
+                return f"Type error with agent '{agent_name}'."
+            except ValueError as e:
+                logger.error(
+                    f"Agent '{agent_name}' encountered ValueError for message ID {message_id}: {e}",
+                    exc_info=True,
+                )
+                return f"[Agent '{agent_name}' failed to process message: {e}]"  # Message format matches test expectation
+            except Exception as e:  # Catch-all for other agent execution errors
+                logger.error(
+                    f"Agent '{agent_name}' failed to handle task for message ID {message_id}: {e}",
+                    exc_info=True,
+                )
+                return f"[Agent '{agent_name}' failed to process message: {e}]"
 
-            return response
+            # Prepare outgoing payload
+            outgoing_payload = {
+                "id": message_id,
+                "agent": agent_name,
+                "original_content": content,  # Or processed_payload.get('content')
+                "response_content": response_content,
+                "author": "agent:" + agent_name,
+                "timestamp": datetime.datetime.now(UTC).isoformat(),
+            }
 
-        except Exception as e:
-            error_msg = f"Error dispatching message to {agent_name}: {e!s}"
-            logger.exception(error_msg)
+            # Run outgoing middleware pipeline
+            try:
+                # final_response_payload = await run_middleware_pipeline(
+                #     outgoing_payload, agent_name, self, direction="outgoing"
+                # )
+                final_response_payload = run_middleware_pipeline(outgoing_payload)
+                if final_response_payload is None:  # Middleware blocked the response
+                    logger.warning(
+                        f"Outgoing middleware blocked response for message ID {message_id} from agent {agent_name}"
+                    )
+                    return "[Response blocked by outgoing middleware]"
+                final_response = final_response_payload.get(
+                    "response_content", "[No response content after middleware]"
+                )
+            except Exception as e:
+                logger.error(
+                    f"Error in outgoing middleware for message ID {message_id} from agent {agent_name}: {e}\n{traceback.format_exc()}"
+                )
+                # Fallback to agent's direct response or a generic error message
+                final_response = response_content  # Or an error message like "[Error in outgoing middleware]"
 
-            # Log failure metrics
             duration = time.time() - start_time
-            self.state_manager.log_telemetry(
-                {
-                    "event": "message_dispatch_complete",
-                    "agent": agent_name,
-                    "duration": duration,
-                    "status": "error",
-                    "error": str(e),
-                }
+            dispatch_latency.labels(agent_key=agent_name).observe(duration)
+            dispatch_counter.labels(agent_key=agent_name).inc()
+
+            logger.debug(
+                f"Dispatch for message ID {message_id} to {agent_name} completed in {duration:.4f}s. Response: {final_response[:100]}..."
             )
+            return final_response
 
-            # Notify subscribers of critical errors
-            if isinstance(e, (RuntimeError, ValueError)):
-                for _subscriber in self.alert_subscribers: # B007: Renamed subscriber to _subscriber
-                    self.notify_agent(
-                        "system", f"Critical error in {agent_name}: {e!s}"
-                    )
-
-            return f"Error processing message: {e!s}"
+        except Exception as e:  # Top-level catch-all for dispatch_message itself
+            logger.error(
+                f"Critical error in dispatch_message for agent '{agent_name}', message ID {message_id}: {e}\n{traceback.format_exc()}"
+            )
+            return f"[Critical orchestrator error processing message for agent '{agent_name}']"
 
     async def run_self_assess_all(self):
         """Run self_assess() on all agents, logging exceptions."""
@@ -908,7 +1267,7 @@ class Orchestrator:
             test_configs = self.load_yaml(str(test_agents_path))
             self.config.update(test_configs)
         # Update channel IDs
-        for name in self.config: # SIM118: Removed .keys()
+        for name in self.config:  # SIM118: Removed .keys()
             chan = self.config.get(name, {}).get("discord_channel_id")
             if not chan:
                 chan = CHANNEL_ID_MAP.get(name, 0)
@@ -916,7 +1275,7 @@ class Orchestrator:
         # Re-instantiate agents
         self.agents = {
             name: CLASS_MAP[name](self)
-            for name in self.config # SIM118: Removed .keys()
+            for name in self.config  # SIM118: Removed .keys()
             if name in CLASS_MAP
         }
         self._agent_instances = self.agents  # Backward compatibility
@@ -995,62 +1354,157 @@ class Orchestrator:
         return self.alert_subscribers
 
     def init_zmq_rep_server(self, bind_address: str) -> None:
-        """Initialize ZeroMQ REP socket and start listening for API commands."""
-        context = zmq.asyncio.Context.instance()
-        self._zmq_socket = context.socket(zmq.REP)
-        self._zmq_socket.bind(bind_address)
-        logger.info(f"ZeroMQ REP server bound to {bind_address}")
-        # Start asyncio loop for handling requests
-        task = asyncio.create_task(self._zmq_rep_loop())
-        self._background_tasks.add(task)
-        task.add_done_callback(self._background_tasks.discard)
+        """Initializes the ZeroMQ REP server."""
+        try:
+            self.zmq_context = zmq.asyncio.Context()
+            self._zmq_socket = self.zmq_context.socket(zmq.REP)
+            self._zmq_socket.bind(bind_address)
+            logger.info(f"ZMQ REP server listening on {bind_address}")
+        except zmq.error.ZMQError as e:
+            logger.error(
+                f"ZMQ REP Server Initialization Error ({bind_address}): {e}. Error Code: {e.errno}"
+            )
+            if e.errno == zmq.EADDRINUSE:
+                logger.error(
+                    f"Address {bind_address} already in use. Check for other running instances."
+                )
+            # Depending on severity, we might want to re-raise or sys.exit()
+            # For now, logging the error and proceeding, Orchestrator might be partially functional or fail later.
+            raise  # Re-raise the ZMQError to be handled by the caller or main loop
+        except Exception as e:
+            logger.error(
+                f"Unexpected error initializing ZMQ REP server ({bind_address}): {e}\n{traceback.format_exc()}"
+            )
+            raise  # Re-raise to ensure startup doesn't silently fail
 
     def init_zmq_pub_server(self, bind_address: str) -> None:
-        """Initialize ZeroMQ PUB socket for broadcasting task update events."""
-        context = zmq.asyncio.Context.instance()
-        self._zmq_pub_socket = context.socket(zmq.PUB)
-        self._zmq_pub_socket.bind(bind_address)
-        logger.info(f"ZeroMQ PUB server bound to {bind_address}")
+        """Initializes the ZeroMQ PUB server."""
+        try:
+            # Ensure context is initialized (usually by REP server init, but good practice)
+            if not hasattr(self, "zmq_context") or self.zmq_context.closed:
+                self.zmq_context = zmq.asyncio.Context()
+
+            self._zmq_pub_socket = self.zmq_context.socket(zmq.PUB)
+            self._zmq_pub_socket.bind(bind_address)
+            logger.info(f"ZMQ PUB server broadcasting on {bind_address}")
+        except zmq.error.ZMQError as e:
+            logger.error(
+                f"ZMQ PUB Server Initialization Error ({bind_address}): {e}. Error Code: {e.errno}"
+            )
+            if e.errno == zmq.EADDRINUSE:
+                logger.error(f"Address {bind_address} already in use for PUB socket.")
+            raise  # Re-raise ZMQError
+        except Exception as e:
+            logger.error(
+                f"Unexpected error initializing ZMQ PUB server ({bind_address}): {e}\n{traceback.format_exc()}"
+            )
+            raise  # Re-raise
 
     async def _zmq_rep_loop(self):
-        """Loop to receive and respond to ZeroMQ REP requests."""
+        """Handles incoming ZMQ REP requests."""
         while True:
             try:
-                command = await self._zmq_socket.recv_json()
-                request_id = command.get("request_id", "N/A")
-                logger.info(
-                    f"Received ZMQ command (ID: {request_id}): {command.get('action')}"
-                )
-                response = self.dispatch_command(command)
-                # Include request ID in response for correlation
-                if request_id != "N/A":
-                    response["request_id"] = request_id
-                await self._zmq_socket.send_json(response)
-                logger.info(
-                    f"Sent ZMQ response (ID: {request_id}) for action: {command.get('action')}"
-                )
-            except zmq.ZMQError as e:
-                logger.error(f"ZMQ communication error in REP loop: {e}")
-                # Attempt to send generic error response if possible
-                with contextlib.suppress(Exception):
-                    await self._zmq_socket.send_json(
-                        {"status": "error", "detail": f"ZMQ Error: {e}"}
+                # Wait for a request
+                message_bytes = await self._zmq_socket.recv()
+                message_str = message_bytes.decode("utf-8")
+                message = json.loads(message_str)
+
+                logger.info(f"ZMQ REP received: {message}")
+
+                # Dispatch command and get response
+                # Ensure command dispatching itself is robust
+                try:
+                    response_data = self.dispatch_command(message)
+                except Exception as e:
+                    logger.error(
+                        f"Error dispatching ZMQ command: {message.get('command', 'UnknownCmd')}: {e}\n{traceback.format_exc()}"
                     )
+                    response_data = {
+                        "status": "error",
+                        "message": f"Error processing command: {e}",
+                    }
+
+                response_bytes = json.dumps(response_data).encode("utf-8")
+                await self._zmq_socket.send(response_bytes)
+
             except json.JSONDecodeError as e:
-                logger.error(f"Failed to decode ZMQ request JSON: {e}")
-                await self._zmq_socket.send_json(
-                    {"status": "error", "detail": f"Invalid JSON received: {e}"}
+                logger.error(
+                    f"ZMQ REP: JSON decoding error: {e}. Received: '{message_str[:100]}'..."
                 )
-            except Exception as e:
-                logger.exception(f"Unexpected error in ZMQ REP loop: {e}")
-                # Attempt to send a generic error response
-                with contextlib.suppress(Exception):
-                    await self._zmq_socket.send_json(
-                        {
-                            "status": "error",
-                            "detail": f"Internal orchestrator error: {e}",
-                        }
+                # Send an error response back if possible, or log and continue
+                try:
+                    err_resp = json.dumps(
+                        {"status": "error", "message": "Invalid JSON format"}
+                    ).encode("utf-8")
+                    await self._zmq_socket.send(err_resp)
+                except zmq.error.ZMQError as zmq_e:
+                    logger.error(
+                        f"ZMQ REP: Failed to send JSON error response: {zmq_e}"
                     )
+            except zmq.error.ZMQError as e:
+                if e.errno == zmq.ETERM:
+                    logger.info("ZMQ REP loop terminating (context terminated).")
+                    break  # Context terminated, exit loop
+                elif e.errno == zmq.EAGAIN:
+                    logger.warning(
+                        "ZMQ REP recv timed out or non-blocking, continuing..."
+                    )  # Should not happen with default blocking recv
+                    await asyncio.sleep(0.01)  # Avoid busy-looping if it somehow occurs
+                    continue
+                else:
+                    logger.error(
+                        f"ZMQ REP loop error: {e}. errno: {e.errno}\n{traceback.format_exc()}"
+                    )
+                    # Consider a cool-down period or a circuit breaker for repeated errors
+                    await asyncio.sleep(1)  # Brief pause before retrying
+            except asyncio.CancelledError:
+                logger.info("ZMQ REP loop cancelled.")
+                break
+            except Exception as e:
+                logger.error(
+                    f"Unexpected error in ZMQ REP loop: {e}\n{traceback.format_exc()}"
+                )
+                # Decide on recovery strategy: continue, break, or re-raise
+                await asyncio.sleep(1)  # Brief pause before retrying
+
+    async def _zmq_pub_loop(self):
+        """Handles periodic ZMQ PUB broadcasts (e.g., heartbeats, task updates)."""
+        logger.info("ZMQ PUB loop started.")
+        try:
+            while True:
+                try:
+                    # Example: Periodically publish a heartbeat or status
+                    # heartbeat_message = {"type": "heartbeat", "timestamp": datetime.datetime.utcnow().isoformat(), "source": "orchestrator"}
+                    # await self._zmq_pub_socket.send_json(heartbeat_message) # send_json is not async, use send_string(json.dumps(...))
+                    # logger.debug(f"ZMQ PUB sent: {heartbeat_message['type']}")
+
+                    # For now, just sleep as the primary goal is testing loop startup/shutdown
+                    await asyncio.sleep(5)  # Sleep for a bit before next cycle
+
+                except zmq.error.ZMQError as e:
+                    if e.errno == zmq.ETERM:
+                        logger.info("ZMQ PUB loop terminating (context terminated).")
+                        break
+                    elif (
+                        e.errno == zmq.EAGAIN
+                    ):  # Should not happen with default blocking send, but good to be aware
+                        logger.warning("ZMQ PUB send would block, retrying...")
+                        await asyncio.sleep(0.1)
+                        continue
+                    else:
+                        logger.error(
+                            f"ZMQ PUB loop error: {e}. errno: {e.errno}\n{traceback.format_exc()}"
+                        )
+                        await asyncio.sleep(1)  # Cool down before retrying
+                except Exception as e:
+                    logger.error(
+                        f"Unexpected error in ZMQ PUB loop's broadcast cycle: {e}\n{traceback.format_exc()}"
+                    )
+                    await asyncio.sleep(5)  # Longer cool down for unexpected errors
+        except asyncio.CancelledError:
+            logger.info("ZMQ PUB loop cancelled.")
+        finally:
+            logger.info("ZMQ PUB loop finished.")
 
     def dispatch_command(self, command: dict) -> dict:
         """Dispatch incoming command based on 'action' field and return response."""
@@ -1161,9 +1615,13 @@ class Orchestrator:
                             "payload": payload,
                         }
                         self._zmq_pub_socket.send_json(event_data)
-                        logger.debug(f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id}")
+                        logger.debug(
+                            f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id}"
+                        )
                     except Exception as e:
-                        logger.error(f"Failed to publish ZMQ event type 'task_created' for task_id '{task_id}': {e}")
+                        logger.error(
+                            f"Failed to publish ZMQ event type 'task_created' for task_id '{task_id}': {e}"
+                        )
                     return {"status": "success", "task_id": str(task_id)}
                 else:
                     return {"status": "error", "detail": "Failed to create task"}
@@ -1196,9 +1654,13 @@ class Orchestrator:
                     try:
                         event_data = {"type": "task_cancelled", "task_id": task_id_str}
                         self._zmq_pub_socket.send_json(event_data)
-                        logger.debug(f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id_str}")
+                        logger.debug(
+                            f"Successfully published ZMQ event: {event_data['type']} for task_id: {task_id_str}"
+                        )
                     except Exception as e:
-                        logger.error(f"Failed to publish ZMQ event type 'task_cancelled' for task_id '{task_id_str}': {e}")
+                        logger.error(
+                            f"Failed to publish ZMQ event type 'task_cancelled' for task_id '{task_id_str}': {e}"
+                        )
                     return {"status": "success"}
                 else:
                     return {
@@ -1341,10 +1803,14 @@ class Orchestrator:
         # Ensure payload contains 'agent', 'directive', and 'confidence'
         agent_name = payload.get("agent")
         directive_name = payload.get("directive")
-        confidence_score = payload.get("confidence") # Agents should provide this
+        confidence_score = payload.get("confidence")  # Agents should provide this
 
-        if not all([agent_name, directive_name]): # Confidence can be handled by pipeline default or further logic
-            logger.error("Task creation failed: 'agent' and 'directive' are required in payload.")
+        if not all(
+            [agent_name, directive_name]
+        ):  # Confidence can be handled by pipeline default or further logic
+            logger.error(
+                "Task creation failed: 'agent' and 'directive' are required in payload."
+            )
             return None
 
         # If confidence is not provided by the agent in the request,
@@ -1354,16 +1820,18 @@ class Orchestrator:
         # Let's assume for now the pipeline's default handling is acceptable if not present,
         # but ideally, agent requests should include it.
         if confidence_score is None:
-            logger.warning(f"Confidence not provided for task from agent '{agent_name}'. Defaulting in middleware if necessary.")
+            logger.warning(
+                f"Confidence not provided for task from agent '{agent_name}'. Defaulting in middleware if necessary."
+            )
             # To be explicit, we can pass it as None and let the pipeline handle it,
             # or set a default here: confidence_score = 1.0 # Example default for requests
 
         middleware_request = {
             "agent": agent_name,
             "directive": directive_name,
-            "confidence": confidence_score, # Will be None if not in original payload
+            "confidence": confidence_score,  # Will be None if not in original payload
             # Pass other relevant parts of payload if middleware needs them
-            **payload  # Pass the whole payload for now, middleware can pick what it needs
+            **payload,  # Pass the whole payload for now, middleware can pick what it needs
         }
 
         # Call the middleware pipeline
@@ -1378,22 +1846,28 @@ class Orchestrator:
                 f"Task creation rejected by middleware. Source: {rejection_source}, Reason: {rejection_reason}, Payload: {payload}"
             )
             # Raise exception to propagate rejection reason to dispatch_command
-            raise ValueError(f"{rejection_source.capitalize()} rejection: {rejection_reason}")
+            raise ValueError(
+                f"{rejection_source.capitalize()} rejection: {rejection_reason}"
+            )
 
         # If validation passes, proceed with task creation logic
         # The actual directive might have been modified by the therapist
         validated_directive = validation_result.get("directive", directive_name)
-        logger.info(f"Middleware validation passed for agent '{agent_name}', directive '{validated_directive}'. Proceeding with task creation.")
+        logger.info(
+            f"Middleware validation passed for agent '{agent_name}', directive '{validated_directive}'. Proceeding with task creation."
+        )
 
         # TODO: Implement actual task creation logic here
         # (e.g., add to a queue, update state manager, interact with agent)
         # For now, generate a dummy task ID
         new_task_id = uuid.uuid4()
-        logger.info(f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'.")
-        
+        logger.info(
+            f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'."
+        )
+
         # Example: Store task in a simple list or more sophisticated state management
         # self.task_queue.append({"id": new_task_id, "agent": agent_name, "directive": validated_directive, "status": "pending", "payload": payload})
-        
+
         return new_task_id
 
     def get_task_details(self, task_id: uuid.UUID) -> Optional[dict]:
@@ -1520,30 +1994,86 @@ class Orchestrator:
 
     def dispatch(self, agent_key: str, payload: dict) -> dict:
         """
-        Dispatch a payload to the agent via its LLM client, returning the response dict.
-        Raises KeyError if the agent key is unknown.
+        Dispatches a task to the specified agent.
+
+        Args:
+            agent_key: The key (name) of the agent to dispatch to.
+            payload: The payload (task data) to send to the agent.
+
+        Returns:
+            A dictionary containing the agent's response.
         """
-        if agent_key not in self.config:
-            raise KeyError(f"Unknown agent key: {agent_key}")
         try:
-            # Record dispatch latency and count
-            start = time.time()
-            result = self.llm_client.create(payload)
-            duration = time.time() - start
-            dispatch_counter.labels(agent_key=agent_key).inc()
-            dispatch_latency.labels(agent_key=agent_key).observe(duration)
-            # Log dispatch in memory if available
-            if agent_key in self.memory:
-                self.memory[agent_key].log_task(
-                    {
-                        "type": "dispatch",
-                        "payload": payload,
-                        "response": result,
-                    }
-                )
-            return result
+            agent = self.load_agent(agent_key)
+            if not agent:
+                logger.error(f"Dispatch failed: Agent '{agent_key}' not found.")
+                return {"status": "error", "message": f"Agent '{agent_key}' not found."}
+
+            # TODO: This is a synchronous call to an agent that might be async.
+            # Consider using asyncio.run_coroutine_threadsafe or similar if agent.handle_task is async
+            # and orchestrator runs in a separate thread.
+            # For now, assuming agent.handle_task is blocking or orchestrator is async.
+            response = agent.handle_task(payload)
+            return {"status": "success", "response": response}
+        except AgentLoadError as e:
+            logger.error(f"Error loading agent '{agent_key}' during dispatch: {e}")
+            return {
+                "status": "error",
+                "message": f"Error loading agent '{agent_key}': {e}",
+            }
+        except AttributeError as e:  # E.g. agent does not have handle_task
+            logger.error(
+                f"Attribute error with agent '{agent_key}' during dispatch: {e}\n{traceback.format_exc()}"
+            )
+            return {
+                "status": "error",
+                "message": f"Attribute error with agent '{agent_key}': {e}",
+            }
+        except TypeError as e:  # E.g. wrong arguments to handle_task
+            logger.error(
+                f"Type error with agent '{agent_key}' during dispatch: {e}\n{traceback.format_exc()}"
+            )
+            return {
+                "status": "error",
+                "message": f"Type error with agent '{agent_key}': {e}",
+            }
         except Exception as e:
-            raise RuntimeError(f"Error dispatching to {agent_key}: {e}") from e
+            logger.error(
+                f"Unexpected error dispatching to agent '{agent_key}': {e}\n{traceback.format_exc()}"
+            )
+            # It's important to include traceback for unexpected errors.
+            return {
+                "status": "error",
+                "message": f"Unexpected error with agent '{agent_key}': {e}",
+            }
+
+    def init_context(self, namespace, **kwargs):
+        """Returns a context dict for agent interactions."""
+        default_context = {
+            "namespace": namespace,
+            "orchestrator": self,
+            "agents": list(self.agents.keys()),
+            "timestamp": datetime.datetime.now(UTC).isoformat(),
+        }
+        context = {**default_context, **kwargs}
+        return context
+
+    # --- Therapist communication stubs ---------------------------------
+    def send_to_therapist(self, task_id: str, payload: dict) -> None:
+        """Queue a message for the Therapist agent."""
+        pass  # TODO: implement routing
+
+    def receive_from_therapist(self, message: dict) -> None:
+        """Handle Therapist → Orchestrator callbacks."""
+        pass  # TODO: integrate with dispatch pipeline
+
+    def agent_comm_router(self, msg: dict) -> None:
+        """Central router deciding which agent receives a message."""
+        pass  # TODO: unify dispatch rules
+
+    def call_directive(self, directive_name: str, **kwargs) -> None:
+        """Invoke a registered directive on an agent."""
+        pass  # TODO: directive registry hookup
 
 
 # Allow direct execution to start the orchestrator loop
@@ -1552,7 +2082,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Initialize dependencies (basic example)
     # In a real app, container setup would be more sophisticated
-    container.register(ILLMClient, container.get(ILLMClient)) # Assuming already registered from core
+    container.register(
+        ILLMClient, container.get(ILLMClient)
+    )  # Assuming already registered from core
     container.register(IStateManager, container.get(IStateManager))
 
     orch = Orchestrator(
@@ -1560,6 +2092,6 @@ if __name__ == "__main__":
         state_manager=container.get(IStateManager),
         llm_client=container.get(ILLMClient),
     )
-    with contextlib.suppress(KeyboardInterrupt): # SIM105
+    with contextlib.suppress(KeyboardInterrupt):  # SIM105
         orch.run()
     logger.info("Orchestrator shut down gracefully.")

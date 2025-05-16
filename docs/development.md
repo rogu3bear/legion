@@ -53,7 +53,7 @@ If you need to verify your environment:
 # Deactivate any active environments
 deactivate
 
-# Use our safe activation script 
+# Use our safe activation script
 source scripts/activate_once.sh
 
 # Verify the environment
@@ -110,4 +110,4 @@ If needed, you can perform these steps manually:
 
 1. Deactivate any active environments: `deactivate`
 2. Remove the existing environment if needed: `rm -rf .venv`
-3. Run the setup script again: `./scripts/dev_setup.sh` 
+3. Run the setup script again: `./scripts/dev_setup.sh`

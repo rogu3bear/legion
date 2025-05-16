@@ -15,13 +15,13 @@ skills:
     config:
       max_files_per_review: 10
       review_timeout_seconds: 600
-      
+
   - name: refactor
     enabled: true
     config:
       max_files_per_refactor: 5
       backup_before_refactor: true
-      
+
   - name: debug
     enabled: true
     config:
@@ -36,7 +36,7 @@ integrations:
         id: "${DISCORD_DEV_CHANNEL_ID}"
       - name: debug-feed
         id: "${DISCORD_DEBUG_CHANNEL_ID}"
-  
+
   memory:
     type: sqlite
     path: "memory/db/legion.db"
@@ -51,5 +51,10 @@ logging:
 
 metrics:
   enabled: true
-  prometheus_port: 9090
+  # prometheus_port should be dynamically set by the application using get_port("prometheus")
+  # If this config is loaded and directly used, it might need a placeholder like {{PROMETHEUS_PORT}}
+  # For now, commenting out or removing, assuming the application will fetch it.
+  # prometheus_port: 9090
+  # Alternatively, if it must be in the YAML for some reason and substituted:
+  prometheus_port: "{{LEGION_PROMETHEUS_PORT}}" # Application needs to replace this
   collect_interval_seconds: 60

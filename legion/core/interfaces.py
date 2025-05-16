@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+
 class ILLMClient(ABC):
     """Interface for LLM client implementations."""
 
@@ -15,6 +16,7 @@ class ILLMClient(ABC):
     def get_embedding(self, text: str) -> List[float]:
         """Generate an embedding for the given text."""
         pass
+
 
 class IStateManager(ABC):
     """Interface for state management implementations."""
@@ -34,6 +36,7 @@ class IStateManager(ABC):
         """Set a state value by key."""
         pass
 
+
 class IMemoryManager(ABC):
     """Interface for memory management implementations."""
 
@@ -43,16 +46,26 @@ class IMemoryManager(ABC):
         pass
 
     @abstractmethod
-    def store_memory(self, id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+    def store_memory(
+        self, id: str, content: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Store a memory entry with optional metadata."""
         pass
 
     @abstractmethod
-    def retrieve_memories(self, agent_name: str, embedding: List[float], top_k: int, category: str = None) -> List[str]:
+    def retrieve_memories(
+        self,
+        agent_name: str,
+        embedding: List[float],
+        top_k: int,
+        category: Optional[str] = None,
+    ) -> List[str]:
         """Retrieve memories based on embedding similarity."""
         pass
 
     @abstractmethod
-    def store_memories(self, agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory") -> None:
+    def store_memories(
+        self, agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory"
+    ) -> None:
         """Store multiple memory snippets with embeddings."""
-        pass 
+        pass

@@ -1,0 +1,9 @@
+executor:
+  allowed_directives:
+    - "run approved task"
+    - "fetch system status"
+
+researcher:
+  allowed_directives:
+    - "search web"
+    - "summarize text"

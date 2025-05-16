@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
+
 class StateManager:
     """Manages centralized state, task logs, and feedback for Legion."""
 
@@ -25,15 +26,17 @@ class StateManager:
 
         # Initialize state if not exists
         if not self.state_file.exists():
-            self._save_state({
-                "config": {
-                    "confidence_threshold": 0.5,
-                    "max_history": 100,
-                    "assessment_interval": 600
-                },
-                "metrics": {},
-                "agent_states": {}
-            })
+            self._save_state(
+                {
+                    "config": {
+                        "confidence_threshold": 0.5,
+                        "max_history": 100,
+                        "assessment_interval": 600,
+                    },
+                    "metrics": {},
+                    "agent_states": {},
+                }
+            )
 
     def _save_state(self, state: Dict[str, Any]) -> None:
         """Save state to JSON file."""
@@ -44,7 +47,7 @@ class StateManager:
         """Get current state."""
         if not self.state_file.exists():
             return {}
-        with open(self.state_file, "r") as f:
+        with open(self.state_file) as f:
             return json.load(f)
 
     def update_state(self, updates: Dict[str, Any]) -> None:
@@ -81,7 +84,7 @@ class StateManager:
         """Get recent tasks from log."""
         tasks = []
         if self.task_log.exists():
-            with open(self.task_log, "r") as f:
+            with open(self.task_log) as f:
                 for line in f:
                     tasks.append(json.loads(line))
                     if len(tasks) >= limit:
@@ -92,7 +95,7 @@ class StateManager:
         """Get recent errors from log."""
         errors = []
         if self.error_log.exists():
-            with open(self.error_log, "r") as f:
+            with open(self.error_log) as f:
                 for line in f:
                     errors.append(json.loads(line))
                     if len(errors) >= limit:

@@ -1,23 +1,19 @@
 import pytest
 
 from legion.agents.python.architect import ArchitectAgent
-from legion.agents.python.doctor import DoctorAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.metrics import MetricsAgent
 from legion.agents.python.ping import PingAgent
-from legion.agents.python.researcher import ResearcherAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
 from memory.legion_memory import LegionAgentMemory
 
 AGENT_CLASSES = [
     ArchitectAgent,
-    DoctorAgent,
     EchoAgent,
     HealthcheckAgent,
     PingAgent,
-    ResearcherAgent,
     TherapistAgent,
     UxDesignerAgent,
     MetricsAgent,
@@ -29,10 +25,16 @@ class DummyOrchestrator:
         cls.__name__.replace("Agent", "").lower() + "_agent": 1 for cls in AGENT_CLASSES
     }
     client = None
+    config = {}
+
+    def __init__(self):
+        self.config = {}
+        for agent_name in self.agent_channel_ids.keys():
+            self.config[agent_name] = {"repo_path": "."}
 
 
 def make_agent(agent_cls):
-    agent = agent_cls(DummyOrchestrator())
+    agent = agent_cls(DummyOrchestrator(), None)
     agent.memory = LegionAgentMemory(agent.name)
     agent.name = agent_cls.__name__.replace("Agent", "").lower() + "_agent"
     return agent

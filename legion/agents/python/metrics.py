@@ -17,7 +17,14 @@ class MetricsAgent(BaseAgent):
 
     def __init__(self, orchestrator, llm_client=None):
         """Initialize the MetricsAgent with orchestrator and optional llm_client."""
-        super().__init__(orchestrator, llm_client=llm_client)
+        # Determine configuration from orchestrator if available, else empty
+        config = getattr(orchestrator, "config", {}) or {}
+        # Use default agent name
+        name = "metrics_agent"
+        # Initialize BaseAgent with name and config
+        super().__init__(name, config, llm_client=llm_client)
+        # Retain reference to orchestrator
+        self.orchestrator = orchestrator
         self.system_prompt = self._default_prompt()
         self.counts = defaultdict(int)
 

@@ -70,3 +70,6 @@ yarn-error.log*
 
 # Legion Specific Artifacts
 artifacts/
+
+# test run artifacts
+memory/<*

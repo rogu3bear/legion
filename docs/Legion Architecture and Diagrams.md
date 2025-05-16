@@ -464,10 +464,10 @@ flowchart LR
 | `scripts/deploy.sh` (CI) | Docker build & push | Deployment Pipeline |
 
 **Legend**
-• A diagram is listed only if the element is explicitly represented or implied (e.g. grouped under its layer).  
+• A diagram is listed only if the element is explicitly represented or implied (e.g. grouped under its layer).
 • If a function isn't shown as a dedicated node, it is encompassed by its parent class or layer block.
 
 ---
 
 ### How to Preview
-Copy any diagram's Mermaid block into the [Mermaid Live Editor](https://live-editor.mermaidjs.io/) or any compatible viewer to render. 
+Copy any diagram's Mermaid block into the [Mermaid Live Editor](https://live-editor.mermaidjs.io/) or any compatible viewer to render.

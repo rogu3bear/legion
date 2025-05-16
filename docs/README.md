@@ -68,4 +68,4 @@ Legion adheres to GitHub Flow for development [[Cite: GitHub Flow](https://docs.
 This repository uses topics for discoverability. Key topics might include: `agent-orchestration`, `discord-bot`, `python`, `llm`, `modular-architecture`. [[Cite: Topics](https://docs.github.com/articles/classifying-your-repository-with-topics)]
 
 ## Recent Updates
-See [Changelog](changelog.md) for the full history. 
+See [Changelog](changelog.md) for the full history.

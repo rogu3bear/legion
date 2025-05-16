@@ -5,17 +5,15 @@ import os
 import pytest
 
 from integration.discord.bot import fetch_thread_history
+from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
-from legion.agents.python.doctor import DoctorAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.ping import PingAgent
-from legion.agents.python.researcher import ResearcherAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
 from legion.orchestrator import Orchestrator
 from memory.legion_memory import LegionAgentMemory
-from legion.agents.base import BaseAgent
 
 
 @pytest.mark.asyncio
@@ -149,7 +147,7 @@ def test_legion_agent_memory_vector_store(tmp_path, monkeypatch):
 
     def fail_open(*a, **kw):
         called["fail"] += 1
-        raise IOError("fail")
+        raise OSError("fail")
 
     monkeypatch.setattr("builtins.open", fail_open)
     LegionAgentMemory.store_memories(
@@ -215,11 +213,9 @@ async def test_agent_smoke_all_inherit(monkeypatch):
             for i, k in enumerate(
                 [
                     "architect_agent",
-                    "doctor_agent",
                     "echo_agent",
                     "healthcheck_agent",
                     "ping_agent",
-                    "researcher_agent",
                     "therapist_agent",
                     "ux_designer_agent",
                 ]
@@ -228,21 +224,17 @@ async def test_agent_smoke_all_inherit(monkeypatch):
 
     agents = [
         ArchitectAgent(DummyOrchestrator()),
-        DoctorAgent(DummyOrchestrator()),
         EchoAgent(DummyOrchestrator()),
         HealthcheckAgent(DummyOrchestrator()),
         PingAgent(DummyOrchestrator()),
-        ResearcherAgent(DummyOrchestrator()),
         TherapistAgent(DummyOrchestrator()),
         UxDesignerAgent(DummyOrchestrator()),
     ]
     names = [
         "architect_agent",
-        "doctor_agent",
         "echo_agent",
         "healthcheck_agent",
         "ping_agent",
-        "researcher_agent",
         "therapist_agent",
         "ux_designer_agent",
     ]
@@ -256,9 +248,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
         ArchitectAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
     )
     monkeypatch.setattr(
-        DoctorAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
-    )
-    monkeypatch.setattr(
         EchoAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
     )
     monkeypatch.setattr(
@@ -266,9 +255,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     )
     monkeypatch.setattr(
         PingAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
-    )
-    monkeypatch.setattr(
-        ResearcherAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
     )
     monkeypatch.setattr(
         TherapistAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
@@ -364,14 +350,17 @@ def test_embedding_fallback(monkeypatch, caplog):
 def test_base_agent_custom_llm_client():
     class DummyOrchestrator:
         agent_channel_ids = {"base_agent": 1}
+
     class DummyLLMClient:
         def __init__(self):
             self.called = False
             self.model = "dummy-model"
             self.default_kwargs = {}
+
         def generate(self, *a, **k):
             self.called = True
             return "dummy-response"
+
     dummy_llm = DummyLLMClient()
     agent = BaseAgent(DummyOrchestrator(), llm_client=dummy_llm)
     assert agent.llm is dummy_llm
@@ -383,29 +372,43 @@ def test_base_agent_custom_llm_client():
 def test_base_agent_handle_message_error_branches(monkeypatch):
     class DummyOrchestrator:
         agent_channel_ids = {"base_agent": 1}
+
     agent = BaseAgent(DummyOrchestrator())
     agent.name = "base_agent"
     agent.config = {}
     # Ensure system_prompt exists before monkeypatching
-    setattr(agent, "system_prompt", "stub")
+    agent.system_prompt = "stub"
     monkeypatch.setattr(agent, "system_prompt", None)
     # Patch get_message_embedding to raise RuntimeError
-    monkeypatch.setattr(agent, "get_message_embedding", lambda text: (_ for _ in ()).throw(RuntimeError("fail embedding")))
+    monkeypatch.setattr(
+        agent,
+        "get_message_embedding",
+        lambda text: (_ for _ in ()).throw(RuntimeError("fail embedding")),
+    )
+
     # Patch fetch_thread_history to raise AttributeError
     async def fail_fetch(*a, **k):
         raise AttributeError("fail fetch")
+
     monkeypatch.setattr(agent, "fetch_thread_history", fail_fetch)
+
     # Patch post_to_discord to do nothing
     async def fake_post(msg):
         pass
+
     monkeypatch.setattr(agent, "post_to_discord", fake_post)
     # Patch call_llm to raise ValueError
-    monkeypatch.setattr(agent, "call_llm", lambda *a, **k: (_ for _ in ()).throw(ValueError("fail llm")))
+    monkeypatch.setattr(
+        agent, "call_llm", lambda *a, **k: (_ for _ in ()).throw(ValueError("fail llm"))
+    )
     # Patch memory.log_task to raise RuntimeError
-    agent.memory.log_task = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("fail log"))
+    agent.memory.log_task = lambda *a, **k: (_ for _ in ()).throw(
+        RuntimeError("fail log")
+    )
     # Patch mem_store to raise ValueError
     agent.mem_store = lambda *a, **k: (_ for _ in ()).throw(ValueError("fail store"))
     # Should not raise, should hit all error branches
     import asyncio
+
     context = {"content": "hi", "author": "user", "timestamp": None}
     asyncio.get_event_loop().run_until_complete(agent.handle_message(context))

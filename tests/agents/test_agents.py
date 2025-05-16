@@ -6,15 +6,12 @@ import pytest
 
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
-from legion.agents.python.doctor import DoctorAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.metrics import MetricsAgent
 from legion.agents.python.ping import PingAgent
-from legion.agents.python.researcher import ResearcherAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
-from legion.core.di_container import container
 
 
 @pytest.fixture(scope="module")
@@ -115,14 +112,17 @@ async def test_therapist_agent_composes_summary(test_env, monkeypatch):
 class DummyOrchestrator:
     agent_channel_ids = {
         "architect_agent": 1,
-        "doctor_agent": 2,
         "echo_agent": 3,
         "healthcheck_agent": 4,
         "ping_agent": 5,
-        "researcher_agent": 6,
         "therapist_agent": 7,
         "ux_designer_agent": 8,
     }
+
+    def __init__(self):
+        self.config = {}
+        for agent_name in self.agent_channel_ids:
+            self.config[agent_name] = {"repo_path": "."}
 
 
 class DummyClient:
@@ -133,21 +133,17 @@ class DummyClient:
 def test_agent_instantiation_and_properties():
     agent_classes = [
         ArchitectAgent,
-        DoctorAgent,
         EchoAgent,
         HealthcheckAgent,
         PingAgent,
-        ResearcherAgent,
         TherapistAgent,
         UxDesignerAgent,
     ]
     names = [
         "architect_agent",
-        "doctor_agent",
         "echo_agent",
         "healthcheck_agent",
         "ping_agent",
-        "researcher_agent",
         "therapist_agent",
         "ux_designer_agent",
     ]
@@ -193,17 +189,26 @@ def test_self_assessment_scheduler_guard(monkeypatch):
 @pytest.mark.asyncio
 async def test_base_agent_error_handling():
     """Test BaseAgent's error handling for unexpected issues."""
-    agent = BaseAgent(name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None)
+    agent = BaseAgent(
+        name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None
+    )
     try:
-        response = await agent.handle_message(content="Test error", context={"invalid": None})
+        response = await agent.handle_message(
+            content="Test error", context={"invalid": None}
+        )
         assert response is not None, "Agent should handle errors gracefully"
     except Exception as e:
-        pytest.fail(f"Agent failed to handle error: {str(e)}")
+        pytest.fail(f"Agent failed to handle error: {e!s}")
+
 
 @pytest.mark.asyncio
 async def test_base_agent_empty_input():
     """Test BaseAgent's response to empty or invalid input."""
-    agent = BaseAgent(name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None)
+    agent = BaseAgent(
+        name="TestAgent", config={"model": "gpt-3.5-turbo"}, memory_manager=None
+    )
     response = await agent.handle_message(content="")
     assert response is not None, "Agent should handle empty input gracefully"
-    assert "error" not in response.lower(), "Response should not contain error for empty input"
+    assert "error" not in response.lower(), (
+        "Response should not contain error for empty input"
+    )

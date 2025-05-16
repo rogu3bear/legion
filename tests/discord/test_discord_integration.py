@@ -1,6 +1,6 @@
 import os
-from unittest.mock import AsyncMock, MagicMock, patch
 import tempfile
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
@@ -16,6 +16,7 @@ from legion.orchestrator import Orchestrator
 # def event_loop():
 #     loop = asyncio.get_event_loop()
 #     yield loop
+
 
 @pytest_asyncio.fixture
 def bot(monkeypatch):
@@ -80,7 +81,9 @@ async def test_config_agent_slash_command(bot, guild):
         # Find the call to ctx.send with an embed
         embed = None
         for call in ctx.send.call_args_list:
-            if "embed" in call.kwargs and isinstance(call.kwargs["embed"], discord.Embed):
+            if "embed" in call.kwargs and isinstance(
+                call.kwargs["embed"], discord.Embed
+            ):
                 embed = call.kwargs["embed"]
                 break
         assert embed is not None
@@ -118,7 +121,9 @@ async def test_state_query_slash_command(bot, guild):
         # Find the call to ctx.send with an embed
         embed = None
         for call in ctx.send.call_args_list:
-            if "embed" in call.kwargs and isinstance(call.kwargs["embed"], discord.Embed):
+            if "embed" in call.kwargs and isinstance(
+                call.kwargs["embed"], discord.Embed
+            ):
                 embed = call.kwargs["embed"]
                 break
         assert embed is not None, "Expected an embed in one of the ctx.send calls"
@@ -139,7 +144,11 @@ async def test_feedback_slash_command(bot, guild):
         logs_chan = MagicMock()
         invoking_channel = MagicMock()
         bot.get_channel = lambda cid: (
-            feedback_chan if cid == 456 else logs_chan if cid == 42 else invoking_channel
+            feedback_chan
+            if cid == 456
+            else logs_chan
+            if cid == 42
+            else invoking_channel
         )
 
         # Patch ctx to use AsyncMock for send
@@ -156,7 +165,9 @@ async def test_feedback_slash_command(bot, guild):
         # Find the call to ctx.send with an embed
         embed = None
         for call in ctx.send.call_args_list:
-            if "embed" in call.kwargs and isinstance(call.kwargs["embed"], discord.Embed):
+            if "embed" in call.kwargs and isinstance(
+                call.kwargs["embed"], discord.Embed
+            ):
                 embed = call.kwargs["embed"]
                 break
         assert embed is not None, "Expected an embed in one of the ctx.send calls"
@@ -233,7 +244,9 @@ async def test_message_event_flow(bot, guild):
         agent.handle_message = AsyncMock(return_value="Valid reply")
         await orch.dispatch_message("echo_agent", "valid content", author="tester")
         assert agent.handle_message.called
-        reply = await agent.handle_message("valid content", author="tester", timestamp=None)
+        reply = await agent.handle_message(
+            "valid content", author="tester", timestamp=None
+        )
         assert reply == "Valid reply"
 
 

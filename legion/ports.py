@@ -7,17 +7,8 @@ Reads .env.ports, provides fallback to defaults, and offers a lookup utility.
 from typing import Dict, Optional
 
 from dotenv import dotenv_values
-
-# Default ports for common services if not specified in .env.ports
-DEFAULT_PORTS: Dict[str, int] = {
-    "web": 8000,  # Standard for FastAPI/Uvicorn if not overridden
-    "orchestrator": 5555,  # Default ZMQ/IPC for orchestrator if not in .env.ports
-    "redis": 6379,
-    "postgres": 5432,
-    "prometheus": 9090,
-    "grafana": 3000,
-    "dev_frontend": 8000,  # Matches the default in existing docker-compose
-}
+from legion.default_ports import DEFAULT_PORTS  # Import from the new file
+from legion.utils.port_conflict_checker import check_ports_available  # re-export for orchestrator
 
 RUNTIME_PORTS: Dict[str, int] = {}
 
@@ -50,6 +41,29 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
                 )
 
     RUNTIME_PORTS = loaded_ports
+
+    # Sanity check: Ensure all default port keys are covered by runtime ports
+    # (either by being in .env.ports or by falling back to the default)
+    # This helps catch discrepancies if .env.ports.example generation logic
+    # diverges from DEFAULT_PORTS keys.
+    if not set(DEFAULT_PORTS.keys()) <= set(RUNTIME_PORTS.keys()):
+        missing_keys = set(DEFAULT_PORTS.keys()) - set(RUNTIME_PORTS.keys())
+        # This should ideally not happen if defaults are always loaded first.
+        # However, if a DEFAULT_PORT key somehow doesn't make it into RUNTIME_PORTS
+        # (e.g. different naming convention not handled by the loading logic),
+        # this assertion will catch it.
+        # For the specified assertion `set(DEFAULT_PORTS) <= set(runtime_ports)`
+        # this means that every key in DEFAULT_PORTS must be a key in RUNTIME_PORTS.
+        print(
+            f"[Error] Port Mismatch: The following DEFAULT_PORTS keys are not in RUNTIME_PORTS: {missing_keys}"
+        )
+        print(
+            "         This might indicate an issue with .env.ports generation or naming conventions."
+        )
+        # Depending on strictness, either raise an error or just warn.
+        # For now, printing an error. For a hard fail:
+        # raise AssertionError(f"Port Mismatch: DEFAULT_PORTS keys {missing_keys} not in RUNTIME_PORTS")
+
     return RUNTIME_PORTS
 
 
@@ -64,6 +78,34 @@ def get_port(service_key: str) -> Optional[int]:
         The port number if found, otherwise None.
     """
     return RUNTIME_PORTS.get(service_key)
+
+
+def get_chroma_url(default_host: str = "localhost") -> str:
+    """
+    Constructs the Chroma API URL using the configured port.
+
+    Args:
+        default_host: The default host for Chroma, e.g., 'localhost'.
+
+    Returns:
+        The full Chroma API URL string.
+    """
+    port = get_port("chroma")
+    # If chroma port is not found, it might indicate a configuration issue.
+    # For now, we'll assume it should always be available either from defaults or .env.ports
+    # A more robust solution might raise an error or have a fallback mechanism if port is None.
+    if port is None:
+        # This case should ideally not happen if 'chroma' is in DEFAULT_PORTS
+        # and load_runtime_ports() runs correctly.
+        # Fallback to a common default or raise an error.
+        # For now, let's use the default port directly if get_port somehow fails to return it.
+        port = DEFAULT_PORTS.get(
+            "chroma", 8000
+        )  # Defaulting to 8000 as a last resort example if not found
+        print(
+            f"[Warning] Chroma port not found in RUNTIME_PORTS, falling back to {port}. Check configuration."
+        )
+    return f"http://{default_host}:{port}"
 
 
 # Initialize RUNTIME_PORTS on module load

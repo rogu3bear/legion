@@ -2,11 +2,13 @@
 Stub memory initialization script for Legion.
 Creates memory/db/legion.db if missing.
 """
+
 import os
 from pathlib import Path
 
+
 def main():
-    db_path = os.path.join(os.path.dirname(__file__), '..', 'memory', 'db', 'legion.db')
+    db_path = os.path.join(os.path.dirname(__file__), "..", "memory", "db", "legion.db")
     db_path = os.path.abspath(db_path)
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     if not os.path.exists(db_path):
@@ -23,5 +25,6 @@ def main():
 
     # Create/initialize SQLite database
 
+
 if __name__ == "__main__":
-    main() 
+    main()

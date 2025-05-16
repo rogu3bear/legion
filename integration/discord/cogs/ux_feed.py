@@ -58,4 +58,27 @@ def render_success(agent_name, message, metrics=None):
     return render_feed_item(agent_name, message, MessageType.SUCCESS, fields)
 
 
+def render_info(
+    agent_name: str, message: str, fields: list[tuple[str, str]] | None = None
+):
+    """Creates an info message embed."""
+    return render_feed_item(agent_name, message, MessageType.INFO, fields)
+
+
+def render_warning(
+    agent_name: str, message: str, fields: list[tuple[str, str]] | None = None
+):
+    """Creates a warning message embed."""
+    return render_feed_item(agent_name, message, MessageType.WARNING, fields)
+
+
+# render_message can be an alias or a more generic function if needed
+# For now, let's make it an alias for render_info for compatibility if tests expect it.
+def render_message(
+    agent_name: str, message: str, fields: list[tuple[str, str]] | None = None
+):
+    """Alias for render_info for general message rendering."""
+    return render_info(agent_name, message, fields)
+
+
 """UX feed cog stub for Discord integration."""

@@ -526,14 +526,14 @@ legion/agents/python/therapist.py:43:55: RUF013 PEP 484 prohibits implicit `Opti
 
 legion/agents/therapist/__init__.py:1:46: W291 [*] Trailing whitespace
   |
-1 | # Initialization file for the therapist agent 
+1 | # Initialization file for the therapist agent
   |                                              ^ W291
   |
   = help: Remove trailing whitespace
 
 legion/agents/therapist/__init__.py:1:47: W292 [*] No newline at end of file
   |
-1 | # Initialization file for the therapist agent 
+1 | # Initialization file for the therapist agent
   |                                               ^ W292
   |
   = help: Add trailing newline
@@ -592,7 +592,7 @@ legion/agents/therapist/validation.py:41:51: W291 [*] Trailing whitespace
    |
 39 |         return {"valid": False, "reason": "Therapist confidence threshold not met"}
 40 |
-41 |     return {"valid": True, "directive": directive} 
+41 |     return {"valid": True, "directive": directive}
    |                                                   ^ W291
    |
    = help: Remove trailing whitespace
@@ -601,7 +601,7 @@ legion/agents/therapist/validation.py:41:52: W292 [*] No newline at end of file
    |
 39 |         return {"valid": False, "reason": "Therapist confidence threshold not met"}
 40 |
-41 |     return {"valid": True, "directive": directive} 
+41 |     return {"valid": True, "directive": directive}
    |                                                    ^ W292
    |
    = help: Add trailing newline
@@ -750,7 +750,7 @@ legion/cli.py:123:17: T201 `print` found
 legion/cli.py:127:20: W291 [*] Trailing whitespace
     |
 126 |     except KeyboardInterrupt:
-127 |         sys.exit(1) 
+127 |         sys.exit(1)
     |                    ^ W291
     |
     = help: Remove trailing whitespace
@@ -758,7 +758,7 @@ legion/cli.py:127:20: W291 [*] Trailing whitespace
 legion/cli.py:127:21: W292 [*] No newline at end of file
     |
 126 |     except KeyboardInterrupt:
-127 |         sys.exit(1) 
+127 |         sys.exit(1)
     |                     ^ W292
     |
     = help: Add trailing newline
@@ -789,7 +789,7 @@ legion/core/db.py:26:9: W291 [*] Trailing whitespace
    |
 24 |     """Run database migrations (stub)."""
 25 |     # TODO: Implement basic migration logic
-26 |     pass 
+26 |     pass
    |         ^ W291
    |
    = help: Remove trailing whitespace
@@ -798,7 +798,7 @@ legion/core/db.py:26:10: W292 [*] No newline at end of file
    |
 24 |     """Run database migrations (stub)."""
 25 |     # TODO: Implement basic migration logic
-26 |     pass 
+26 |     pass
    |          ^ W292
    |
    = help: Add trailing newline
@@ -861,7 +861,7 @@ legion/core/db/migrations/0001_initial.py:30:35: W291 [*] Trailing whitespace
    |
 28 |     # op.drop_table('example_table')
 29 |     pass
-30 |     # ### end Alembic commands ### 
+30 |     # ### end Alembic commands ###
    |                                   ^ W291
    |
    = help: Remove trailing whitespace
@@ -870,7 +870,7 @@ legion/core/db/migrations/0001_initial.py:30:36: W292 [*] No newline at end of f
    |
 28 |     # op.drop_table('example_table')
 29 |     pass
-30 |     # ### end Alembic commands ### 
+30 |     # ### end Alembic commands ###
    |                                    ^ W292
    |
    = help: Add trailing newline
@@ -909,7 +909,7 @@ legion/core/di_container.py:57:1: E402 Module level import not at top of file
 legion/core/di_container.py:60:56: W291 [*] Trailing whitespace
    |
 59 | container.register_factory(ILLMClient, LLMClient)
-60 | container.register_factory(IStateManager, StateManager) 
+60 | container.register_factory(IStateManager, StateManager)
    |                                                        ^ W291
    |
    = help: Remove trailing whitespace
@@ -917,7 +917,7 @@ legion/core/di_container.py:60:56: W291 [*] Trailing whitespace
 legion/core/di_container.py:60:57: W292 [*] No newline at end of file
    |
 59 | container.register_factory(ILLMClient, LLMClient)
-60 | container.register_factory(IStateManager, StateManager) 
+60 | container.register_factory(IStateManager, StateManager)
    |                                                         ^ W292
    |
    = help: Add trailing newline
@@ -1039,7 +1039,7 @@ legion/core/init_memory.py:19:26: PTH120 `os.path.dirname()` should be replaced 
 legion/core/init_memory.py:27:11: W291 [*] Trailing whitespace
    |
 26 | if __name__ == "__main__":
-27 |     main() 
+27 |     main()
    |           ^ W291
    |
    = help: Remove trailing whitespace
@@ -1047,7 +1047,7 @@ legion/core/init_memory.py:27:11: W291 [*] Trailing whitespace
 legion/core/init_memory.py:27:12: W292 [*] No newline at end of file
    |
 26 | if __name__ == "__main__":
-27 |     main() 
+27 |     main()
    |            ^ W292
    |
    = help: Add trailing newline
@@ -1097,7 +1097,7 @@ legion/core/interfaces.py:58:13: W291 [*] Trailing whitespace
    |
 56 |     def store_memories(self, agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory") -> None:
 57 |         """Store multiple memory snippets with embeddings."""
-58 |         pass 
+58 |         pass
    |             ^ W291
    |
    = help: Remove trailing whitespace
@@ -1106,7 +1106,7 @@ legion/core/interfaces.py:58:14: W292 [*] No newline at end of file
    |
 56 |     def store_memories(self, agent_name: str, snippets: List[Dict[str, Any]], base_dir: str = "memory") -> None:
 57 |         """Store multiple memory snippets with embeddings."""
-58 |         pass 
+58 |         pass
    |              ^ W292
    |
    = help: Add trailing newline
@@ -1223,7 +1223,7 @@ legion/core/logging_config.py:13:1: W293 Blank line contains whitespace
    |
 11 |     """
 12 |     Configure structured JSON logging for the Legion system.
-13 |     
+13 |
    | ^^^^ W293
 14 |     Args:
 15 |         log_level (str): The logging level to set (default: 'INFO').
@@ -1234,7 +1234,7 @@ legion/core/logging_config.py:18:1: W293 [*] Blank line contains whitespace
    |
 16 |     """
 17 |     level = getattr(logging, log_level.upper(), logging.INFO)
-18 |     
+18 |
    | ^^^^ W293
 19 |     # Create a JSON formatter
 20 |     class JsonFormatter(logging.Formatter):
@@ -1245,7 +1245,7 @@ legion/core/logging_config.py:34:1: W293 [*] Blank line contains whitespace
    |
 32 |                 log_data['exception'] = self.formatException(record.exc_info)
 33 |             return json.dumps(log_data)
-34 |     
+34 |
    | ^^^^ W293
 35 |     # Configure root logger
 36 |     logger = logging.getLogger()
@@ -1256,7 +1256,7 @@ legion/core/logging_config.py:38:1: W293 [*] Blank line contains whitespace
    |
 36 |     logger = logging.getLogger()
 37 |     logger.setLevel(level)
-38 |     
+38 |
    | ^^^^ W293
 39 |     # Remove existing handlers
 40 |     for handler in logger.handlers[:]:
@@ -1267,7 +1267,7 @@ legion/core/logging_config.py:42:1: W293 [*] Blank line contains whitespace
    |
 40 |     for handler in logger.handlers[:]:
 41 |         logger.removeHandler(handler)
-42 |     
+42 |
    | ^^^^ W293
 43 |     # Add console handler with JSON formatter
 44 |     console_handler = logging.StreamHandler(sys.stdout)
@@ -1278,17 +1278,17 @@ legion/core/logging_config.py:47:1: W293 [*] Blank line contains whitespace
    |
 45 |     console_handler.setFormatter(JsonFormatter())
 46 |     logger.addHandler(console_handler)
-47 |     
+47 |
    | ^^^^ W293
-48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level}) 
+48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level})
    |
    = help: Remove whitespace from blank line
 
 legion/core/logging_config.py:48:89: W291 [*] Trailing whitespace
    |
 46 |     logger.addHandler(console_handler)
-47 |     
-48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level}) 
+47 |
+48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level})
    |                                                                                         ^ W291
    |
    = help: Remove trailing whitespace
@@ -1296,8 +1296,8 @@ legion/core/logging_config.py:48:89: W291 [*] Trailing whitespace
 legion/core/logging_config.py:48:90: W292 [*] No newline at end of file
    |
 46 |     logger.addHandler(console_handler)
-47 |     
-48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level}) 
+47 |
+48 |     logging.info('Logging initialized with JSON format', extra={'log_level': log_level})
    |                                                                                          ^ W292
    |
    = help: Add trailing newline
@@ -1449,7 +1449,7 @@ legion/core/utils/indexing.py:22:84: W291 [*] Trailing whitespace
    |
 20 |     """Extracts keywords from text (stub)."""
 21 |     # Simple placeholder
-22 |     return re.findall(r'\b\w{4,}\b', text.lower()) # Example: find words >= 4 chars 
+22 |     return re.findall(r'\b\w{4,}\b', text.lower()) # Example: find words >= 4 chars
    |                                                                                    ^ W291
    |
    = help: Remove trailing whitespace
@@ -1458,7 +1458,7 @@ legion/core/utils/indexing.py:22:85: W292 [*] No newline at end of file
    |
 20 |     """Extracts keywords from text (stub)."""
 21 |     # Simple placeholder
-22 |     return re.findall(r'\b\w{4,}\b', text.lower()) # Example: find words >= 4 chars 
+22 |     return re.findall(r'\b\w{4,}\b', text.lower()) # Example: find words >= 4 chars
    |                                                                                     ^ W292
    |
    = help: Add trailing newline
@@ -1480,7 +1480,7 @@ legion/core/utils/network.py:27:60: W291 [*] Trailing whitespace
    |
 25 |                 raise e
 26 |     # Should not be reached, but needed for type hinting
-27 |     raise RuntimeError("Exhausted retries without success") 
+27 |     raise RuntimeError("Exhausted retries without success")
    |                                                            ^ W291
    |
    = help: Remove trailing whitespace
@@ -1489,7 +1489,7 @@ legion/core/utils/network.py:27:61: W292 [*] No newline at end of file
    |
 25 |                 raise e
 26 |     # Should not be reached, but needed for type hinting
-27 |     raise RuntimeError("Exhausted retries without success") 
+27 |     raise RuntimeError("Exhausted retries without success")
    |                                                             ^ W292
    |
    = help: Add trailing newline
@@ -1509,7 +1509,7 @@ legion/database/chroma_interface.py:11:16: W291 [*] Trailing whitespace
    |
  9 |     if "agent directive example" in query_text:
 10 |         return {"source": "chroma_placeholder", "data": "Relevant context for agent directive example."}
-11 |     return None 
+11 |     return None
    |                ^ W291
    |
    = help: Remove trailing whitespace
@@ -1518,7 +1518,7 @@ legion/database/chroma_interface.py:11:17: W292 [*] No newline at end of file
    |
  9 |     if "agent directive example" in query_text:
 10 |         return {"source": "chroma_placeholder", "data": "Relevant context for agent directive example."}
-11 |     return None 
+11 |     return None
    |                 ^ W292
    |
    = help: Add trailing newline
@@ -1537,7 +1537,7 @@ legion/discord/commands.py:156:17: SIM105 Use `contextlib.suppress(Exception)` i
 
 legion/middleware/__init__.py:1:37: W291 [*] Trailing whitespace
   |
-1 | # Initializes the middleware package 
+1 | # Initializes the middleware package
   |                                     ^ W291
 2 | from .validator import validate_directive
 3 | from .hallucination_guard import guard_response
@@ -1546,7 +1546,7 @@ legion/middleware/__init__.py:1:37: W291 [*] Trailing whitespace
 
 legion/middleware/__init__.py:2:1: I001 [*] Import block is un-sorted or un-formatted
   |
-1 |   # Initializes the middleware package 
+1 |   # Initializes the middleware package
 2 | / from .validator import validate_directive
 3 | | from .hallucination_guard import guard_response
 4 | | from legion.agents.therapist.validation import therapist_validate
@@ -1560,7 +1560,7 @@ legion/middleware/__init__.py:25:1: W293 [*] Blank line contains whitespace
    |
 23 |     # Let's assume 'request_payload' contains 'confidence'.
 24 |     # If not, this step might need to be conditional or adapt.
-25 |     
+25 |
    | ^^^^ W293
 26 |     initial_confidence = request_payload.get("confidence")
 27 |     if initial_confidence is None:
@@ -1573,7 +1573,7 @@ legion/middleware/__init__.py:35:9: T201 `print` found
 34 |         # In a real system, this would need careful consideration.
 35 |         print("Warning: Confidence not found in request_payload for hallucination guard/therapist. Using default 0.0.")
    |         ^^^^^ T201
-36 |         initial_confidence = 0.0 
+36 |         initial_confidence = 0.0
    |
    = help: Remove `print`
 
@@ -1581,7 +1581,7 @@ legion/middleware/__init__.py:36:33: W291 [*] Trailing whitespace
    |
 34 |         # In a real system, this would need careful consideration.
 35 |         print("Warning: Confidence not found in request_payload for hallucination guard/therapist. Using default 0.0.")
-36 |         initial_confidence = 0.0 
+36 |         initial_confidence = 0.0
    |                                 ^ W291
 37 |
 38 |     # Hallucination guard expects a 'response' like structure with 'confidence'
@@ -1592,7 +1592,7 @@ legion/middleware/__init__.py:42:1: W293 [*] Blank line contains whitespace
    |
 40 |     hallucination_check_input = {"confidence": initial_confidence} # Can add other relevant parts of payload if needed
 41 |     hallucination_result = guard_response(hallucination_check_input, threshold=confidence_threshold)
-42 |     
+42 |
    | ^^^^ W293
 43 |     middleware_passed_initial_checks = True # From directive_validation_result
    |
@@ -1601,7 +1601,7 @@ legion/middleware/__init__.py:42:1: W293 [*] Blank line contains whitespace
 legion/middleware/__init__.py:44:1: W293 [*] Blank line contains whitespace
    |
 43 |     middleware_passed_initial_checks = True # From directive_validation_result
-44 |     
+44 |
    | ^^^^ W293
 45 |     if not hallucination_result.get("valid", False):
 46 |         # Even if hallucination guard fails, therapist might still review,
@@ -1612,7 +1612,7 @@ legion/middleware/__init__.py:65:1: W293 [*] Blank line contains whitespace
    |
 63 |         "middleware_validation": middleware_passed_initial_checks and hallucination_result.get("valid", True) # True if directive AND …
 64 |     }
-65 |     
+65 |
    | ^^^^ W293
 66 |     # If initial middleware (validator or hallucination) failed, therapist input reflects this.
 67 |     # The therapist may still choose to override.
@@ -1632,7 +1632,7 @@ legion/middleware/__init__.py:89:2: W291 [*] Trailing whitespace
    |
 87 | #     with open("legion/config/directives.yaml", "w") as f:
 88 | #         yaml.dump({"executor": {"allowed_directives": ["deploy critical patch X", "run diagnostics"]}}, f)
-89 | # 
+89 | #
    |  ^ W291
 90 | #     test_request_valid = {
 91 | #         "agent": "executor",
@@ -1643,7 +1643,7 @@ legion/middleware/__init__.py:97:2: W291 [*] Trailing whitespace
    |
 95 | #     result_valid = run_middleware_pipeline(test_request_valid)
 96 | #     print(f"Test Valid Request: {result_valid}")
-97 | # 
+97 | #
    |  ^ W291
 98 | #     test_request_low_confidence_therapist_pass = { # therapist has stricter confidence
 99 | #         "agent": "executor",
@@ -1654,7 +1654,7 @@ legion/middleware/__init__.py:101:29: W291 [*] Trailing whitespace
     |
  99 | #         "agent": "executor",
 100 | #         "directive": "deploy critical patch X",
-101 | #         "confidence": 0.80 
+101 | #         "confidence": 0.80
     |                             ^ W291
 102 | #     }
 103 | #     result_low_confidence_therapist_fail = run_middleware_pipeline(test_request_low_confidence_therapist_pass, confidence_threshold…
@@ -1665,7 +1665,7 @@ legion/middleware/__init__.py:105:2: W291 [*] Trailing whitespace
     |
 103 | #     result_low_confidence_therapist_fail = run_middleware_pipeline(test_request_low_confidence_therapist_pass, confidence_threshold…
 104 | #     print(f"Test Low Confidence (Therapist Fail): {result_low_confidence_therapist_fail}")
-105 | # 
+105 | #
     |  ^ W291
 106 | #     test_request_low_confidence_middleware_fail = {
 107 | #         "agent": "executor",
@@ -1676,7 +1676,7 @@ legion/middleware/__init__.py:109:29: W291 [*] Trailing whitespace
     |
 107 | #         "agent": "executor",
 108 | #         "directive": "deploy critical patch X",
-109 | #         "confidence": 0.70 
+109 | #         "confidence": 0.70
     |                             ^ W291
 110 | #     }
 111 | #     # Middleware (hallucination guard) uses 0.75 by default
@@ -1687,7 +1687,7 @@ legion/middleware/__init__.py:112:142: W291 [*] Trailing whitespace
     |
 110 | …
 111 | …
-112 | …uest_low_confidence_middleware_fail, confidence_threshold=0.75) 
+112 | …uest_low_confidence_middleware_fail, confidence_threshold=0.75)
     |                                                                 ^ W291
 113 | …ddleware_fail}")
 114 | …
@@ -1698,7 +1698,7 @@ legion/middleware/__init__.py:114:2: W291 [*] Trailing whitespace
     |
 112 | #     result_low_confidence_middleware_fail = run_middleware_pipeline(test_request_low_confidence_middleware_fail, confidence_thresho…
 113 | #     print(f"Test Low Confidence (Middleware Fail): {result_low_confidence_middleware_fail}")
-114 | # 
+114 | #
     |  ^ W291
 115 | #     test_request_invalid_directive = {
 116 | #         "agent": "executor",
@@ -1709,7 +1709,7 @@ legion/middleware/__init__.py:122:2: W291 [*] Trailing whitespace
     |
 120 | #     result_invalid_directive = run_middleware_pipeline(test_request_invalid_directive)
 121 | #     print(f"Test Invalid Directive: {result_invalid_directive}")
-122 | # 
+122 | #
     |  ^ W291
 123 | #     # Cleanup mock
 124 | #     # os.remove("legion/config/directives.yaml")
@@ -1720,7 +1720,7 @@ legion/middleware/__init__.py:126:38: W291 [*] Trailing whitespace
     |
 124 | #     # os.remove("legion/config/directives.yaml")
 125 | #     # if not os.listdir("legion/config"): # Check if dir is empty
-126 | #         # os.rmdir("legion/config") 
+126 | #         # os.rmdir("legion/config")
     |                                      ^ W291
     |
     = help: Remove trailing whitespace
@@ -1729,7 +1729,7 @@ legion/middleware/__init__.py:126:39: W292 [*] No newline at end of file
     |
 124 | #     # os.remove("legion/config/directives.yaml")
 125 | #     # if not os.listdir("legion/config"): # Check if dir is empty
-126 | #         # os.rmdir("legion/config") 
+126 | #         # os.rmdir("legion/config")
     |                                       ^ W292
     |
     = help: Add trailing newline
@@ -1738,7 +1738,7 @@ legion/middleware/hallucination_guard.py:17:49: W291 [*] Trailing whitespace
    |
 15 |     if confidence < threshold:
 16 |         return {"valid": False, "reason": "Low confidence (possible hallucination)"}
-17 |     return {"valid": True, "response": response} 
+17 |     return {"valid": True, "response": response}
    |                                                 ^ W291
    |
    = help: Remove trailing whitespace
@@ -1747,21 +1747,21 @@ legion/middleware/hallucination_guard.py:17:50: W292 [*] No newline at end of fi
    |
 15 |     if confidence < threshold:
 16 |         return {"valid": False, "reason": "Low confidence (possible hallucination)"}
-17 |     return {"valid": True, "response": response} 
+17 |     return {"valid": True, "response": response}
    |                                                  ^ W292
    |
    = help: Add trailing newline
 
 legion/middleware/tests/__init__.py:1:43: W291 [*] Trailing whitespace
   |
-1 | # Initializes the middleware tests package 
+1 | # Initializes the middleware tests package
   |                                           ^ W291
   |
   = help: Remove trailing whitespace
 
 legion/middleware/tests/__init__.py:1:44: W292 [*] No newline at end of file
   |
-1 | # Initializes the middleware tests package 
+1 | # Initializes the middleware tests package
   |                                            ^ W292
   |
   = help: Add trailing newline
@@ -1825,7 +1825,7 @@ legion/middleware/tests/test_middleware.py:11:1: I001 [*] Import block is un-sor
 15 | | # Import the new pipeline function
 16 | | from legion.middleware import run_middleware_pipeline
 17 | | # Import therapist_validate to potentially mock or inspect if needed, though not directly called by tests here
-18 | | from legion.agents.therapist.validation import therapist_validate 
+18 | | from legion.agents.therapist.validation import therapist_validate
 19 | |
 20 | | # For mocking directives.yaml if needed
 21 | | import yaml
@@ -1859,14 +1859,14 @@ legion/middleware/tests/test_middleware.py:16:1: E402 Module level import not at
 16 | from legion.middleware import run_middleware_pipeline
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ E402
 17 | # Import therapist_validate to potentially mock or inspect if needed, though not directly called by tests here
-18 | from legion.agents.therapist.validation import therapist_validate 
+18 | from legion.agents.therapist.validation import therapist_validate
    |
 
 legion/middleware/tests/test_middleware.py:18:1: E402 Module level import not at top of file
    |
 16 | from legion.middleware import run_middleware_pipeline
 17 | # Import therapist_validate to potentially mock or inspect if needed, though not directly called by tests here
-18 | from legion.agents.therapist.validation import therapist_validate 
+18 | from legion.agents.therapist.validation import therapist_validate
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ E402
 19 |
 20 | # For mocking directives.yaml if needed
@@ -1876,7 +1876,7 @@ legion/middleware/tests/test_middleware.py:18:48: F401 [*] `legion.agents.therap
    |
 16 | from legion.middleware import run_middleware_pipeline
 17 | # Import therapist_validate to potentially mock or inspect if needed, though not directly called by tests here
-18 | from legion.agents.therapist.validation import therapist_validate 
+18 | from legion.agents.therapist.validation import therapist_validate
    |                                                ^^^^^^^^^^^^^^^^^^ F401
 19 |
 20 | # For mocking directives.yaml if needed
@@ -1887,7 +1887,7 @@ legion/middleware/tests/test_middleware.py:18:66: W291 [*] Trailing whitespace
    |
 16 | from legion.middleware import run_middleware_pipeline
 17 | # Import therapist_validate to potentially mock or inspect if needed, though not directly called by tests here
-18 | from legion.agents.therapist.validation import therapist_validate 
+18 | from legion.agents.therapist.validation import therapist_validate
    |                                                                  ^ W291
 19 |
 20 | # For mocking directives.yaml if needed
@@ -1962,7 +1962,7 @@ legion/middleware/tests/test_middleware.py:98:1: W293 [*] Blank line contains wh
     |
  96 |             with open(temp_directives_path, 'r') as f_orig:
  97 |                 original_directives_content = f_orig.read()
- 98 |         
+ 98 |
     | ^^^^^^^^ W293
  99 |         test_directives = {
 100 |             "executor": {"allowed_directives": ["deploy critical patch X", "run diagnostics"]},
@@ -1982,7 +1982,7 @@ legion/middleware/tests/test_middleware.py:105:1: W293 [*] Blank line contains w
     |
 103 |         with open(temp_directives_path, 'w') as f_temp:
 104 |             yaml.dump(test_directives, f_temp)
-105 |         
+105 |
     | ^^^^^^^^ W293
 106 |         # Force reload of directives in validator module
 107 |         validator_module._loaded_directives = None
@@ -1993,7 +1993,7 @@ legion/middleware/tests/test_middleware.py:121:93: W291 [*] Trailing whitespace
     |
 119 |         self.assertFalse(result_s2["final_valid"], "S2 should have been rejected by therapist due to confidence")
 120 |         self.assertEqual(result_s2["source"], "therapist")
-121 |         self.assertIn("Therapist confidence threshold not met", result_s2.get("reason", "")) 
+121 |         self.assertIn("Therapist confidence threshold not met", result_s2.get("reason", ""))
     |                                                                                             ^ W291
 122 |
 123 |         # Scenario 3: Valid directive, confidence too low for middleware (hallucination guard threshold 0.75)
@@ -2004,9 +2004,9 @@ legion/middleware/tests/test_middleware.py:129:73: W291 [*] Trailing whitespace
     |
 127 |         # The therapist_validate function (as stubbed) might still pass it if other conditions are met
 128 |         # but the overall pipeline will reflect the therapist's decision based on that input.
-129 |         # Let's trace: validator pass, hallucination fail (valid=False), 
+129 |         # Let's trace: validator pass, hallucination fail (valid=False),
     |                                                                         ^ W291
-130 |         # therapist_input gets middleware_validation=False. Therapist's logic (if not logical/strategic fail) 
+130 |         # therapist_input gets middleware_validation=False. Therapist's logic (if not logical/strategic fail)
 131 |         # will then check confidence (0.70 < 0.85) -> therapist fail.
     |
     = help: Remove trailing whitespace
@@ -2014,8 +2014,8 @@ legion/middleware/tests/test_middleware.py:129:73: W291 [*] Trailing whitespace
 legion/middleware/tests/test_middleware.py:130:110: W291 [*] Trailing whitespace
     |
 128 |         # but the overall pipeline will reflect the therapist's decision based on that input.
-129 |         # Let's trace: validator pass, hallucination fail (valid=False), 
-130 |         # therapist_input gets middleware_validation=False. Therapist's logic (if not logical/strategic fail) 
+129 |         # Let's trace: validator pass, hallucination fail (valid=False),
+130 |         # therapist_input gets middleware_validation=False. Therapist's logic (if not logical/strategic fail)
     |                                                                                                              ^ W291
 131 |         # will then check confidence (0.70 < 0.85) -> therapist fail.
 132 |         result_s3 = run_middleware_pipeline(payload_s3, confidence_threshold=0.75)
@@ -2026,9 +2026,9 @@ legion/middleware/tests/test_middleware.py:136:80: W291 [*] Trailing whitespace
     |
 134 |         self.assertEqual(result_s3["source"], "therapist") # Therapist makes the final call based on its rules and input
 135 |         self.assertIn("Therapist confidence threshold not met", result_s3.get("reason", ""))
-136 |         # Note: The therapist input would have had middleware_validation=False. 
+136 |         # Note: The therapist input would have had middleware_validation=False.
     |                                                                                ^ W291
-137 |         # The therapist_validate function then applies its own logic. If it only checked middleware_validation, 
+137 |         # The therapist_validate function then applies its own logic. If it only checked middleware_validation,
 138 |         # it might stop there. But it also checks confidence independently.
     |
     = help: Remove trailing whitespace
@@ -2036,8 +2036,8 @@ legion/middleware/tests/test_middleware.py:136:80: W291 [*] Trailing whitespace
 legion/middleware/tests/test_middleware.py:137:112: W291 [*] Trailing whitespace
     |
 135 |         self.assertIn("Therapist confidence threshold not met", result_s3.get("reason", ""))
-136 |         # Note: The therapist input would have had middleware_validation=False. 
-137 |         # The therapist_validate function then applies its own logic. If it only checked middleware_validation, 
+136 |         # Note: The therapist input would have had middleware_validation=False.
+137 |         # The therapist_validate function then applies its own logic. If it only checked middleware_validation,
     |                                                                                                                ^ W291
 138 |         # it might stop there. But it also checks confidence independently.
     |
@@ -2078,7 +2078,7 @@ legion/middleware/tests/test_middleware.py:167:13: PTH107 `os.remove()` should b
 166 |         elif os.path.exists(temp_directives_path):
 167 |             os.remove(temp_directives_path)
     |             ^^^^^^^^^ PTH107
-168 |         
+168 |
 169 |         # Important: Reset validator module's cache if it was changed globally for other tests
     |
 
@@ -2086,17 +2086,17 @@ legion/middleware/tests/test_middleware.py:168:1: W293 [*] Blank line contains w
     |
 166 |         elif os.path.exists(temp_directives_path):
 167 |             os.remove(temp_directives_path)
-168 |         
+168 |
     | ^^^^^^^^ W293
 169 |         # Important: Reset validator module's cache if it was changed globally for other tests
-170 |         validator_module._loaded_directives = None 
+170 |         validator_module._loaded_directives = None
     |
     = help: Remove whitespace from blank line
 
 legion/middleware/tests/test_middleware.py:170:51: W291 [*] Trailing whitespace
     |
 169 |         # Important: Reset validator module's cache if it was changed globally for other tests
-170 |         validator_module._loaded_directives = None 
+170 |         validator_module._loaded_directives = None
     |                                                   ^ W291
 171 |
 172 | if __name__ == "__main__":
@@ -2107,7 +2107,7 @@ legion/middleware/tests/test_middleware.py:180:41: W291 [*] Trailing whitespace
     |
 178 |     result = runner.run(suite)
 179 |     # Exit with a non-zero code if tests failed, for CI purposes
-180 |     sys.exit(not result.wasSuccessful()) 
+180 |     sys.exit(not result.wasSuccessful())
     |                                         ^ W291
     |
     = help: Remove trailing whitespace
@@ -2116,7 +2116,7 @@ legion/middleware/tests/test_middleware.py:180:42: W292 [*] No newline at end of
     |
 178 |     result = runner.run(suite)
 179 |     # Exit with a non-zero code if tests failed, for CI purposes
-180 |     sys.exit(not result.wasSuccessful()) 
+180 |     sys.exit(not result.wasSuccessful())
     |                                          ^ W292
     |
     = help: Add trailing newline
@@ -2179,7 +2179,7 @@ legion/middleware/validator.py:51:116: W291 [*] Trailing whitespace
    |
 49 |         return {"is_valid": True}
 50 |     else:
-51 |         return {"is_valid": False, "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'."} 
+51 |         return {"is_valid": False, "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'."}
    |                                                                                                                    ^ W291
    |
    = help: Remove trailing whitespace
@@ -2188,7 +2188,7 @@ legion/middleware/validator.py:51:117: W292 [*] No newline at end of file
    |
 49 |         return {"is_valid": True}
 50 |     else:
-51 |         return {"is_valid": False, "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'."} 
+51 |         return {"is_valid": False, "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'."}
    |                                                                                                                     ^ W292
    |
    = help: Add trailing newline
@@ -2244,7 +2244,7 @@ legion/orchestrator.py:1393:1: W293 [*] Blank line contains whitespace
      |
 1391 | …     new_task_id = uuid.uuid4()
 1392 | …     logger.info(f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'.")
-1393 | …     
+1393 | …
      ^^^^^^^^ W293
 1394 | …     # Example: Store task in a simple list or more sophisticated state management
 1395 | …     # self.task_queue.append({"id": new_task_id, "agent": agent_name, "directive": validated_directive, "status": "pending", "payl…
@@ -2255,7 +2255,7 @@ legion/orchestrator.py:1396:1: W293 [*] Blank line contains whitespace
      |
 1394 | …     # Example: Store task in a simple list or more sophisticated state management
 1395 | …     # self.task_queue.append({"id": new_task_id, "agent": agent_name, "directive": validated_directive, "status": "pending", "payl…
-1396 | …     
+1396 | …
      ^^^^^^^^ W293
 1397 | …     return new_task_id
      |

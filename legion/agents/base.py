@@ -9,15 +9,13 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-import hashlib
 
 import openai
 
-from legion.core.llm_client import LLMClient
+from legion.core.di_container import ILLMClient, container
+from legion.core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
-from legion.core.di_container import container, ILLMClient
-from legion.core.logging_config import setup_logging
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -37,13 +35,19 @@ AGENT_EMOJIS = {
 class BaseAgent:
     """Base class for all Legion agents, providing shared logic and interfaces."""
 
-    def __init__(self, name: str, config: dict, llm_client: 'ILLMClient' = None, state_manager: 'IStateManager' = None):
+    def __init__(
+        self,
+        name: str,
+        config: dict,
+        llm_client: "ILLMClient" = None,
+        state_manager: "IStateManager" = None,
+    ):
         """Initialize the Base Agent with dependency injection for LLM client and state manager."""
         self.name = name
         self.config = config
-        self.logger = logging.getLogger(f'agent.{name}')
+        self.logger = logging.getLogger(f"agent.{name}")
         setup_logging()  # Ensure logging is configured
-        self.logger.info(f'Agent {name} initialized', extra={'agent_name': name})
+        self.logger.info(f"Agent {name} initialized", extra={"agent_name": name})
         self.orchestrator = None
         self.client = None
         self.channel_id = getattr(self.orchestrator, "agent_channel_ids", {}).get(
@@ -90,7 +94,7 @@ class BaseAgent:
             if chunk:
                 chunks.append(chunk)
             for i, chunk in enumerate(chunks):
-                suffix = f"\n[Message chunk {i+1}/{len(chunks)}]"
+                suffix = f"\n[Message chunk {i + 1}/{len(chunks)}]"
                 to_send = chunk + suffix if i == len(chunks) - 1 else chunk
                 await channel.send(f"{prefix}{to_send}")
         else:
@@ -121,21 +125,25 @@ class BaseAgent:
                 except Exception as e:
                     logging.warning(f"[{self.name}] Failed to build introduction: {e}")
                     first_line = "Ready to assist."
-                intro = (
-                    f"{AGENT_EMOJIS.get(self.name, '')} **{self.name}** here! {first_line}"
-                )
+                intro = f"{AGENT_EMOJIS.get(self.name, '')} **{self.name}** here! {first_line}"
                 await self.post_to_discord(intro)
                 self.introduced = True
             user_query = (
-                content if content is not None else (context["content"] if context else "")
+                content
+                if content is not None
+                else (context["content"] if context else "")
             )
             timestamp = (
                 timestamp
                 if timestamp is not None
-                else (context["timestamp"] if context and "timestamp" in context else None)
+                else (
+                    context["timestamp"] if context and "timestamp" in context else None
+                )
             )
             thread_id = (
-                timestamp.isoformat() if hasattr(timestamp, "isoformat") else str(timestamp)
+                timestamp.isoformat()
+                if hasattr(timestamp, "isoformat")
+                else str(timestamp)
             )
             # 1. Persona system prompt
             try:
@@ -143,13 +151,18 @@ class BaseAgent:
                     system_prompt = self.system_prompt.strip()
                 else:
                     system_prompt = (
-                        self.config.get("default_prompt") or "You are a helpful assistant."
+                        self.config.get("default_prompt")
+                        or "You are a helpful assistant."
                     )
             except AttributeError as e:
-                logging.error(f"[{self.name}] Failed to load system prompt due to attribute error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to load system prompt due to attribute error: {e}"
+                )
                 system_prompt = "You are a helpful assistant."
             except KeyError as e:
-                logging.error(f"[{self.name}] Failed to load system prompt due to missing key: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to load system prompt due to missing key: {e}"
+                )
                 system_prompt = "You are a helpful assistant."
             # 2. Retrieve long-term memory via helper
             try:
@@ -162,20 +175,30 @@ class BaseAgent:
                     timestamp=timestamp,
                 )
             except RuntimeError as e:
-                logging.warning(f"[{self.name}] Failed to retrieve memories due to runtime error: {e}")
+                logging.warning(
+                    f"[{self.name}] Failed to retrieve memories due to runtime error: {e}"
+                )
                 memories = []
             except ValueError as e:
-                logging.warning(f"[{self.name}] Failed to retrieve memories due to value error: {e}")
+                logging.warning(
+                    f"[{self.name}] Failed to retrieve memories due to value error: {e}"
+                )
                 memories = []
             # 3. Fetch conversation history (last 5 messages)
             try:
                 channel_id = self.orchestrator.agent_channel_ids.get(self.name)
-                thread_history = await self.fetch_thread_history(channel_id, thread_id, 5)
+                thread_history = await self.fetch_thread_history(
+                    channel_id, thread_id, 5
+                )
             except RuntimeError as e:
-                logging.error(f"[{self.name}] Failed to fetch thread history due to runtime error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to fetch thread history due to runtime error: {e}"
+                )
                 thread_history = []
             except AttributeError as e:
-                logging.error(f"[{self.name}] Failed to fetch thread history due to attribute error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to fetch thread history due to attribute error: {e}"
+                )
                 thread_history = []
             # 4. Build LLM payload using PromptBuilder
             messages = PromptBuilder.build(
@@ -208,9 +231,13 @@ class BaseAgent:
                             }
                         )
                 except AttributeError as e:
-                    logging.warning(f"[{self.name}] Failed to log latency due to attribute error: {e}")
+                    logging.warning(
+                        f"[{self.name}] Failed to log latency due to attribute error: {e}"
+                    )
                 except RuntimeError as e:
-                    logging.warning(f"[{self.name}] Failed to log latency due to runtime error: {e}")
+                    logging.warning(
+                        f"[{self.name}] Failed to log latency due to runtime error: {e}"
+                    )
                 print(f"[DEBUG] LLM raw response: {reply}")
                 # Check for 'choices' in the response
                 if hasattr(reply, "choices") or (
@@ -224,7 +251,9 @@ class BaseAgent:
                 # Return the assistant reply as before
                 return reply
             except RuntimeError as e:
-                logging.error(f"[{self.name}] LLM call failed due to runtime error: {e}")
+                logging.error(
+                    f"[{self.name}] LLM call failed due to runtime error: {e}"
+                )
                 reply = "[Error: LLM unavailable]"
             except ValueError as e:
                 logging.error(f"[{self.name}] LLM call failed due to value error: {e}")
@@ -233,23 +262,37 @@ class BaseAgent:
             try:
                 await self.post_to_discord(reply)
             except RuntimeError as e:
-                logging.error(f"[{self.name}] Failed to post reply to Discord due to runtime error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to post reply to Discord due to runtime error: {e}"
+                )
             except AttributeError as e:
-                logging.error(f"[{self.name}] Failed to post reply to Discord due to attribute error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to post reply to Discord due to attribute error: {e}"
+                )
             # 7. Append to SQLite memory log
             try:
                 # Ensure user_query is serializable
                 serializable_query = user_query
                 if isinstance(user_query, dict):
                     serializable_query = user_query.copy()
-                    if "timestamp" in serializable_query and hasattr(serializable_query["timestamp"], "isoformat"):
-                        serializable_query["timestamp"] = serializable_query["timestamp"].isoformat()
-                self.memory.log_task({"type": "user_message", "content": serializable_query})
+                    if "timestamp" in serializable_query and hasattr(
+                        serializable_query["timestamp"], "isoformat"
+                    ):
+                        serializable_query["timestamp"] = serializable_query[
+                            "timestamp"
+                        ].isoformat()
+                self.memory.log_task(
+                    {"type": "user_message", "content": serializable_query}
+                )
                 self.memory.log_task({"type": "assistant_reply", "content": reply})
             except RuntimeError as e:
-                logging.error(f"[{self.name}] Failed to append to SQLite memory due to runtime error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to append to SQLite memory due to runtime error: {e}"
+                )
             except ValueError as e:
-                logging.error(f"[{self.name}] Failed to append to SQLite memory due to value error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to append to SQLite memory due to value error: {e}"
+                )
             # 8. Store vector memories with tags/timestamp
             try:
                 # Generate embedding for reply
@@ -263,12 +306,19 @@ class BaseAgent:
                     timestamp=timestamp,
                 )
             except RuntimeError as e:
-                logging.error(f"[{self.name}] Failed to store vector memories due to runtime error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to store vector memories due to runtime error: {e}"
+                )
             except ValueError as e:
-                logging.error(f"[{self.name}] Failed to store vector memories due to value error: {e}")
+                logging.error(
+                    f"[{self.name}] Failed to store vector memories due to value error: {e}"
+                )
             return reply
         except Exception as e:
-            logging.error(f"[{self.name}] Unhandled exception in handle_message: {e}", exc_info=True)
+            logging.error(
+                f"[{self.name}] Unhandled exception in handle_message: {e}",
+                exc_info=True,
+            )
             # Fallback generic error handling
             try:
                 await self.post_to_discord(f"[Error] Internal error in {self.name}.")
@@ -288,9 +338,9 @@ class BaseAgent:
                 input=[text],
                 model=model,
             )
-            if hasattr(response, "data") and response.data:
-                return response["data"][0]["embedding"]
-            elif isinstance(response, dict) and "data" in response and response["data"]:
+            if (hasattr(response, "data") and response.data) or (
+                isinstance(response, dict) and "data" in response and response["data"]
+            ):
                 return response["data"][0]["embedding"]
             else:
                 print(
@@ -310,7 +360,7 @@ class BaseAgent:
         )
         try:
             if not self.client:
-                logging.warning(f"[BaseAgent] No client for fetch_thread_history")
+                logging.warning("[BaseAgent] No client for fetch_thread_history")
                 return []
             channel = self.client.get_channel(channel_id)
             if not channel:
@@ -368,9 +418,13 @@ class BaseAgent:
                         }
                     )
             except AttributeError as e:
-                logging.warning(f"[{self.name}] Failed to log latency metric due to attribute error: {e}")
+                logging.warning(
+                    f"[{self.name}] Failed to log latency metric due to attribute error: {e}"
+                )
             except RuntimeError as e:
-                logging.warning(f"[{self.name}] Failed to log latency metric due to runtime error: {e}")
+                logging.warning(
+                    f"[{self.name}] Failed to log latency metric due to runtime error: {e}"
+                )
             print(f"[DEBUG] LLM raw response: {response}")
             # Check for 'choices' in the response
             if hasattr(response, "choices") or (
@@ -388,7 +442,9 @@ class BaseAgent:
 
             print(f"[ERROR] LLM call failed: {e}")
             traceback.print_exc()
-            raise RuntimeError(f"[{self.name}] LLM call failed due to OpenAI error: {e}")
+            raise RuntimeError(
+                f"[{self.name}] LLM call failed due to OpenAI error: {e}"
+            )
         except ValueError as e:
             import traceback
 
@@ -457,12 +513,15 @@ class BaseAgent:
     ) -> None:
         """Helper to store vector memories with optional tags, timestamp; deduplicates by text."""
         bd = base_dir or self.config.get("memory_base_dir", "memory")
+
         # Deduplicate by text
         def make_hashable_text(text):
             if isinstance(text, dict):
                 import json
+
                 return json.dumps(text, sort_keys=True)
             return str(text)
+
         unique = {
             make_hashable_text(snip["text"]): snip
             for snip in snippets
@@ -482,7 +541,9 @@ class BaseAgent:
             enriched.append(item)
         LegionAgentMemory.store_memories(self.name, enriched, base_dir=bd)
 
-    async def store_message(self, payload: str, message_id: str, metadata: Optional[Dict[str, Any]] = None):
+    async def store_message(
+        self, payload: str, message_id: str, metadata: Optional[Dict[str, Any]] = None
+    ):
         """Store a message in the agent's memory."""
         message: Dict[str, Any] = {
             "id": message_id,
@@ -493,7 +554,5 @@ class BaseAgent:
         }
         # Store user message (will be deduplicated)
         await self.memory.store_memory(
-            message_id,
-            payload,
-            metadata=message["metadata"]
+            message_id, payload, metadata=message["metadata"]
         )

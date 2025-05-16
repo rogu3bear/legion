@@ -19,4 +19,4 @@ else
 fi
 
 echo "Environment reset complete. Your prompt has been cleaned."
-echo "To activate the Legion virtual environment, run: source scripts/activate_once.sh" 
+echo "To activate the Legion virtual environment, run: source scripts/activate_once.sh"

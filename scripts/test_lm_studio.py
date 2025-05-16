@@ -2,6 +2,7 @@
 """
 Test LM Studio OpenAI-compatible endpoint for /v1/chat/completions.
 """
+
 import json
 import os
 
