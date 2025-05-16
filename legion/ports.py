@@ -7,20 +7,8 @@ Reads .env.ports, provides fallback to defaults, and offers a lookup utility.
 from typing import Dict, Optional
 
 from dotenv import dotenv_values
+from legion.default_ports import DEFAULT_PORTS  # Import from the new file
 from legion.utils.port_conflict_checker import check_ports_available  # re-export for orchestrator
-
-# Default ports for common services if not specified in .env.ports
-DEFAULT_PORTS: Dict[str, int] = {
-    "web": 8000,  # Standard for FastAPI/Uvicorn if not overridden
-    "orchestrator": 5555,  # Default ZMQ/IPC for orchestrator if not in .env.ports
-    "redis": 6379,
-    "postgres": 5432,
-    "prometheus": 9090,
-    "grafana": 3000,
-    "dev_frontend": 8000,  # Matches the default in existing docker-compose
-    "chroma": 27020,  # Default port for ChromaDB
-    "test_metrics_server": 9100,  # Unified test metrics server port
-}
 
 RUNTIME_PORTS: Dict[str, int] = {}
 
