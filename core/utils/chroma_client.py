@@ -8,7 +8,7 @@ from urllib.parse import urlparse  # Add for parsing URL
 # from chromadb import AsyncClient # Old import
 import chromadb  # New import
 
-from ..models import ChromaRecord
+from middleware.src.models import ChromaRecord
 
 
 class ChromaClient:
@@ -48,14 +48,6 @@ class ChromaClient:
             self.client = SimpleNamespace()
 
     async def upsert_batch(self, records: List[ChromaRecord]) -> None:
-        docs = [
-            {
-                "id": f"{r.agent_name}:{r.interaction_id}",
-                "embedding": r.embedding,
-                "metadata": r.dict(exclude={"embedding"}),
-            }
-            for r in records
-        ]
         tasks = []
         for r in records:
             # Support both async and sync get_or_create_collection

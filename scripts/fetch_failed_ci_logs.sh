@@ -23,4 +23,4 @@ for id in $ids; do
   else
     echo "   (no log file found)"
   fi
-done 
+done

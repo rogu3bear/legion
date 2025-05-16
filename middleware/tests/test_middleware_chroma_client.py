@@ -8,12 +8,13 @@ import types
 
 import pytest
 
+from core.utils.chroma_client import ChromaClient
+from middleware.src.models import ChromaRecord
+
 # Stub chromadb AsyncClient for test environment
 sys.modules["chromadb"] = types.SimpleNamespace(
     AsyncClient=lambda api_url, api_key: None
 )
-from middleware.src.middleware.chroma_client import ChromaClient
-from middleware.src.models import ChromaRecord
 
 
 @pytest.mark.asyncio

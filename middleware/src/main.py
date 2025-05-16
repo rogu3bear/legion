@@ -7,8 +7,9 @@ import prometheus_client
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
+from core.utils.chroma_client import ChromaClient
+
 from .config import settings
-from .middleware.chroma_client import ChromaClient
 from .middleware.context_manager import ContextManager
 from .middleware.hallucination_guard import HallucinationGuard
 from .models import ChromaRecord, OrchestratorRequest, OrchestratorResponse

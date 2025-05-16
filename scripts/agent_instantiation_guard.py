@@ -13,12 +13,15 @@ import sys
 from pathlib import Path
 from typing import List, Set, Tuple
 
+# Add current script's directory to path to find sibling modules
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import libcst as cst
-from libcst.codemod import VisitorBasedCodemodCommand
-from libcst.metadata import PositionProvider, QualifiedNameProvider, ScopeProvider
 
 # Import our custom wrapper for CodemodContext
-from scripts.legion_codemod_context import CodemodContext
+from legion_codemod_context import CodemodContext
+from libcst.codemod import VisitorBasedCodemodCommand
+from libcst.metadata import PositionProvider, QualifiedNameProvider, ScopeProvider
 
 # Agent classes to target (ensure these match the exact class names)
 AGENT_CLASSES: Set[str] = {
@@ -33,7 +36,7 @@ AGENT_CLASSES: Set[str] = {
 
 # Path to the orchestrator module, relative to repo root, using OS-specific separators
 ORCHESTRATOR_MODULE_PATH_PARTS: Tuple[str, ...] = ("legion", "agents", "python")
-ORCHESTRATOR_FILE_PATH_STR: str = os.path.join("legion", "orchestrator.py")
+ORCHESTRATOR_FILE_PATH_STR: str = str(Path("legion") / "orchestrator.py")
 
 # Expected import prefix for agent classes
 AGENT_IMPORT_PREFIX: Tuple[str, ...] = ("legion", "agents", "python")
@@ -56,7 +59,7 @@ class ImportRemover(cst.CSTTransformer):
         super().__init__()
         self.classes_to_remove = classes_to_remove
 
-    def leave_ImportFrom(
+    def leave_ImportFrom(  # noqa: N802
         self, original_node: cst.ImportFrom, updated_node: cst.ImportFrom
     ) -> cst.CSTNode | cst.RemovalSentinel:
         module_path_parts = []
@@ -140,7 +143,7 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
             # If path resolution fails, err on the side of caution and process the file
             return False
 
-    def visit_Call(self, node: cst.Call) -> None:
+    def visit_Call(self, node: cst.Call) -> None:  # noqa: N802
         if self.should_skip_file():
             return
 
@@ -190,7 +193,7 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
                 # The actual transformation happens in leave_Call
                 pass  # Handled in leave_Call
 
-    def leave_Call(
+    def leave_Call(  # noqa: N802
         self, original_node: cst.Call, updated_node: cst.Call
     ) -> cst.CSTNode:
         if not self.apply_fixes or self.should_skip_file():
@@ -273,10 +276,11 @@ def main() -> None:
     changed_files_count = 0
     processed_files_count = 0
 
-    for file_path in files_to_process:
+    for file_path_obj in files_to_process:
+        file_path = str(file_path_obj)
         processed_files_count += 1
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with file_path_obj.open(encoding="utf-8") as f:
                 source_code = f.read()
         except Exception as e:
             print(f"Error reading {file_path}: {e}", file=sys.stderr)
@@ -287,9 +291,10 @@ def main() -> None:
             context = CodemodContext(
                 args=args,
                 filename=str(
-                    file_path.relative_to(args.repo_root)
-                    if file_path.is_absolute() and args.repo_root in file_path.parents
-                    else file_path
+                    file_path_obj.relative_to(args.repo_root)
+                    if file_path_obj.is_absolute()
+                    and args.repo_root in file_path_obj.parents
+                    else file_path_obj
                 ),
             )
             # Pass repo_root via context.args for the codemod to use
@@ -298,16 +303,14 @@ def main() -> None:
             codemod_instance = AgentInstantiationCodemod(context)
             output_tree = codemod_instance.transform_module(input_tree)
 
-            all_warnings.extend(codemod_instance.warnings)
+            if codemod_instance.warnings:
+                all_warnings.extend(codemod_instance.warnings)
 
-            if args.apply:
-                if input_tree.code != output_tree.code:
-                    with open(file_path, "w", encoding="utf-8") as f:
-                        f.write(output_tree.code)
-                    print(
-                        f"Applied fixes to: {file_path.relative_to(args.repo_root) if file_path.is_absolute() and args.repo_root in file_path.parents else file_path}"
-                    )
-                    changed_files_count += 1
+            if args.apply and input_tree.code != output_tree.code:
+                with file_path_obj.open("w", encoding="utf-8") as f:
+                    f.write(output_tree.code)
+                print(f"Applied fixes to {file_path}")
+                changed_files_count += 1
         except cst.ParserSyntaxError as e:
             print(f"CST Parsing error in {file_path}: {e}", file=sys.stderr)
         except Exception as e:
@@ -315,8 +318,9 @@ def main() -> None:
 
     if all_warnings:
         print("\n--- Warnings ---", file=sys.stderr)
-        for warning in sorted(list(set(all_warnings))):  # Unique sorted warnings
+        for warning in sorted(set(all_warnings)):
             print(warning, file=sys.stderr)
+        sys.exit(1)
 
     if args.apply:
         print(

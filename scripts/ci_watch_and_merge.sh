@@ -37,7 +37,7 @@ if ${ci_passed}; then
   if [ "$merge_status" -eq 0 ]; then
     echo "PR #${PR_NUMBER} merged successfully."
     gh pr comment ${PR_NUMBER} --body "✅ CI green & merged by automation. Posted metrics & agent-feed updates."
-    
+
     echo "Running post-merge follow-ups..."
     echo "Running: pytest --cov=legion --cov-report=term-missing -q"
     pytest --cov=legion --cov-report=term-missing -q
