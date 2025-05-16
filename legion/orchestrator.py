@@ -2082,10 +2082,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Initialize dependencies (basic example)
     # In a real app, container setup would be more sophisticated
-    container.register(
+    container.register_instance(
         ILLMClient, container.get(ILLMClient)
     )  # Assuming already registered from core
-    container.register(IStateManager, container.get(IStateManager))
+    container.register_instance(IStateManager, container.get(IStateManager))
 
     orch = Orchestrator(
         pid_file=PID_FILE,
