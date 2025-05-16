@@ -2,18 +2,44 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 function App() {
-  const [status, setStatus] = useState("")
+  const [agents, setAgents] = useState([])
+  const [selectedAgent, setSelectedAgent] = useState(null)
+  const [config, setConfig] = useState({})
 
   useEffect(() => {
-    fetch("http://localhost:5001/")
+    fetch("http://localhost:5001/agents")
       .then(res => res.json())
-      .then(data => setStatus(data.status))
+      .then(data => setAgents(data.agents))
   }, [])
 
+  const loadAgent = (agent) => {
+    fetch(`http://localhost:5001/agents/${agent}`)
+      .then(res => res.json())
+      .then(data => {
+        setSelectedAgent(agent)
+        setConfig(data)
+      })
+  }
+
   return (
-    <div>
-      <h1>Legion UI</h1>
-      <p>Server Status: {status}</p>
+    <div style={{ padding: "20px" }}>
+      <h1>Legion Agent Management</h1>
+      <ul>
+        {agents.map(agent => (
+          <li key={agent}>
+            <button onClick={() => loadAgent(agent)}>
+              {agent}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {selectedAgent && (
+        <div>
+          <h2>{selectedAgent} Configuration:</h2>
+          <pre>{JSON.stringify(config, null, 2)}</pre>
+        </div>
+      )}
     </div>
   )
 }
