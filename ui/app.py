@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import os
 import yaml
+from legion.ports import get_port
 
 app = Flask(__name__)
 CORS(app)
@@ -29,4 +30,4 @@ def get_agent(agent_name):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=get_port("PORT_ALLOCATOR_UI_BACKEND"))
