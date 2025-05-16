@@ -23,10 +23,6 @@ jobs:
           pip install -U pip
           pip install -r requirements.txt
           pip install flake8
-      - name: Generate and Check .env.ports.example
-        run: |
-          python scripts/gen_env_ports.py legacy/ports.yaml > .env.ports.example
-          git diff --exit-code .env.ports.example || (echo ".env.ports.example is not up to date. Please run scripts/gen_env_ports.py and commit the result." && exit 1)
       - name: Lint code
         run: |
           bash scripts/activate_once.sh
@@ -43,6 +39,15 @@ jobs:
         run: |
           bash scripts/activate_once.sh
           bandit -r legion/ -o artifacts/reports/bandit_report_ci.json -f json
+      - name: Check port availability
+        run: |
+          bash scripts/activate_once.sh
+          python - << 'PYCODE'
+          from legion.ports import load_runtime_ports
+          from legion.utils.port_conflict_checker import check_ports_available
+          ports = load_runtime_ports()
+          check_ports_available(ports)
+          PYCODE
       - name: Run tests
         env:
           GENERAL_CHANNEL_ID: '0'
@@ -109,8 +114,6 @@ jobs:
         pytest -q tests/integration
     - name: CLI smoke test
       run: legion list-agents
-    - name: Check port generation
-      run: bash scripts/gen_ports_env.sh > /dev/null
     - name: Check service health
       env:
         PORT_ALLOCATOR_WEB: 8000

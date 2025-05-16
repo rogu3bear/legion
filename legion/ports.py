@@ -7,6 +7,7 @@ Reads .env.ports, provides fallback to defaults, and offers a lookup utility.
 from typing import Dict, Optional
 
 from dotenv import dotenv_values
+from legion.utils.port_conflict_checker import check_ports_available  # re-export for orchestrator
 
 # Default ports for common services if not specified in .env.ports
 DEFAULT_PORTS: Dict[str, int] = {

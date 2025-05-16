@@ -28,25 +28,11 @@ else
     source .venv/bin/activate
 fi
 
-# Set default PORT if not defined, use 8081 as suggested
-: ${PORT:=8081}
-
-# Port selection with retry
-MAX_RETRIES=5
-RETRY_DELAY=5
-for i in $(seq 1 $MAX_RETRIES); do
-    if lsof -i :$PORT > /dev/null; then
-        log_msg "WARNING: Port $PORT in use. Retrying in $RETRY_DELAY seconds... (Attempt $i)"
-        if [ $i -eq $MAX_RETRIES ]; then
-            log_msg "ERROR: Port $PORT still in use after $MAX_RETRIES attempts. Exiting."
-            exit 1
-        fi
-        sleep $RETRY_DELAY
-    else
-        break
-    fi
-done
-log_msg "INFO: Port $PORT is free. Proceeding."
+# Ensure PORT is set by environment
+if [ -z "${PORT:-}" ]; then
+    log_msg "ERROR: PORT is not set. Please configure it in your environment."
+    exit 1
+fi
 
 # Set default environment variables with better security practices
 : ${SQLALCHEMY_DATABASE_URI:="sqlite:///memory/db/legion.db"}
