@@ -66,8 +66,12 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
         # this assertion will catch it.
         # For the specified assertion `set(DEFAULT_PORTS) <= set(runtime_ports)`
         # this means that every key in DEFAULT_PORTS must be a key in RUNTIME_PORTS.
-        print(f"[Error] Port Mismatch: The following DEFAULT_PORTS keys are not in RUNTIME_PORTS: {missing_keys}")
-        print("         This might indicate an issue with .env.ports generation or naming conventions.")
+        print(
+            f"[Error] Port Mismatch: The following DEFAULT_PORTS keys are not in RUNTIME_PORTS: {missing_keys}"
+        )
+        print(
+            "         This might indicate an issue with .env.ports generation or naming conventions."
+        )
         # Depending on strictness, either raise an error or just warn.
         # For now, printing an error. For a hard fail:
         # raise AssertionError(f"Port Mismatch: DEFAULT_PORTS keys {missing_keys} not in RUNTIME_PORTS")
