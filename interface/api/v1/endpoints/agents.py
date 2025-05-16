@@ -67,6 +67,20 @@ def update_agent_db(
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+
+    # If name is being updated, check for conflicts first
+    new_name = agent_data.get("name")
+    if new_name and new_name != db_agent.name:
+        existing_agent_with_name = db.query(AgentModel).filter(
+            AgentModel.name == new_name, 
+            AgentModel.id != agent_id
+        ).first()
+        if existing_agent_with_name:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Agent name '{new_name}' already exists."
+            )
+
     # Apply updates for provided fields
     for key, value in agent_data.items():
         if hasattr(db_agent, key):

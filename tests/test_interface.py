@@ -4,7 +4,7 @@ import uuid
 from unittest.mock import patch  # Added for mocking
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, status  # Added status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -183,7 +183,7 @@ def superuser_token_headers(client: TestClient, db_session: Session) -> dict[str
 
 
 # Fixture for the database session (replaces override_get_db for cleaner test functions)
-@pytest.fixture(scope="session")  # Use session scope for efficiency
+@pytest.fixture(scope="function")
 def db_session():
     Base.metadata.drop_all(bind=engine)  # Ensure clean slate for session
     Base.metadata.create_all(bind=engine)
@@ -321,7 +321,7 @@ def test_update_nonexistent_agent(client: TestClient, superuser_token_headers: d
 
 
 def test_update_agent_name_conflict(client: TestClient, superuser_token_headers: dict):
-    """Test updating an agent to a name that already exists returns 400."""
+    """Test updating an agent to a name that already exists returns 409."""
     # Create two agents
     agent1 = {"name": "AgentA", "model": "model-a"}
     agent2 = {"name": "AgentB", "model": "model-b"}
@@ -333,8 +333,8 @@ def test_update_agent_name_conflict(client: TestClient, superuser_token_headers:
     response = client.put(
         f"/api/v1/agents/{id2}", headers=superuser_token_headers, json=update_data
     )
-    assert response.status_code == 400
-    assert "Agent name already exists" in response.text
+    assert response.status_code == 409
+    assert "Agent name 'AgentA' already exists." in response.text
 
 
 def test_delete_agent_by_superuser(client: TestClient, superuser_token_headers: dict):
@@ -391,141 +391,102 @@ def test_delete_nonexistent_agent(client: TestClient, superuser_token_headers: d
 # --- System Endpoints --- START ---
 
 
-# Mock orchestrator_comm functions for system endpoint tests
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_orchestrator_status_success(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test successfully getting orchestrator status via IPC."""
-    mock_command_id = "cmd-test-success"
-    mock_send.return_value = mock_command_id
-    mock_response = {
-        "command_id": mock_command_id,
-        "response": {
-            "status": "ok",
-            "detail": "Orchestrator is running",
-            "pid": 12345,
-            "active_agents": ["architect_agent", "metrics_agent"],
-        },
-    }
-    mock_await.return_value = mock_response
+    """Test successful retrieval of orchestrator status."""
+    expected_status = {"status": "healthy", "active_agents": 5}
+    mock_call_orchestrator.return_value = expected_status
 
-    response = client.get(
-        "/api/v1/system/status/orchestrator", headers=regular_user_token_headers
-    )
+    response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
 
-    assert response.status_code == 200
-    assert response.json() == mock_response["response"]
-    mock_send.assert_called_once_with({"action": "status"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert response.status_code == 200, response.text
+    assert response.json() == expected_status
+    mock_call_orchestrator.assert_called_once_with(action="status")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_orchestrator_status_timeout(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test timeout scenario when waiting for orchestrator response."""
-    mock_command_id = "cmd-test-timeout"
-    mock_send.return_value = mock_command_id
-    mock_await.return_value = None  # Simulate timeout
-
-    response = client.get(
-        "/api/v1/system/status/orchestrator", headers=regular_user_token_headers
+    """Test orchestrator status retrieval timeout."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="Test timeout"
     )
+
+    response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
 
     assert response.status_code == 504
-    assert "No response received from orchestrator" in response.text
-    mock_send.assert_called_once_with({"action": "status"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert "Test timeout" in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="status")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_orchestrator_status_error_response(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test scenario where orchestrator returns an error status."""
-    mock_command_id = "cmd-test-error"
-    mock_send.return_value = mock_command_id
-    mock_response = {
-        "command_id": mock_command_id,
-        "response": {"status": "error", "detail": "Something went wrong"},
-    }
-    mock_await.return_value = mock_response
-
-    response = client.get(
-        "/api/v1/system/status/orchestrator", headers=regular_user_token_headers
+    """Test orchestrator returning an error status."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY, detail="Orchestrator error: Test error"
     )
+    response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
 
-    assert response.status_code == 500
-    assert "Orchestrator returned an error: Something went wrong" in response.text
-    mock_send.assert_called_once_with({"action": "status"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert response.status_code == 502
+    assert "Orchestrator error: Test error" in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="status")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_orchestrator_status_send_error(
-    mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test scenario where sending the command via IPC fails."""
-    mock_send.side_effect = OSError("Disk full")
-
-    response = client.get(
-        "/api/v1/system/status/orchestrator", headers=regular_user_token_headers
+    """Test scenario where _call_orchestrator itself raises an unexpected error (e.g. network before ZMQ)."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error communicating with orchestrator."
     )
 
-    assert response.status_code == 503
-    assert "Failed to send command to orchestrator" in response.text
-    mock_send.assert_called_once_with({"action": "status"})
+    response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
+    assert response.status_code == 500
+    assert "Internal error communicating with orchestrator." in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="status")
 
 
 def test_get_orchestrator_status_unauthenticated(client: TestClient):
     """Test accessing orchestrator status endpoint without authentication."""
-    response = client.get("/api/v1/system/status/orchestrator")
+    response = client.get("/api/v1/system/status")
     assert response.status_code == 401
     assert "Not authenticated" in response.text
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_metrics_success(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
     """Test successfully getting system metrics via IPC."""
-    mock_command_id = "cmd-metrics-success"
-    mock_send.return_value = mock_command_id
-    mock_response = {
-        "command_id": mock_command_id,
-        "response": {"status": "ok", "metrics": {"cpu": 10.1, "mem": 512}},
-    }
-    mock_await.return_value = mock_response
+    expected_metrics_payload = {"status": "ok", "metrics": {"cpu": 10.1, "mem": 512}}
+    mock_call_orchestrator.return_value = expected_metrics_payload
 
     response = client.get("/api/v1/system/metrics", headers=regular_user_token_headers)
 
     assert response.status_code == 200
-    assert response.json() == mock_response["response"]
-    mock_send.assert_called_once_with({"action": "metrics"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert response.json() == expected_metrics_payload
+    mock_call_orchestrator.assert_called_once_with(action="metrics")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_metrics_timeout(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test timeout scenario for system metrics request."""
-    mock_command_id = "cmd-metrics-timeout"
-    mock_send.return_value = mock_command_id
-    mock_await.return_value = None  # Simulate timeout
+    """Test system metrics retrieval timeout."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="Test timeout"
+    )
 
     response = client.get("/api/v1/system/metrics", headers=regular_user_token_headers)
-
     assert response.status_code == 504
-    assert "No response received from orchestrator for metrics" in response.text
-    mock_send.assert_called_once_with({"action": "metrics"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert "Test timeout" in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="metrics")
 
 
 def test_get_system_metrics_unauthenticated(client: TestClient):
@@ -535,94 +496,67 @@ def test_get_system_metrics_unauthenticated(client: TestClient):
     assert "Not authenticated" in response.text
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_logs_success(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
     """Test successfully retrieving system logs via IPC."""
-    mock_command_id = "cmd-logs-success"
-    mock_send.return_value = mock_command_id
-    mock_response = {
-        "command_id": mock_command_id,
-        "response": {
-            "status": "ok",
-            "logs": [
-                {
-                    "timestamp": "2024-06-01T12:00:00Z",
-                    "level": "INFO",
-                    "msg": "System started",
-                },
-                {
-                    "timestamp": "2024-06-01T12:01:00Z",
-                    "level": "ERROR",
-                    "msg": "Agent crashed",
-                },
-            ],
-        },
+    expected_logs_payload = {
+        "status": "ok",
+        "logs": [
+            {"timestamp": "2023-01-01T12:00:00", "level": "INFO", "message": "Log 1"},
+            {"timestamp": "2023-01-01T12:00:01", "level": "WARN", "message": "Log 2"},
+        ],
     }
-    mock_await.return_value = mock_response
+    mock_call_orchestrator.return_value = expected_logs_payload
 
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
 
     assert response.status_code == 200
-    assert response.json() == mock_response["response"]
-    mock_send.assert_called_once_with({"action": "logs"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert response.json() == expected_logs_payload
+    mock_call_orchestrator.assert_called_once_with(action="logs")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_logs_timeout(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test timeout scenario when waiting for system logs response."""
-    mock_command_id = "cmd-logs-timeout"
-    mock_send.return_value = mock_command_id
-    mock_await.return_value = None  # Simulate timeout
-
+    """Test system logs retrieval timeout."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="Test timeout"
+    )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
-
     assert response.status_code == 504
-    assert "No response received from orchestrator for logs" in response.text
-    mock_send.assert_called_once_with({"action": "logs"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert "Test timeout" in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="logs")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
-@patch("interface.api.v1.endpoints.system.await_response")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_logs_error_response(
-    mock_await, mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test scenario where orchestrator returns an error for logs."""
-    mock_command_id = "cmd-logs-error"
-    mock_send.return_value = mock_command_id
-    mock_response = {
-        "command_id": mock_command_id,
-        "response": {"status": "error", "detail": "Log retrieval failed"},
-    }
-    mock_await.return_value = mock_response
-
+    """Test system logs retrieval with orchestrator error."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY, detail="Orchestrator error: Log system failure"
+    )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
-
-    assert response.status_code == 500
-    assert "Orchestrator returned an error: Log retrieval failed" in response.text
-    mock_send.assert_called_once_with({"action": "logs"})
-    mock_await.assert_called_once_with(mock_command_id, timeout=10)
+    assert response.status_code == 502
+    assert "Log system failure" in response.json()["detail"] # Check for specific part of detail
+    mock_call_orchestrator.assert_called_once_with(action="logs")
 
 
-@patch("interface.api.v1.endpoints.system.send_command")
+@patch("interface.api.v1.endpoints.system._call_orchestrator")
 def test_get_system_logs_send_error(
-    mock_send, client: TestClient, regular_user_token_headers: dict
+    mock_call_orchestrator, client: TestClient, regular_user_token_headers: dict
 ):
-    """Test scenario where sending the logs command via IPC fails."""
-    mock_send.side_effect = OSError("IPC unavailable")
-
+    """Test scenario where _call_orchestrator itself raises an unexpected error for logs."""
+    mock_call_orchestrator.side_effect = HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error communicating with orchestrator."
+    )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
-
-    assert response.status_code == 503
-    assert "Failed to send command to orchestrator" in response.text
-    mock_send.assert_called_once_with({"action": "logs"})
+    assert response.status_code == 500
+    assert "Internal error communicating with orchestrator." in response.json()["detail"]
+    mock_call_orchestrator.assert_called_once_with(action="logs")
 
 
 def test_get_system_logs_unauthenticated(client: TestClient):

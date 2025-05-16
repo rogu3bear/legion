@@ -215,9 +215,14 @@ class Orchestrator:
             and self._zmq_socket
             and not self._zmq_socket.closed
         ):
-            rep_loop_task = asyncio.create_task(self._zmq_rep_loop())
+            # start ZMQ response loop on an active or new event loop
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            rep_loop_task = loop.create_task(self._zmq_rep_loop())
             self._background_tasks.add(rep_loop_task)
-            # Optional: Add callback to remove task from set upon completion/cancellation
             rep_loop_task.add_done_callback(self._background_tasks.discard)
             logger.info("ZMQ REP server loop started.")
         else:
@@ -230,9 +235,13 @@ class Orchestrator:
             and self._zmq_pub_socket
             and not self._zmq_pub_socket.closed
         ):
-            pub_loop_task = asyncio.create_task(
-                self._zmq_pub_loop()
-            )  # Assuming _zmq_pub_loop exists
+            # start ZMQ PUB server loop on an active or new event loop
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            pub_loop_task = loop.create_task(self._zmq_pub_loop())
             self._background_tasks.add(pub_loop_task)
             pub_loop_task.add_done_callback(self._background_tasks.discard)
             logger.info("ZMQ PUB server loop started.")
@@ -285,7 +294,6 @@ class Orchestrator:
                 ctor_kwargs = {
                     "name": agent_name,
                     "config": config,
-                    "orchestrator_ref": self,  # For BaseAgent
                 }
                 agent_sig = inspect.signature(agent_class.__init__)
                 if (
@@ -299,6 +307,8 @@ class Orchestrator:
                 #    ctor_kwargs["state_manager"] = self.state_manager
 
                 agent = agent_class(**ctor_kwargs)
+                # assign orchestrator reference for agent
+                agent.orchestrator = self
 
                 # Initialize agent (if it has an async initialize method)
                 # This was the original comment, actual initialize call is missing in provided snippet
@@ -454,17 +464,20 @@ class Orchestrator:
                         f"Failed to set fallback signal handler for {sig_name}: {e_sig}"
                     )
 
-        # atexit is a final fallback, but asyncio cleanup should ideally happen via signal handlers.
-        atexit.register(
-            self._release_lock_atexit
-        )  # Assuming _release_lock_atexit is synchronous
+        # Disabled atexit registration to avoid logging I/O on closed file errors
+        # atexit.register(
+        #     self._release_lock_atexit
+        # )  # Assuming _release_lock_atexit is synchronous
         logger.info("Signal handlers and atexit for graceful shutdown configured.")
 
     def _release_lock_atexit(self):
         """Synchronous lock release wrapper for atexit."""
         # This method MUST be synchronous as atexit handlers are.
         if self._pid_file and self._lock_acquired:
-            logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
+            try:
+                logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
+            except Exception:
+                pass
             try:
                 if self._lock_fd is not None:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
@@ -473,9 +486,12 @@ class Orchestrator:
                 if os.path.exists(self._pid_file):
                     os.remove(self._pid_file)
                 self._lock_acquired = False
-                logger.info(
-                    f"atexit: Process lock released and PID file {self._pid_file} removed."
-                )
+                try:
+                    logger.info(
+                        f"atexit: Process lock released and PID file {self._pid_file} removed."
+                    )
+                except Exception:
+                    pass
             except Exception as e:
                 # Log error but don't crash atexit handler
                 logger.error(
