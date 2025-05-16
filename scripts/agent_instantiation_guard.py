@@ -14,8 +14,11 @@ from pathlib import Path
 from typing import List, Set, Tuple
 
 import libcst as cst
-from libcst.codemod import CodemodContext, VisitorBasedCodemodCommand
+from libcst.codemod import VisitorBasedCodemodCommand
 from libcst.metadata import PositionProvider, QualifiedNameProvider, ScopeProvider
+
+# Import our custom wrapper for CodemodContext
+from scripts.legion_codemod_context import CodemodContext
 
 # Agent classes to target (ensure these match the exact class names)
 AGENT_CLASSES: Set[str] = {

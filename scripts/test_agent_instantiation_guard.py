@@ -8,9 +8,9 @@ import libcst as cst
 # Adjust the import path if necessary
 from scripts.agent_instantiation_guard import (
     AgentInstantiationCodemod,
-    CodemodContext,
     class_name_to_agent_key,
 )
+from scripts.legion_codemod_context import CodemodContext
 
 
 # Helper to run the codemod on a string

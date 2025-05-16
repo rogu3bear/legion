@@ -58,7 +58,17 @@ jobs:
           bash scripts/activate_once.sh
           mkdir -p scripts/logs
           mkdir -p artifacts/reports
+          mkdir -p /tmp/ci_logs
           pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ interface/ --maxfail=1 --disable-warnings -q
+      - name: Upload CI Logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ci-logs-build
+          path: |
+            scripts/logs/
+            artifacts/reports/
+            /tmp/ci_logs/
       - name: Upload Logs on Failure
         uses: actions/upload-artifact@v3
         if: failure()
@@ -80,6 +90,10 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
+    - name: Create log directories
+      run: |
+        mkdir -p scripts/logs
+        mkdir -p /tmp/ci_logs
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -121,6 +135,14 @@ jobs:
         # Grafana health
         curl -f "http://localhost:${PORT_ALLOCATOR_GRAFANA}/api/health"
         docker compose down -v
+    - name: Upload CI Logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: ci-logs-test
+        path: |
+          scripts/logs/
+          /tmp/ci_logs/
     - name: Upload Logs on Failure
       uses: actions/upload-artifact@v3
       if: failure()
@@ -147,6 +169,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+      - name: Create log directories
+        run: mkdir -p /tmp/ci_logs
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -154,3 +178,9 @@ jobs:
       - name: Run instantiation guard
         run: |
           python scripts/agent_instantiation_guard.py legion/
+      - name: Upload CI Logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ci-logs-agent-guard
+          path: /tmp/ci_logs/
