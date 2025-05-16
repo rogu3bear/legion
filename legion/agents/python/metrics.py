@@ -15,16 +15,11 @@ from legion.agents.base import BaseAgent
 class MetricsAgent(BaseAgent):
     """An agent for collecting and analyzing system metrics."""
 
-    def __init__(self, orchestrator, llm_client=None):
-        """Initialize the MetricsAgent with orchestrator and optional llm_client."""
-        # Determine configuration from orchestrator if available, else empty
-        config = getattr(orchestrator, "config", {}) or {}
-        # Use default agent name
-        name = "metrics_agent"
-        # Initialize BaseAgent with name and config
-        super().__init__(name, config, llm_client=llm_client)
-        # Retain reference to orchestrator
-        self.orchestrator = orchestrator
+    def __init__(self, name: str, config: dict, orchestrator_ref=None, llm_client=None):
+        """Initialize the MetricsAgent with name, config, orchestrator reference, and optional llm_client."""
+        super().__init__(name, config or {}, llm_client=llm_client)
+        # retain orchestrator reference
+        self.orchestrator = orchestrator_ref
         self.system_prompt = self._default_prompt()
         self.counts = defaultdict(int)
 

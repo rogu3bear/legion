@@ -22,5 +22,7 @@ PYCODE
 
 # Start services
 ./scripts/start_bot.sh &
+# Export PORT for web UI from our allocator
+export PORT="$PORT_ALLOCATOR_WEB_UI"
 ./scripts/start_web.sh &
 wait 

@@ -66,7 +66,7 @@ async def test_A1_architect_reads_task_log(test_env, monkeypatch):
         for entry in entries:
             f.write(json.dumps(entry) + "\n")
     # Patch ArchitectAgent to use this log path
-    agent = ArchitectAgent(DummyOrchestrator())
+    agent = ArchitectAgent(name="architect_test_A1", config={}, orchestrator_ref=DummyOrchestrator())
     agent.set_log_paths(log_path=test_env["log_path"])
     logs = agent.read_logs()
     assert logs == entries
@@ -77,7 +77,7 @@ async def test_A2_architect_extracts_llm_metrics(test_env, monkeypatch):
     # Seed llm_connector_test.log
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent(DummyOrchestrator())
+    agent = ArchitectAgent(name="architect_test_A2", config={}, orchestrator_ref=DummyOrchestrator())
     agent.set_log_paths(report_path=test_env["report_path"])
     metrics = agent.extract_llm_metrics()
     assert metrics == {"latency": 123.0, "errors": 2}
@@ -95,7 +95,7 @@ async def test_A3_architect_composes_summary(test_env, monkeypatch):
             f.write(json.dumps(entry) + "\n")
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent(DummyOrchestrator())
+    agent = ArchitectAgent(name="architect_test_A3", config={}, orchestrator_ref=DummyOrchestrator())
     agent.set_log_paths(
         log_path=test_env["log_path"], report_path=test_env["report_path"]
     )
@@ -127,7 +127,7 @@ async def test_A4_architect_posts_summary(test_env, monkeypatch):
             f.write(json.dumps(entry) + "\n")
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent(DummyOrchestrator())
+    agent = ArchitectAgent(name="architect_test_A4", config={}, orchestrator_ref=DummyOrchestrator())
     agent.set_log_paths(
         log_path=test_env["log_path"], report_path=test_env["report_path"]
     )
@@ -147,7 +147,7 @@ async def test_A5_architect_no_logs_fallback(test_env, monkeypatch):
         pass
     with open(test_env["report_path"], "w") as f:
         f.write("latency: 123ms\nerrors: 2\n")
-    agent = ArchitectAgent(DummyOrchestrator())
+    agent = ArchitectAgent(name="architect_test_A5", config={}, orchestrator_ref=DummyOrchestrator())
     agent.set_log_paths(
         log_path=test_env["log_path"], report_path=test_env["report_path"]
     )
@@ -170,13 +170,12 @@ async def test_B1_architect_tags_metrics(monkeypatch):
         "legion.agents.python.metrics.MetricsAgent.post_to_discord",
         fake_post_to_discord,
     )
-    metrics_agent = __import__(
+    MetricsAgentClass = __import__(
         "legion.agents.python.metrics", fromlist=["MetricsAgent"]
-    ).MetricsAgent(DummyOrchestrator())
-    metrics_agent.name = "metrics"
+    ).MetricsAgent
+    metrics_agent = MetricsAgentClass(name="metrics_test_B1", config={}, orchestrator_ref=DummyOrchestrator())
     metrics_agent.client = DummyClient()
     metrics_agent.channel_id = 1
-    metrics_agent.config = {}
     # Architect triggers metrics agent (simulate tagging)
     await metrics_agent.post_to_discord("@metrics_agent please review logs")
     assert "@metrics_agent" in captured["msg"]
@@ -194,13 +193,12 @@ async def test_B2_architect_triggers_therapist(monkeypatch):
         "legion.agents.python.therapist.TherapistAgent.post_to_discord",
         fake_post_to_discord,
     )
-    therapist_agent = __import__(
+    TherapistAgentClass = __import__(
         "legion.agents.python.therapist", fromlist=["TherapistAgent"]
-    ).TherapistAgent(DummyOrchestrator())
-    therapist_agent.name = "therapist"
+    ).TherapistAgent
+    therapist_agent = TherapistAgentClass(name="therapist_test_B2", config={}, orchestrator_ref=DummyOrchestrator())
     therapist_agent.client = DummyClient()
     therapist_agent.channel_id = 1
-    therapist_agent.config = {}
     # Architect triggers therapist agent (simulate error notification)
     await therapist_agent.post_to_discord(
         "@therapist_agent error detected: LLM failure"
