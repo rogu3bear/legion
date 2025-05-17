@@ -14,8 +14,10 @@ class ArchitectAgent(BaseAgent):
     4. Guiding technical decisions
     """
 
-    def __init__(self, orchestrator, llm_client=None):
-        super().__init__(orchestrator, llm_client)
+    def __init__(self, name: str, config: dict, orchestrator_ref=None, llm_client=None):
+        super().__init__(name, config, llm_client)
+        # assign orchestrator reference for internal use
+        self.orchestrator = orchestrator_ref
         # --- TEMP DEBUG LOGGING ---
         try:
             config_repr = repr(self.config)  # Get a representation

@@ -10,15 +10,11 @@ class TherapistAgent(BaseAgent):
     You are 🗣️ the Therapist Agent—monitor agent well-being, provide support, and help resolve conflicts or stress among agents.
     """
 
-    def __init__(self, orchestrator):
-        # Determine configuration from orchestrator if available, else empty
-        config = getattr(orchestrator, "config", {}) or {}
-        # Use default agent name
-        name = "therapist_agent"
-        # Initialize BaseAgent with name and config
-        super().__init__(name, config)
-        # Retain reference to orchestrator
-        self.orchestrator = orchestrator
+    def __init__(self, name: str, config: dict, orchestrator_ref=None, llm_client=None):
+        """Initialize the TherapistAgent with name, config, orchestrator reference, and optional llm_client."""
+        super().__init__(name, config or {}, llm_client=llm_client)
+        # retain orchestrator reference
+        self.orchestrator = orchestrator_ref
 
     def set_log_paths(self, log_path=None):
         self._log_path = log_path

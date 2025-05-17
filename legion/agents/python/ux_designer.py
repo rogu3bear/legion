@@ -6,8 +6,10 @@ class UxDesignerAgent(BaseAgent):
     You are 🎨 the UX Designer Agent—critique, improve, and propose user experience and interface designs for all Legion features.
     """
 
-    def __init__(self, orchestrator, llm_client=None):
-        super().__init__(orchestrator, llm_client=llm_client)
+    def __init__(self, name: str, config: dict, orchestrator_ref=None, llm_client=None):
+        super().__init__(name, config or {}, llm_client=llm_client)
+        # retain orchestrator reference
+        self.orchestrator = orchestrator_ref
 
     # All message handling is now inherited from BaseAgent.
 

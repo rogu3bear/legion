@@ -1,6 +1,6 @@
 import requests
 
-LMSTUDIO_API = "http://localhost:1234/v1"
+LMSTUDIO_API = "http://127.0.0.1:1234/v1"
 
 
 def list_models():
