@@ -68,18 +68,8 @@ jobs:
           else
             echo "npm test script not found or package.json missing."
           fi
-      - name: Lint code
-        run: |
-          bash scripts/activate_once.sh
-          flake8 .
-      - name: Type Check (mypy)
-        run: |
-          bash scripts/activate_once.sh
-          mypy legion/ > artifacts/reports/mypy_report.txt || true
-      - name: Ruff Lint
-        run: |
-          bash scripts/activate_once.sh
-          ruff check legion/ > artifacts/reports/ruff_report.txt || true
+      - name: Lint
+        run: make lint
       - name: Security Scan (Bandit)
         run: |
           bash scripts/activate_once.sh
