@@ -146,6 +146,15 @@ class AgentDispatchPayload(BaseModel):
     context: Optional[Dict[str, Any]] = Field(
         None, description="Optional additional context data for the agent."
     )
+    tags: Optional[List[str]] = Field(
+        None, description="Optional list of tags to attach to the dispatch."
+    )
+    task_owner: Optional[str] = Field(
+        None, description="Identifier for the owner of the dispatched task."
+    )
+    payload: Optional[Dict[str, Any]] = Field(
+        None, description="Arbitrary payload for the agent action."
+    )
 
 
 # Schema for the response FROM an agent dispatch
