@@ -652,7 +652,13 @@ async def test_dispatch_message_success(
     """Test successfully dispatching a message to an agent."""
     agent_name = "architect"
     message = "Review the latest design doc."
-    request_payload = {"message": message, "context": {"user_session": "xyz"}}
+    request_payload = {
+        "message": message,
+        "context": {"user_session": "xyz"},
+        "tags": ["t1"],
+        "task_owner": "tester",
+        "payload": {"k": "v"},
+    }
 
     mock_agent_response = "Acknowledged. Reviewing design doc now."
     mock_orchestrator_response_payload = {
@@ -689,6 +695,9 @@ async def test_dispatch_message_success(
     assert payload_sent["message"] == message
     assert payload_sent["context"] == request_payload["context"]
     assert payload_sent["originator"]["type"] == "user"
+    assert payload_sent["tags"] == ["t1"]
+    assert payload_sent["task_owner"] == "tester"
+    assert payload_sent["payload"] == {"k": "v"}
 
 
 @pytest.mark.asyncio
@@ -697,7 +706,11 @@ async def test_dispatch_message_agent_not_found(
 ):
     """Test dispatching a message to an agent that doesn't exist."""
     agent_name = "ghost_agent"
-    request_payload = {"message": "Are you there?"}
+    request_payload = {
+        "message": "Are you there?",
+        "tags": ["t2"],
+        "task_owner": "tester",
+    }
 
     mock_orchestrator_response_payload = {
         "status": "not_found",
@@ -727,7 +740,7 @@ async def test_dispatch_message_orchestrator_error(
 ):
     """Test handling an orchestrator error during dispatch."""
     agent_name = "error_prone_agent"
-    request_payload = {"message": "This might fail"}
+    request_payload = {"message": "This might fail", "task_owner": "tester"}
 
     # Mock the helper raising an exception
     mock_call = mocker.patch(
@@ -752,7 +765,7 @@ async def test_dispatch_message_orchestrator_error(
 async def test_dispatch_message_unauthorized(client: TestClient):
     """Test dispatching a message without authentication."""
     agent_name = "any_agent"
-    request_payload = {"message": "Test"}
+    request_payload = {"message": "Test", "tags": ["t"], "task_owner": "tester"}
     response = client.post(
         f"{settings.API_V1_STR}/agents/{agent_name}/dispatch", json=request_payload
     )

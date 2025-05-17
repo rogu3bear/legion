@@ -204,6 +204,12 @@ def dispatch_message_to_agent(
             "username": current_user.username,
         },
     }
+    if payload.tags is not None:
+        orchestrator_payload["tags"] = payload.tags
+    if payload.task_owner is not None:
+        orchestrator_payload["task_owner"] = payload.task_owner
+    if payload.payload is not None:
+        orchestrator_payload["payload"] = payload.payload
 
     response_payload = _call_orchestrator(
         action="dispatch_agent_message", payload=orchestrator_payload

@@ -57,7 +57,7 @@ jobs:
           PORT_ALLOCATOR_PROMETHEUS: 9090
           PORT_ALLOCATOR_REDIS: 6379
           PORT_ALLOCATOR_POSTGRES: 5432
-          PORT_ALLOCATOR_GRAFANA: 3000
+          PORT_ALLOCATOR_GRAFANA: 7806
           ORCHESTRATOR_API_URL: 'http://localhost:${{ env.PORT_ALLOCATOR_WEB || 8000 }}'
         run: |
           bash scripts/activate_once.sh
@@ -65,6 +65,10 @@ jobs:
           mkdir -p artifacts/reports
           mkdir -p /tmp/ci_logs
           pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ interface/ --maxfail=1 --disable-warnings -q
+      - name: Run backend tests
+        run: |
+          bash scripts/activate_once.sh
+          pytest --cov
       - name: Upload CI Logs
         uses: actions/upload-artifact@v3
         if: always()
@@ -121,7 +125,7 @@ jobs:
         PORT_ALLOCATOR_PROMETHEUS: 9090
         PORT_ALLOCATOR_REDIS: 6379
         PORT_ALLOCATOR_POSTGRES: 5432
-        PORT_ALLOCATOR_GRAFANA: 3000
+        PORT_ALLOCATOR_GRAFANA: 7806
       run: |
         bash scripts/gen_ports_env.sh
         docker compose up -d --no-build

@@ -1,5 +1,6 @@
 """Core application settings."""
 
+import os
 from pydantic_settings import BaseSettings
 
 
@@ -17,7 +18,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
+    BACKEND_CORS_ORIGINS: list = [
+        f"http://localhost:{os.getenv('UI_FRONTEND_PORT', '7802')}",
+        f"http://localhost:{os.getenv('WEB_API_PORT', '7803')}",
+    ]
 
     ORCHESTRATOR_ADDRESS: str = "tcp://localhost:5555"
 
