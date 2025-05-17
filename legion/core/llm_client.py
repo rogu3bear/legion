@@ -20,7 +20,8 @@ if base:
 else:
     print("WARNING: OPENAI_API_BASE not set! LLM calls will fail.")
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
-print(f"DEBUG: openai.api_key  = {openai.api_key}")
+# API key is loaded silently to avoid leaking credentials
+# print(f"DEBUG: openai.api_key  = {openai.api_key}")
 
 # Configure logging
 logger = logging.getLogger(__name__)
