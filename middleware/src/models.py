@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ChromaRecord(BaseModel):
@@ -13,7 +13,7 @@ class ChromaRecord(BaseModel):
     tokens: int
     embedding: List[float]
     timestamp: datetime
-    tags: List[str] = []
+    tags: List[str] = Field(default_factory=list)
 
 
 class OrchestratorRequest(BaseModel):
