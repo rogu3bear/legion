@@ -4,8 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Legion Interface</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .agent-list { list-style: none; padding: 0; }
+        .agent-item { border: 1px solid #ccc; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+        .agent-item h3 { margin-top: 0; }
+        .tags { margin-top: 5px; }
+        .tag { display: inline-block; background-color: #eee; color: #333; padding: 2px 6px; margin-right: 5px; border-radius: 3px; font-size: 0.9em; }
+        /* Define some colors for tags - extend as needed */
+        .tag-critical { background-color: #ffcdd2; color: #b71c1c; }
+        .tag-ui { background-color: #c8e6c9; color: #1b5e20; }
+        .tag-backend { background-color: #bbdefb; color: #0d47a1; }
+        .tag-unset { background-color: #f5f5f5; color: #616161; border: 1px solid #e0e0e0; }
+        .tag-malformed { background-color: #fff9c4; color: #f57f17; border: 1px solid #fbc02d; }
+        .task-owner { font-style: italic; color: #555; font-size: 0.9em; }
+    </style>
 </head>
 <body>
-    <h1>Legion Interface Stub</h1>
+    <h1>Legion Agents</h1>
+    <div id="agents-container">
+        <ul id="agent-list" class="agent-list"></ul>
+    </div>
+
+    <script src="/static/js_agents.js"></script>
 </body>
 </html>

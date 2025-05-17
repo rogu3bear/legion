@@ -8,14 +8,30 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-# Re-export enums from the model definition for API usage
-# Assuming the model file is accessible via core.db.models
+# Option 1: Define one set of names, conditionally.
+# This relies on mypy correctly understanding that only one branch is taken.
+
+# Attempt to import from core.db.models first. If this path is taken by mypy,
+# it should not complain about the except block definitions if they are guarded.
+# However, mypy might still analyze the except block independently.
+
+_TaskStatus_imported = None
+_TaskPriority_imported = None
+
 try:
-    from core.db.models import TaskPriority, TaskStatus
+    from core.db.models import TaskPriority as _TaskPriority_imported_real
+    from core.db.models import TaskStatus as _TaskStatus_imported_real
+
+    _TaskStatus_imported = _TaskStatus_imported_real
+    _TaskPriority_imported = _TaskPriority_imported_real
 except ImportError:
-    # Fallback or define simple string types if models are not accessible during generation/linting
-    # This might happen in isolated schema checks. A robust setup would handle this.
-    from enum import Enum
+    pass  # Fallback definitions will occur below if imports failed
+
+if _TaskStatus_imported and _TaskPriority_imported:
+    TaskStatus = _TaskStatus_imported
+    TaskPriority = _TaskPriority_imported
+else:
+    from enum import Enum  # Keep import here for clarity if this branch is taken
 
     class TaskStatus(str, Enum):
         PENDING = "pending"

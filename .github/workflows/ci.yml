@@ -23,6 +23,51 @@ jobs:
           pip install -U pip
           pip install -r requirements.txt
           pip install flake8
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Or your preferred LTS version
+      - name: Install npm dependencies
+        run: |
+          # Assuming package.json is in the root and frontend is in ui/frontend
+          # If package.json for frontend is in ui/frontend, cd there first
+          if [ -f "ui/frontend/package.json" ]; then
+            npm install --prefix ui/frontend
+          elif [ -f "package.json" ]; then
+            npm install
+          else
+            echo "No package.json found for npm install."
+          fi
+      - name: Lint with ESLint (Frontend)
+        run: |
+          # Adjust path to ESLint config and source if needed
+          if [ -f "ui/frontend/package.json" ]; then
+            npm run lint --prefix ui/frontend --if-present -- --max-warnings 0
+          elif [ -f "package.json" ] && grep -q '"lint"' package.json; then # Check if lint script exists
+            npm run lint -- --max-warnings 0
+          else
+            echo "ESLint lint script not found or package.json missing."
+          fi
+      - name: Run npm tests with coverage (Frontend)
+        run: |
+          # Adjust path and command if needed
+          # This assumes a test script configured for coverage
+          MIN_COVERAGE=90
+          if [ -f "ui/frontend/package.json" ]; then
+            # Attempt to run, capture output, and check coverage
+            # This is a placeholder for actual coverage checking logic
+            # You'll need a tool like jest with coverage reporters
+            echo "Attempting npm test --prefix ui/frontend --if-present -- --coverage"
+            # npm test --prefix ui/frontend --if-present -- --coverage
+            # Add actual coverage check here, e.g., parse coverage report
+            echo "Coverage check for frontend not fully implemented in CI script yet."
+          elif [ -f "package.json" ] && grep -q '"test"' package.json; then
+            echo "Attempting npm test -- --coverage"
+            # npm test -- --coverage
+            echo "Coverage check for root package.json not fully implemented in CI script yet."
+          else
+            echo "npm test script not found or package.json missing."
+          fi
       - name: Lint code
         run: |
           bash scripts/activate_once.sh

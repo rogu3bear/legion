@@ -26,6 +26,12 @@ class AgentStatusInfo(BaseModel):
     last_heartbeat: Optional[datetime] = Field(
         None, description="Timestamp of the last heartbeat received from the agent."
     )
+    tags: Optional[List[str]] = Field(
+        [], description="List of tags associated with the agent."
+    )
+    task_owner: Optional[str] = Field(
+        None, description="Identifier of the task owner, if any."
+    )
     model_config = ConfigDict(
         from_attributes=True
     )  # Allow mapping from ORM objects if applicable
@@ -99,12 +105,12 @@ class AgentUpdate(AgentAPIUpdate):
 # --- Schemas for legacy DB model interaction (might be deprecated) ---
 # Kept for reference, but API should likely return AgentStatusInfo
 class AgentDBBase_Legacy(BaseModel):
-    name: str
+    name: Optional[str] = None  # Name made Optional to match AgentDBUpdate_Legacy
     description: Optional[str] = None
-    model: str
-    temperature: float = 0.7
-    max_tokens: int = 2000
-    is_active: bool = True
+    model: Optional[str] = None  # Made Optional to match AgentDBUpdate_Legacy
+    temperature: Optional[float] = 0.7  # Made Optional
+    max_tokens: Optional[int] = 2000  # Made Optional
+    is_active: Optional[bool] = True  # Made Optional
     config: Optional[Dict[str, Any]] = None
 
 
@@ -112,7 +118,7 @@ class AgentDBCreate_Legacy(AgentDBBase_Legacy):
     pass
 
 
-class AgentDBUpdate_Legacy(AgentDBBase_Legacy):
+class AgentDBUpdate_Legacy(AgentDBBase_Legacy):  # This class makes them optional
     name: Optional[str] = None
     model: Optional[str] = None
     temperature: Optional[float] = None

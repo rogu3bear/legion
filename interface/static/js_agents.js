@@ -67,60 +67,78 @@
     }
 
     // Function to render agent list
-    function renderAgentList(agents) {
+    function renderAgentList(agentsData) {
         if (!agentListEl) return;
 
         agentListEl.innerHTML = '';
 
-        if (!agents || agents.length === 0) {
-            agentListEl.innerHTML = '<p class="text-center">No agents available.</p>';
+        if (!agentsData || agentsData.length === 0) {
+            agentListEl.innerHTML = '<li>No agents available.</li>';
             return;
         }
 
-        const list = document.createElement('div');
-        list.className = 'list-group';
+        agentsData.forEach(agent => {
+            const listItem = document.createElement('li');
+            listItem.className = 'agent-item';
 
-        agents.forEach(agent => {
-            const statusBadgeClass = agent.status === 'running' ? 'bg-success' :
-                                     agent.status === 'stopped' ? 'bg-danger' :
-                                     agent.status === 'error' ? 'bg-warning' : 'bg-secondary';
+            // Tags handling
+            let tagsHTML = '';
+            if (agent.tags === undefined || agent.tags === null || !Array.isArray(agent.tags)) {
+                if (agent.tags !== undefined && agent.tags !== null) { // It exists but is not an array
+                    console.warn(`Agent '${agent.name}': 'tags' field is not an array. Received:`, agent.tags);
+                }
+                tagsHTML = '<span class="tag tag-unset">🔘 Unset</span>';
+            } else if (agent.tags.length === 0) {
+                tagsHTML = '<span class="tag tag-unset">🔘 No Tags</span>'; // Differentiated "No Tags" from "Unset"
+            } else {
+                tagsHTML = agent.tags.map(tag => {
+                    if (typeof tag !== 'string') {
+                        console.warn(`Agent '${agent.name}': A tag is not a string. Received:`, tag);
+                        return `<span class="tag tag-malformed">${String(tag)} (Malformed)</span>`;
+                    }
+                    return `<span class="tag tag-${String(tag).toLowerCase().replace(/\\s+/g, '-')}">${String(tag)}</span>`;
+                }).join('');
+            }
 
-            const item = document.createElement('a');
-            item.href = '#';
-            item.className = `list-group-item list-group-item-action d-flex justify-content-between align-items-center${currentAgentName === agent.name ? ' active' : ''}`;
-            item.innerHTML = `
-                <div>
-                    <strong>${agent.name}</strong>
-                    <span class="badge ${statusBadgeClass} agent-status-badge">${agent.status}</span>
+            // Task owner handling
+            let taskOwnerText = 'Unassigned';
+            if (agent.task_owner !== undefined && agent.task_owner !== null) {
+                if (typeof agent.task_owner === 'string') {
+                    taskOwnerText = agent.task_owner;
+                } else {
+                    console.warn(`Agent '${agent.name}': 'task_owner' field is not a string. Received:`, agent.task_owner);
+                    taskOwnerText = `${String(agent.task_owner)} (Malformed)`;
+                }
+            }
+            const taskOwnerHTML = `<p class="task-owner">Owner: ${taskOwnerText}</p>`;
+
+            listItem.innerHTML = `
+                <h3>${agent.name || 'N/A'} (${agent.type || 'N/A'})</h3>
+                <p>Status: ${agent.status || 'N/A'} ${agent.is_active ? '(Active)' : '(Inactive)'}</p>
+                ${taskOwnerHTML}
+                <div class="tags">
+                    ${tagsHTML}
                 </div>
-                <small>${agent.type || 'Unknown type'}</small>
             `;
-
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadAgentDetails(agent.name);
-            });
-
-            list.appendChild(item);
+            agentListEl.appendChild(listItem);
         });
-
-        agentListEl.appendChild(list);
     }
 
     // Function to fetch agent list
-    async function fetchAgents() {
+    async function fetchAndRenderAgents() {
         try {
             const response = await fetch('/api/v1/agents');
             if (!response.ok) {
-                throw new Error(`Error fetching agents: ${response.status} ${response.statusText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            agents = await response.json();
-            renderAgentList(agents);
-            return agents;
+            const agentsData = await response.json();
+            agents = agentsData;
+            renderAgentList(agentsData);
         } catch (error) {
-            console.error('Failed to fetch agents:', error);
-            showNotification(`Failed to fetch agents: ${error.message}`, 'error');
-            return [];
+            console.error('Error fetching agents:', error);
+            if (agentListEl) {
+                agentListEl.innerHTML = '<li>Error loading agents. Check console.</li>';
+            }
         }
     }
 
@@ -345,7 +363,7 @@
 
             // Wait a moment for the agent to change status, then refresh
             setTimeout(async () => {
-                await fetchAgents();
+                await fetchAndRenderAgents();
                 await loadAgentDetails(currentAgentName);
             }, 1000);
         } catch (error) {
@@ -354,11 +372,10 @@
         }
     }
 
-    // Initial setup: fetch agents and set up event listeners
-    fetchAgents();
-
-    // Set up interval to refresh agent list
-    setInterval(fetchAgents, 10000);
+    // Initial setup: fetch agents
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchAndRenderAgents();
+    });
 
     // Set up event listeners for buttons
     if (btnEditConfig) {
