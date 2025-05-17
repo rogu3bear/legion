@@ -1,7 +1,10 @@
 """Core application settings."""
 
 import os
+
 from pydantic_settings import BaseSettings
+
+from legion.ports import get_port
 
 
 class Settings(BaseSettings):
@@ -23,7 +26,7 @@ class Settings(BaseSettings):
         f"http://localhost:{os.getenv('WEB_API_PORT', '7803')}",
     ]
 
-    ORCHESTRATOR_ADDRESS: str = "tcp://localhost:5555"
+    ORCHESTRATOR_ADDRESS: str = f"tcp://localhost:{get_port('orchestrator')}"
 
     class Config:
         case_sensitive = True

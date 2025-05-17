@@ -1,7 +1,7 @@
 """API endpoints for agent management, status, configuration, and lifecycle control."""
 
 import logging
-from typing import Any, List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from interface.schemas.agent import (
     AgentDispatchResponse,
     AgentStatusInfo,
 )
+from legion.orchestrator.capability_indexer import get_capabilities
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -72,7 +73,7 @@ def update_agent_db(
     new_name = agent_data.get("name")
     if new_name and new_name != db_agent.name:
         existing_agent_with_name = db.query(AgentModel).filter(
-            AgentModel.name == new_name, 
+            AgentModel.name == new_name,
             AgentModel.id != agent_id
         ).first()
         if existing_agent_with_name:
@@ -505,3 +506,13 @@ def reload_all_agents_configs(
             detail=response.detail or "Orchestrator failed to reload configurations.",
         )
     return response
+
+
+@router.get("/capabilities", summary="List Agent Capabilities")
+def list_agent_capabilities(
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> Dict[str, List[str]]:
+    """Return mapping of agents to their capability methods."""
+
+    return get_capabilities()
+

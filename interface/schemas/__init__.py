@@ -10,6 +10,7 @@ from .agent import (
 )
 from .memory import DocumentResponse, MemorySearchResponse
 from .task import Task, TaskCreate, TaskCreatedResponse, TaskList, TaskUpdate
+from .task_registry import Task as RegistryTask, TaskStatus as RegistryTaskStatus
 from .token import Token, TokenPayload
 from .user import User, UserCreate, UserInDB, UserUpdate
 from .user_preference import UserPreference, UserPreferenceCreate, UserPreferenceUpdate
