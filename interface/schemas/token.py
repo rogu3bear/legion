@@ -16,7 +16,7 @@ class Token(BaseModel):
 class TokenPayload(BaseModel):
     """Schema for the data encoded within the JWT token."""
 
-    sub: str | None = Field(
+    sub: Optional[str] = Field(
         None, description="Subject of the token (usually the username)."
     )
 

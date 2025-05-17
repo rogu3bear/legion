@@ -1,6 +1,7 @@
 """User related schemas."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -24,7 +25,7 @@ class UserCreate(UserBase):
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
-    password: str | None = Field(
+    password: Optional[str] = Field(
         None, description="Optional new password (will be hashed if provided)."
     )
 

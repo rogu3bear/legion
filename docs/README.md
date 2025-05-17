@@ -64,6 +64,32 @@ Legion adheres to GitHub Flow for development [[Cite: GitHub Flow](https://docs.
 - **Structured Logging:** JSON logs via `legion/core/logging_config.py`; see [Architecture Doc](architecture.md#structured-logging--error-boundaries).
 - **Configuration Warnings:** Unknown keys in agent YAMLs are logged and ignored.
 
+## Agent Roles and Capabilities
+Legion employs a variety of specialized agents, each designed for specific tasks and possessing unique capabilities. The primary roles include:
+- **Architect:** Oversees system design, plans new features, and ensures architectural integrity.
+- **Developer:** Writes, tests, and debugs code for various components of Legion.
+- **Researcher:** Gathers information, analyzes data, and provides insights for decision-making.
+- **Doctor:** Monitors system health, diagnoses issues, and can perform corrective actions.
+- **Other specialized agents:** Ping, Echo, Healthcheck for diagnostics and basic interactions.
+(More details on specific agent capabilities can be found in their respective configuration files and agent layer code.)
+
+## UI Tagging and Task Ownership
+The Legion web interface provides visibility into agent status, including assigned tags and task ownership.
+- **Tags:** Agents can be associated with various tags (e.g., `critical`, `ui`, `backend`, `data-processing`) which are displayed as colored chips in the UI. This allows for quick visual identification and filtering.
+- **Task Owner:** If an agent is currently assigned to or working on a task initiated by a user or another process, the `task_owner` field will indicate the originator.
+
+**Demo of UI Tagging:**
+[View Tag UI Demo (GIF)](assets/demos/tag-ui-0517.gif) (Note: Ensure `assets/demos/tag-ui-0517.gif` is present)
+
+## Port Mapping and Configuration
+Legion services use a defined set of network ports for communication. These are managed centrally to avoid conflicts.
+- **Configuration:** Port assignments are primarily defined in the `.env.ports` file at the project root. This file is loaded by services that require port information, such as the Vite frontend server and backend services.
+- **Key Ports (Defaults, check `.env.ports` for current values):
+  - `PORT_ALLOCATOR_UI_FRONTEND` (e.g., 7802): Used by the Vite/React frontend development server.
+  - `PORT_ALLOCATOR_UI_BACKEND` (e.g., 7801): Used by the FastAPI backend that serves the API for the UI.
+  - Other ports are defined for orchestrator, database, messaging, etc.
+- **Reference:** The `ui/frontend/vite.config.js` shows an example of how the frontend port is consumed. The main FastAPI application (`interface/main.py`) will typically run on the port defined for the UI backend.
+
 ## Repository Topics
 This repository uses topics for discoverability. Key topics might include: `agent-orchestration`, `discord-bot`, `python`, `llm`, `modular-architecture`. [[Cite: Topics](https://docs.github.com/articles/classifying-your-repository-with-topics)]
 
