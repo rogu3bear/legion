@@ -47,9 +47,17 @@ def unique_user_data(prefix: str) -> dict:
 
 
 # --- Auth Endpoints ---
-def test_register_user():
-    # TODO: Implement registration test
-    pass
+def test_register_user(client: TestClient):
+    """Ensure a user can register successfully."""
+    user_data = unique_user_data("register")
+
+    response = client.post("/api/v1/auth/register", json=user_data)
+
+    assert response.status_code == 201
+    created = response.json()
+    assert created["username"] == user_data["username"]
+    assert created["email"] == user_data["email"]
+    assert "id" in created
 
 
 def test_login_user_success(client: TestClient):
