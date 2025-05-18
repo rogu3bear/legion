@@ -1,0 +1,148 @@
+"""Thread-safe task repository with optional SQLite persistence."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import threading
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, Iterable, List, Optional
+
+from sqlalchemy import Column, String, create_engine, JSON
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+from legion.core.constants import TaskState
+
+LEGION_DATA_DIR = Path(os.getenv("LEGION_DATA_DIR", "memory"))
+BACKEND = os.getenv("LEGION_STATE_BACKEND", "memory")
+DB_PATH = LEGION_DATA_DIR / "state" / "legion.db"
+
+Base = declarative_base()
+SessionLocal = sessionmaker()
+
+
+class TaskModel(Base):
+    __tablename__ = "task_registry"
+    id = Column(String, primary_key=True)
+    tags = Column(JSON, nullable=False, default=list)
+    owner = Column(String, nullable=False)
+    agent = Column(String)
+    status = Column(String, nullable=False)
+
+
+@dataclass
+class TaskRecord:
+    task_id: str
+    tags: List[str]
+    owner: str
+    agent: Optional[str] = None
+    status: TaskState = TaskState.PENDING
+
+
+class _StateRepo:
+    def __init__(self) -> None:
+        self._lock = threading.RLock()
+        self._tasks: Dict[str, TaskRecord] = {}
+        self._session = None
+        if BACKEND == "sqlite":
+            DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+            engine = create_engine(f"sqlite:///{DB_PATH}")
+            Base.metadata.create_all(engine)
+            SessionLocal.configure(bind=engine)
+            self._session = SessionLocal()
+
+    def _persist(self, rec: TaskRecord) -> None:
+        if self._session is None:
+            return
+        obj = self._session.get(TaskModel, rec.task_id) or TaskModel(id=rec.task_id)
+        obj.tags = rec.tags
+        obj.owner = rec.owner
+        obj.agent = rec.agent
+        obj.status = rec.status.value
+        self._session.add(obj)
+        self._session.commit()
+
+    def add_task(self, task_id: str, tags: List[str], owner: str, agent: Optional[str] = None) -> None:
+        with self._lock:
+            rec = TaskRecord(task_id, tags, owner, agent)
+            self._tasks[task_id] = rec
+            self._persist(rec)
+
+    def get_task(self, task_id: str) -> Optional[TaskRecord]:
+        with self._lock:
+            return self._tasks.get(task_id)
+
+    def update_task(
+        self,
+        task_id: str,
+        *,
+        status: Optional[TaskState] = None,
+        tags: Optional[List[str]] = None,
+        owner: Optional[str] = None,
+    ) -> Optional[TaskRecord]:
+        with self._lock:
+            rec = self._tasks.get(task_id)
+            if rec is None:
+                return None
+            if status is not None:
+                rec.status = status
+            if tags is not None:
+                rec.tags = tags
+            if owner is not None:
+                rec.owner = owner
+            self._persist(rec)
+            return rec
+
+    def list_tasks(
+        self,
+        *,
+        status: Optional[TaskState] = None,
+        owner: Optional[str] = None,
+        tag: Optional[str] = None,
+    ) -> Iterable[TaskRecord]:
+        with self._lock:
+            for rec in self._tasks.values():
+                if status is not None and rec.status != status:
+                    continue
+                if owner is not None and rec.owner != owner:
+                    continue
+                if tag is not None and tag not in rec.tags:
+                    continue
+                yield rec
+
+    def remove_task(self, task_id: str) -> bool:
+        with self._lock:
+            rec = self._tasks.pop(task_id, None)
+            if rec is None:
+                return False
+            if self._session is not None:
+                obj = self._session.get(TaskModel, task_id)
+                if obj:
+                    self._session.delete(obj)
+                    self._session.commit()
+            return True
+
+
+_repo = _StateRepo()
+
+add_task = _repo.add_task
+get_task = _repo.get_task
+update_task = _repo.update_task
+list_tasks = _repo.list_tasks
+remove_task = _repo.remove_task
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--migrate", action="store_true", help="ensure database exists")
+    args = parser.parse_args()
+    if args.migrate and BACKEND == "sqlite":
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        engine = create_engine(f"sqlite:///{DB_PATH}")
+        Base.metadata.create_all(engine)
+        print(f"migrated {DB_PATH}")
+
+
+if __name__ == "__main__":
+    main()

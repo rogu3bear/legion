@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import AgentCard from './components/AgentCard.jsx'
+import DirectiveEditor from './components/DirectiveEditor.jsx'
+import PortMapDisplay from './components/PortMapDisplay.jsx'
 
 function App() {
   const [agents, setAgents] = useState([])
   const [selectedAgent, setSelectedAgent] = useState(null)
   const [config, setConfig] = useState({})
+  const [directive, setDirective] = useState('')
 
   useEffect(() => {
     fetch("http://localhost:5001/agents")
@@ -21,23 +25,32 @@ function App() {
       })
   }
 
+  const sendDirective = () => {
+    fetch('http://localhost:5001/echo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: directive })
+    })
+      .then(res => res.json())
+      .then(() => setDirective(''))
+  }
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Legion Agent Management</h1>
-      <ul>
+      <PortMapDisplay />
+      <div className="flex flex-wrap">
         {agents.map(agent => (
-          <li key={agent}>
-            <button onClick={() => loadAgent(agent)}>
-              {agent}
-            </button>
-          </li>
+          <AgentCard key={agent} agent={agent} onSelect={loadAgent} />
         ))}
-      </ul>
+      </div>
 
       {selectedAgent && (
         <div>
           <h2>{selectedAgent} Configuration:</h2>
           <pre>{JSON.stringify(config, null, 2)}</pre>
+          <DirectiveEditor value={directive} onChange={setDirective} />
+          <button onClick={sendDirective} className="mt-2 px-2 py-1 bg-blue-500 text-white rounded">Send</button>
         </div>
       )}
     </div>

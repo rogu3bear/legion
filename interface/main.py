@@ -37,6 +37,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     auth_router,
     login_router,
     memory_router,
+    echo_router,
     system_router,
     task_registry_router,
     tasks_router,
@@ -51,6 +52,7 @@ app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
+app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []

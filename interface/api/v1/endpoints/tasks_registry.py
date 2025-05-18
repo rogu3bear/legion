@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Path, Query, status
 
 from interface.schemas.task_registry import Task, TaskStatus, TaskUpdate
-from legion.orchestrator import state_repository
+from legion.orchestrator import state_repo as state_repository
 
 router = APIRouter()
 

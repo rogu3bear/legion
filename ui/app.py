@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import os
 import yaml
-from legion.ports import get_port
+from legion.ports import get_port, LEGION_PORT_MAP
 
 app = Flask(__name__)
 CORS(app)
@@ -27,6 +27,11 @@ def get_agent(agent_name):
     with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     return jsonify({agent_name: cfg})
+
+
+@app.route("/ports")
+def port_map():
+    return jsonify(LEGION_PORT_MAP)
 
 
 if __name__ == "__main__":
