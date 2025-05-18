@@ -33,17 +33,27 @@ Current development focus is on completing the web interface backend according t
 
 3. Start Services
    ```bash
-   # Start Discord bot
-   ./scripts/start_bot.sh
-
-   # Start web interface
-   ./scripts/start_web.sh
+   make dev
    ```
 
-4. Docker Deployment (Alternative)
+4. Lint and Test
+   ```bash
+   make lint
+   make test
+   ```
+5. Docker Deployment (Alternative)
    ```bash
    docker-compose up -d
    ```
+
+### Development Ports
+| Service | Env Var | Default |
+|---------|---------|---------|
+| Orchestrator | PORT_ALLOCATOR_ORCHESTRATOR | 27000 |
+| Web UI | PORT_ALLOCATOR_WEB_UI | 27001 |
+| Redis | PORT_ALLOCATOR_REDIS | 27040 |
+| Postgres | PORT_ALLOCATOR_POSTGRES | 27050 |
+
 
 ## Documentation
 For comprehensive documentation, see:
@@ -53,6 +63,43 @@ For comprehensive documentation, see:
 - [Discord Integration](docs/discord_integration.md)
 - [Function Index](docs/function_index.md)
 - [Changelog](changelog.md)
+- [ASCII Dispatch Diagrams](docs/dispatch_flow_ascii.md)
+
+## Full System Operation
+
+Below is a high‑level view of how the pieces fit together when all services are running:
+
+```
+   +---------+     +--------------+     +---------------+
+   |  User   +---> |  Interfaces  +---> |  Orchestrator |
+   +---------+     +--------------+     +---------------+
+                                       /               \
+                                      v                 v
+                               +-----------+    +---------------+
+                               |   Agents  |    | Monitoring/DB |
+                               +-----------+    +---------------+
+```
+
+### Message Handling Pipeline
+
+```
+User
+  |
+  v
+[Discord/Web/API] --dispatch_message--> [Orchestrator]
+  |
+  v
+[BaseAgent]
+   |-- validate_request
+   |-- retrieve_memories
+   |-- build_prompt
+   |-- call_llm
+   |-- store_memories
+   '-- post_to_discord
+  |
+  v
+User receives reply
+```
 
 ## Project Structure
 Legion follows a strict layered architecture enforced by CI:
@@ -86,6 +133,11 @@ python scripts/agent_instantiation_guard.py --apply legion/
 ```
 
 Use the `orchestrator.load_agent()` API to instantiate agents correctly.
+
+## Tag Glossary
+`agents` — core personas
+`tasks` — orchestrator routes
+`registry_tasks` — public task registry endpoints
 
 ## License
 All rights reserved. This codebase is proprietary and confidential.

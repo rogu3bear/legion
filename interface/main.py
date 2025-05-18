@@ -1,5 +1,3 @@
-"""Legion interface FastAPI app stub."""
-
 import sys # sys must be imported first for path modifications
 from pathlib import Path # pathlib for path manipulations
 
@@ -26,6 +24,13 @@ from starlette.responses import Response
 from legion.core.logging_config import setup_logging
 # from legion.orchestrator import Orchestrator # Old import
 from legion import Orchestrator # New import
+=======
+from legion.orchestrator import Orchestrator
+
+# Ensure the project root directory is in the Python path
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa: PTH100,PTH118,PTH120
+)
 # Needs to be after sys.path modification:
 
 logger = setup_logging(__name__)
@@ -36,12 +41,13 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 # Include API routers
-from interface.api.v1.endpoints import (
+from interface.api.v1.endpoints import (  # noqa: E402
     agents_router,
     auth_router,
     login_router,
     memory_router,
     system_router,
+    task_registry_router,
     tasks_router,
     lmstudio_proxy_router,
 )
@@ -51,6 +57,7 @@ app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
 app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
+app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 

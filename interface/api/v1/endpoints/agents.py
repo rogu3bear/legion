@@ -19,6 +19,7 @@ from interface.schemas.agent import (
     AgentDispatchResponse,
     AgentStatusInfo,
 )
+from legion.orchestrator.capability_indexer import get_capabilities
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -76,6 +77,11 @@ def update_agent_db(
             .filter(AgentModel.name == new_name, AgentModel.id != agent_id)
             .first()
         )
+=======
+        existing_agent_with_name = db.query(AgentModel).filter(
+            AgentModel.name == new_name,
+            AgentModel.id != agent_id
+        ).first()
         if existing_agent_with_name:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -524,3 +530,13 @@ def reload_all_agents_configs(
             detail=response.detail or "Orchestrator failed to reload configurations.",
         )
     return response
+
+
+@router.get("/capabilities", summary="List Agent Capabilities")
+def list_agent_capabilities(
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> Dict[str, List[str]]:
+    """Return mapping of agents to their capability methods."""
+
+    return get_capabilities()
+
