@@ -41,7 +41,6 @@ def test_env(tmp_path):
 @pytest.mark.asyncio
 async def test_dispatch_message_integration(test_env, monkeypatch):
     """Tests the orchestrator dispatch flow, including state logging and telemetry."""
-    state_manager = test_env["state_manager"]
     # Ensure EchoAgent is available for testing
     if "echo_agent" not in Orchestrator.CLASS_MAP:
         Orchestrator.CLASS_MAP["echo_agent"] = EchoAgent
@@ -73,7 +72,7 @@ async def test_dispatch_message_integration(test_env, monkeypatch):
     log_file = test_env["state_dir"] / "tasks.jsonl"
     assert log_file.exists()
     log_entries = []
-    with open(log_file) as f:
+    with log_file.open() as f:
         for line in f:
             log_entries.append(json.loads(line))
 

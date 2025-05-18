@@ -50,8 +50,8 @@ clean:
 	rm -rf scripts/logs/*
 
 docs_refresh:
-        @echo "Updating port map in docs..."
-        python3 scripts/doc_ports.py
+	@echo "Updating port map in docs..."
+	python3 scripts/doc_ports.py
 
 dev: backend frontend
 

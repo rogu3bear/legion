@@ -2,9 +2,7 @@
   "name": "legion-interface",
   "version": "0.1.0",
   "description": "Frontend for Legion",
-  "dependencies": {
-    "//": "Add potential JS dependencies here if js_feed.js needs them"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "scripts": {
     "dev": "vite --config ui/frontend/vite.config.js --host",

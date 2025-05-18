@@ -63,15 +63,11 @@ def setup_di_container(state_manager_instance, mock_llm_client_instance):
     original_state_manager = None
     original_llm_client = None
 
-    try:
+    with contextlib.suppress(KeyError):
         original_state_manager = container.get(IStateManager)
-    except KeyError:
-        pass  # Not registered, fine
 
-    try:
+    with contextlib.suppress(KeyError):
         original_llm_client = container.get(ILLMClient)
-    except KeyError:
-        pass  # Not registered, fine
 
     container.register_instance(IStateManager, state_manager_instance)
     container.register_instance(ILLMClient, mock_llm_client_instance)
@@ -123,7 +119,7 @@ def minimal_agent_config(tmp_path):
         "prompt": "You are an echo agent.",
         "channel_id": "test_channel_echo",
     }
-    with open(echo_config_file, "w") as f:
+    with echo_config_file.open("w") as f:
         yaml.dump({"agents": [echo_config_content]}, f)
 
     return str(config_dir)

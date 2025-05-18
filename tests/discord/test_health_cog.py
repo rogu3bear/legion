@@ -43,7 +43,6 @@ def mock_memory():
 
 @pytest.fixture
 def health_agent(mock_channel, mock_memory):
-    config = {"uptime_threshold_minutes": 1, "check_interval_minutes": 1}
     agent = HealthCog(mock_channel)
     agent.memory = mock_memory
     return agent
@@ -130,7 +129,8 @@ async def test_ping_command(health_cog):
     assert len(ctx.sent_messages) == 1
     assert "Pinging..." in ctx.sent_messages[0]["args"]
     # Access the mock message returned by send to check if edit was called
-    mock_message = (
+    # Access the mock message returned by send to check if edit was called
+    _mock_message = (
         ctx.sent_messages[0]["args"][0] if ctx.sent_messages[0]["args"] else None
     )
     # This assertion is tricky due to timing, better to mock time.monotonic if precision needed
