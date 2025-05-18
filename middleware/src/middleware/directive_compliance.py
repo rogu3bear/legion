@@ -1,5 +1,9 @@
-"""
-Handles directive compliance checks for agent requests.
+"""Directive compliance checks for agent requests.
+
+This helper mirrors the high level middleware design by ensuring each
+request adheres to per-agent rules before further processing. The
+``DirectiveCompliance`` class can be instantiated once and reused across
+requests.
 """
 
 import logging
@@ -9,7 +13,8 @@ from legion.utils.agent_feed import post_agent_feed
 
 logger = logging.getLogger(__name__)
 
-# Placeholder for actual directive definitions. These would be loaded from configs.
+# Placeholder for directive definitions. In production these values would be
+# loaded from configuration files or a database.
 AGENT_DIRECTIVES = {
     "default": {
         "max_length": 1024,
@@ -35,11 +40,23 @@ class DirectiveCompliance:
         request_metadata: Dict[str, Any],
         agent_id: Optional[str] = None,
     ) -> Tuple[str, Dict[str, Any]]:
-        """
-        Checks the request against predefined agent directives.
+        """Validate ``request_text`` against predefined directives.
 
-        Returns a tuple: (compliance_status, details_dict)
-        Compliance_status can be: "compliant", "non_compliant", "therapist_triggered"
+        Parameters
+        ----------
+        request_text:
+            The raw request from the user or agent.
+        request_metadata:
+            Additional metadata such as ``task_id``.
+        agent_id:
+            Optional agent identifier used to select directive overrides.
+
+        Returns
+        -------
+        Tuple[str, Dict[str, Any]]
+            ``("compliant", details)`` when all checks pass or a status of
+            ``"non_compliant"``/``"therapist_triggered"`` with failure details.
+            The ``details`` dictionary records which checks passed or failed.
         """
         status = "compliant"
         details: Dict[str, Any] = {"checks_passed": [], "checks_failed": []}
@@ -108,6 +125,7 @@ class DirectiveCompliance:
             log_level,
             f"Directive Compliance Check: Agent='{agent_id}', Status='{status}', Details='{details}', Request='{request_text[:100]}...'",
         )
+        # Notify the Echo agent so that compliance issues surface in the shared feed.
         if status != "compliant":
             post_agent_feed(f"Directive compliance issue: {status}")
 

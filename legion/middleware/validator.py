@@ -1,4 +1,10 @@
-"""Validates agent directives against a predefined YAML configuration."""
+"""Directive validation utilities.
+
+This module reads ``legion/config/directives.yaml`` which defines the
+directives available to each agent. The :func:`validate_directive`
+function is intended for use by the middleware pipeline documented in
+``docs/middleware.md``.
+"""
 
 import logging
 import yaml
@@ -6,13 +12,18 @@ import yaml
 # Assume directives.yaml is in legion/config/directives.yaml
 DIRECTIVES_PATH = "legion/config/directives.yaml"
 
-_loaded_directives = None
+_loaded_directives: dict | None = None  # Cached directives configuration
 
 logger = logging.getLogger(__name__)
 
 
-def _load_directives_config():
-    """Loads the directives configuration from the YAML file."""
+def _load_directives_config() -> dict:
+    """Load and cache the directives configuration.
+
+    The YAML file is parsed the first time this function is invoked. The
+    resulting dictionary is cached in ``_loaded_directives`` so subsequent calls
+    avoid unnecessary disk reads.
+    """
     global _loaded_directives
     if _loaded_directives is None:
         try:
@@ -31,15 +42,20 @@ def _load_directives_config():
 
 
 def validate_directive(payload: dict) -> dict:
-    """
-    Validates an agent directive payload.
+    """Validate a single directive request.
 
-    Args:
-        payload: A dictionary containing 'agent' and 'directive' keys.
+    Parameters
+    ----------
+    payload:
+        Dictionary with at least ``agent`` and ``directive`` keys.
 
-    Returns:
-        A dictionary with 'is_valid' (bool) and optionally 'reason' (str).
+    Returns
+    -------
+    dict
+        ``{"is_valid": True}`` if permitted or ``{"is_valid": False, "reason": str}``.
     """
+    # Load the directive rules once per process; subsequent calls reuse the
+    # cached configuration in ``_loaded_directives``.
     directives_config = _load_directives_config()
     agent_name = payload.get("agent")
     directive_name = payload.get("directive")

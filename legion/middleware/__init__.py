@@ -1,5 +1,11 @@
 # Initializes the middleware package
-"""High level middleware pipeline for directive and hallucination checks."""
+"""High level middleware pipeline for directive and hallucination checks.
+
+This package glues together the individual middleware components described
+in ``docs/middleware.md``. The main entry point
+:func:`run_middleware_pipeline` should be called by the orchestrator before a
+request reaches the Therapist agent.
+"""
 
 import logging
 
@@ -15,11 +21,21 @@ logger = logging.getLogger(__name__)
 def run_middleware_pipeline(
     request_payload: dict, confidence_threshold: float = 0.75
 ) -> dict:
-    """
-    Runs the full middleware validation pipeline:
-    1. Directive validation
-    2. Hallucination guard
-    3. Therapist validation
+    """Run directive and hallucination checks before invoking the Therapist.
+
+    Parameters
+    ----------
+    request_payload:
+        Payload from the agent containing at least ``agent`` and ``directive``.
+    confidence_threshold:
+        Minimum confidence score accepted by ``guard_response``.
+
+    Returns
+    -------
+    dict
+        Dictionary with ``final_valid`` and ``source`` keys describing the
+        overall decision. Additional details may be included by the Therapist
+        agent.
     """
     # Step 1: Initial directive validation (e.g., using validator.py)
     # The 'request_payload' should contain 'agent' and 'directive'
@@ -111,6 +127,8 @@ def run_middleware_pipeline(
         )
         post_agent_feed("Therapist review due to middleware failure")
 
+    # Delegate the final decision to the Therapist agent which may apply
+    # additional business rules beyond this middleware's scope.
     therapist_decision = therapist_validate(therapist_input)
     logger.info("Therapist decision", extra={"result": therapist_decision})
 
