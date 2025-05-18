@@ -1,4 +1,9 @@
-"""Validates agent directives against a predefined YAML configuration."""
+"""Directive validation utilities.
+
+The validator loads a YAML file describing which directives each agent is
+allowed to execute.  ``validate_directive`` is used by the middleware
+pipeline described in ``docs/middleware.md``.
+"""
 
 import logging
 import yaml
@@ -11,8 +16,13 @@ _loaded_directives = None
 logger = logging.getLogger(__name__)
 
 
-def _load_directives_config():
-    """Loads the directives configuration from the YAML file."""
+def _load_directives_config() -> dict:
+    """Load and cache the directives configuration.
+
+    The YAML file is parsed the first time this function is invoked and the
+    resulting dictionary is cached in ``_loaded_directives`` to avoid repeated
+    disk access.
+    """
     global _loaded_directives
     if _loaded_directives is None:
         try:
@@ -31,15 +41,19 @@ def _load_directives_config():
 
 
 def validate_directive(payload: dict) -> dict:
-    """
-    Validates an agent directive payload.
+    """Validate a single directive request.
 
-    Args:
-        payload: A dictionary containing 'agent' and 'directive' keys.
+    Parameters
+    ----------
+    payload:
+        Dictionary with at least ``agent`` and ``directive`` keys.
 
-    Returns:
-        A dictionary with 'is_valid' (bool) and optionally 'reason' (str).
+    Returns
+    -------
+    dict
+        ``{"is_valid": True}`` if permitted or ``{"is_valid": False, "reason": str}``.
     """
+    # Load the directive rules once per process; subsequent calls use the cache.
     directives_config = _load_directives_config()
     agent_name = payload.get("agent")
     directive_name = payload.get("directive")

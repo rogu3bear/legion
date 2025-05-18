@@ -77,11 +77,6 @@ def update_agent_db(
             .filter(AgentModel.name == new_name, AgentModel.id != agent_id)
             .first()
         )
-=======
-        existing_agent_with_name = db.query(AgentModel).filter(
-            AgentModel.name == new_name,
-            AgentModel.id != agent_id
-        ).first()
         if existing_agent_with_name:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
