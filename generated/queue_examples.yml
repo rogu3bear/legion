@@ -1,0 +1,24 @@
+agents:
+  - id: agent-a
+    role: worker
+    capabilities: ["compute", "report"]
+  - id: agent-b
+    role: helper
+    capabilities: ["assist"]
+
+tasks:
+  - id: t1
+    agent: agent-a
+    directive: compute
+    payload: {}
+    priority: 1
+  - id: t2
+    agent: agent-b
+    directive: assist
+    payload: {}
+    priority: 2
+  - id: t3
+    agent: agent-a
+    directive: report
+    payload: {}
+    priority: 0
