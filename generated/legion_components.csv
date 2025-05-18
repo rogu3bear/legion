@@ -1,0 +1,4 @@
+component,type
+orchestrator,core
+ui,frontend
+agents,collection

@@ -6,6 +6,7 @@ from .memory import router as memory_router
 from .system import router as system_router
 from .tasks import router as tasks_router
 from .tasks_registry import router as task_registry_router
+from .echo import router as echo_router
 from .queue import router as queue_router
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "system_router",
     "tasks_router",
     "task_registry_router",
+    "echo_router",
     "queue_router",
 ]

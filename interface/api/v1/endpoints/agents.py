@@ -137,6 +137,12 @@ def list_agents(
     return agents
 
 
+@router.post("/register", summary="Register agent with orchestrator")
+def register_agent(payload: AgentConfigInfo) -> Dict[str, Any]:
+    """Forward registration data to the orchestrator."""
+    return _call_orchestrator(action="register_agent", payload=payload.dict())
+
+
 @router.get("/{agent_name}", response_model=AgentStatusInfo, summary="Get Agent Status")
 def get_agent_status(
     agent_name: str,

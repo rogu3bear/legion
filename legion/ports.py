@@ -67,6 +67,22 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
     return RUNTIME_PORTS
 
 
+# Valid port allocation map used across Legion. Only ports within this range
+# should be used by services.
+LEGION_PORT_MAP: Dict[str, int] = {
+    "ui_backend": 7801,
+    "ui_frontend": 7802,
+    "orchestrator_rest": 7803,
+    "interface_api": 7804,
+    "middleware": 7805,
+    "metrics": 7806,
+    "researcher_api": 7807,
+    "zmq_pub": 7808,
+    "zmq_sub": 7809,
+    "redis": 7810,
+}
+
+
 def get_port(service_key: str) -> Optional[int]:
     """
     Retrieves the allocated port for a given service key.
