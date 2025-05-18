@@ -1,6 +1,8 @@
 """Directive compliance checks for agent requests.
 
 This helper mirrors the high level middleware design by ensuring each
+request adheres to per-agent rules before further processing.
+=======
 request adheres to per-agent rules before further processing. The
 ``DirectiveCompliance`` class can be instantiated once and reused across
 requests.
@@ -56,6 +58,7 @@ class DirectiveCompliance:
         Tuple[str, Dict[str, Any]]
             ``("compliant", details)`` when all checks pass or a status of
             ``"non_compliant"``/``"therapist_triggered"`` with failure details.
+=======
             The ``details`` dictionary records which checks passed or failed.
         """
         status = "compliant"
