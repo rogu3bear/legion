@@ -1,4 +1,11 @@
-"""Hallucination guard for agent responses."""
+"""Hallucination guard for agent responses.
+
+This module provides ``guard_response`` which performs a minimal
+confidence check on an agent's output.  The logic mirrors the
+"Hallucination Guard" section described in ``docs/middleware.md`` and
+emits a message to the ``agent-feed`` when a response falls below the
+configured threshold.
+"""
 
 import logging
 
@@ -8,17 +15,25 @@ logger = logging.getLogger(__name__)
 
 
 def guard_response(response: dict, threshold: float = 0.75):
-    """
-    Checks the confidence score of a response and flags potential hallucinations.
+    """Validate an agent response by its confidence score.
 
-    Args:
-        response: The response dictionary, expected to have a 'confidence' key.
-        threshold: The minimum confidence score to be considered valid.
+    Parameters
+    ----------
+    response:
+        Dictionary expected to contain a ``confidence`` value.
+    threshold:
+        Minimum allowed confidence for a response to be considered valid.
 
-    Returns:
-        A dictionary indicating if the response is valid and the reason if not.
+    Returns
+    -------
+    dict
+        ``{"valid": True, "response": response}`` if the response meets the
+        threshold, otherwise ``{"valid": False, "reason": str}``.
     """
     confidence = response.get("confidence", 0)
+
+    # If the confidence score does not meet the threshold we emit a warning
+    # and notify the agent-feed for observability purposes.
     if confidence < threshold:
         logger.warning(
             "Hallucination guard triggered", extra={"confidence": confidence, "threshold": threshold}
@@ -29,4 +44,6 @@ def guard_response(response: dict, threshold: float = 0.75):
     logger.info(
         "Hallucination guard passed", extra={"confidence": confidence, "threshold": threshold}
     )
+
+    # Pass the original response through so downstream middleware can continue
     return {"valid": True, "response": response}
