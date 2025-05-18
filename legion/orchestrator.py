@@ -41,8 +41,8 @@ from legion.ports import get_port  # Added for prometheus port replacement
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
-from legion.orchestrator.state_repo import repo as state_repo
-from legion.orchestrator.workload_queue import queue as workload_queue
+from legion.orchestrator_internals.state_repo import repo as state_repo
+from legion.orchestrator_internals.workload_queue import queue as workload_queue
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
