@@ -1,0 +1,17 @@
+{
+  "info": {"title": "Legion API", "version": "0.1"},
+  "paths": {
+    "/api/v1/tasks": {
+      "get": {"summary": "List tasks"},
+      "post": {"summary": "Submit new task"},
+      "patch": {"summary": "Update task"},
+      "delete": {"summary": "Cancel task"}
+    },
+    "/api/v1/agents/capabilities": {
+      "get": {"summary": "Agent capabilities"}
+    },
+    "/api/v1/agents/health": {
+      "get": {"summary": "Agent health"}
+    }
+  }
+}

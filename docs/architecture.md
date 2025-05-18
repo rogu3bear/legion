@@ -17,7 +17,7 @@ Legion is a modular, ruthlessly layered agent orchestration system. Every file, 
    - SQLite DB, memory API, JSONL logs
 6. **Integration Layer** (`integration/discord/`)
    - Discord bot glue: cogs, settings, bot bootstrap
-7. **Presentation Layer** (`interface/`)
+7. **Presentation Layer** (`backend/`; currently `interface/`)
    - FastAPI endpoints, front-end scripts, templates
 8. **Infrastructure Layer** (`scripts/`, `.github/`, `docs/`, `changelog.md`)
    - CI, ops, migrations, changelog, docs

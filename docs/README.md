@@ -88,7 +88,7 @@ Legion services use a defined set of network ports for communication. These are 
   - `PORT_ALLOCATOR_UI_FRONTEND` (e.g., 7802): Used by the Vite/React frontend development server.
   - `PORT_ALLOCATOR_UI_BACKEND` (e.g., 7801): Used by the FastAPI backend that serves the API for the UI.
   - Other ports are defined for orchestrator, database, messaging, etc.
-- **Reference:** The `ui/frontend/vite.config.js` shows an example of how the frontend port is consumed. The main FastAPI application (`interface/main.py`) will typically run on the port defined for the UI backend.
+  - **Reference:** The `ui/frontend/vite.config.js` shows an example of how the frontend port is consumed. The FastAPI application entry point is `backend/main.py` (currently located at `interface/main.py`) and uses the port defined for the UI backend.
 
 ## Repository Topics
 This repository uses topics for discoverability. Key topics might include: `agent-orchestration`, `discord-bot`, `python`, `llm`, `modular-architecture`. [[Cite: Topics](https://docs.github.com/articles/classifying-your-repository-with-topics)]
