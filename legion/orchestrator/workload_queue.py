@@ -1,3 +1,7 @@
+# NOTE: The previous version of this file (HEAD) implemented a ZMQ publisher for workload events.
+# The current version (main) uses a FIFO queue with priority, backed by StateRepo.
+# If ZMQ event publishing is needed, consider integrating the HEAD logic as a utility.
+
 """Simple PUB socket for workload events.
 
 Events are broadcast on ``tcp://127.0.0.1:${LEGION_PORT_MAP['zmq_pub']}``.

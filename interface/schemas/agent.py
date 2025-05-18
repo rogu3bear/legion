@@ -204,3 +204,15 @@ class AgentConfigUpdate(BaseModel):
         ...,
         description="A dictionary containing the configuration key-value pairs to update.",
     )
+
+
+class AgentRegisterRequest(BaseModel):
+    """Payload used by agents to register with the orchestrator."""
+
+    id: str = Field(..., description="Unique agent identifier")
+    role: str = Field(..., description="Declared agent role")
+    capabilities: List[str] = Field(default_factory=list)
+
+
+class AgentRegisterResponse(BaseModel):
+    token: str = Field(..., description="Authentication token issued to the agent")

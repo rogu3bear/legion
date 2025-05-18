@@ -1,3 +1,7 @@
+# NOTE: The previous version of this file (HEAD) implemented a thread-safe task repository with optional SQLite persistence.
+# The current version (main) uses a JSON-backed StateRepo for agent/task/queue management.
+# If SQL persistence is needed in the future, consider integrating the HEAD logic as an optional backend.
+
 """Thread-safe task repository with optional SQLite persistence."""
 
 from __future__ import annotations
