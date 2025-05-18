@@ -110,3 +110,67 @@ _For a live list use `GET /api/v1/agents/capabilities`._
 
 ---
 © 2025 AuchIndustries — internal use only.
+
+## AI Contributor Guide
+
+This section provides integration instructions for AI agents such as OpenAI Codex or Cursor. Follow these guidelines when analyzing or modifying the repository.
+
+### 1. Project Overview
+- **Purpose**: Legion orchestrates multiple specialized agents through a layered architecture, handling memory storage, task routing, and real-time interfaces.
+- **Key Features**: modular agent system, FastAPI backend, Discord bot, and structured logging.
+
+### 2. Directory Structure
+```text
+artifacts/            # Logs and CI reports
+interface/            # FastAPI backend and web interface
+legion/               # Core orchestration logic and agent runtime
+memory/               # Memory subsystems (vector store, DB, logs)
+middleware/           # Request/response middleware services
+scripts/              # Utility and CI scripts
+tests/                # Pytest suites
+ui/                   # Vite/React frontend
+```
+Refer to `docs/architecture.md` for the enforced layered model.
+
+### 3. Setup and Execution
+1. Create a virtual environment and install Python requirements:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+2. Initialize memory stores:
+   ```bash
+   ./scripts/init_memory.sh
+   ```
+3. Start development servers:
+   ```bash
+   make dev
+   ```
+
+### 4. Testing and Validation
+- Run linting and tests with:
+  ```bash
+  make lint
+  make test
+  ```
+- CI runs additional checks including mypy and the agent instantiation guard.
+- Place new tests under `tests/` following the existing directory layout.
+
+### 5. Coding Standards
+- Python style is enforced via `ruff` and type checking via `mypy` (see `pyproject.toml`).
+- Naming conventions follow `snake_case` for modules/functions and `PascalCase` for classes.
+- Activate pre-commit hooks with `pre-commit install` to run linters automatically.
+
+### 6. Git and Contribution Workflow
+- Use GitHub Flow: create a feature branch, commit small logical changes, open a PR against `main`, and respond to reviews.
+- Example branch names: `feature/<short-desc>` or `fix/<issue>`.
+- Keep commit messages concise (e.g., `feat: add health endpoint`).
+
+### 7. AI Agent Guidance
+- Respect the layered architecture and avoid direct agent instantiation—use `orchestrator.load_agent()`.
+- Update documentation alongside code changes when behavior or APIs change.
+- Validate changes locally (`make lint && make test`) before submitting a pull request.
+- Avoid editing generated artifacts under `artifacts/` or runtime logs under `memory/logs/`.
+
+
