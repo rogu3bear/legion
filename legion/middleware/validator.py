@@ -3,6 +3,11 @@
 The validator loads a YAML file describing which directives each agent is
 allowed to execute.  ``validate_directive`` is used by the middleware
 pipeline described in ``docs/middleware.md``.
+=======
+This module reads ``legion/config/directives.yaml`` which defines the
+directives available to each agent. The :func:`validate_directive`
+function is intended for use by the middleware pipeline documented in
+``docs/middleware.md``.
 """
 
 import logging
@@ -11,7 +16,7 @@ import yaml
 # Assume directives.yaml is in legion/config/directives.yaml
 DIRECTIVES_PATH = "legion/config/directives.yaml"
 
-_loaded_directives = None
+_loaded_directives: dict | None = None  # Cached directives configuration
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +27,10 @@ def _load_directives_config() -> dict:
     The YAML file is parsed the first time this function is invoked and the
     resulting dictionary is cached in ``_loaded_directives`` to avoid repeated
     disk access.
+=======
+    The YAML file is parsed the first time this function is invoked. The
+    resulting dictionary is cached in ``_loaded_directives`` so subsequent calls
+    avoid unnecessary disk reads.
     """
     global _loaded_directives
     if _loaded_directives is None:
@@ -54,6 +63,9 @@ def validate_directive(payload: dict) -> dict:
         ``{"is_valid": True}`` if permitted or ``{"is_valid": False, "reason": str}``.
     """
     # Load the directive rules once per process; subsequent calls use the cache.
+=======
+    # Load the directive rules once per process; subsequent calls reuse the
+    # cached configuration in ``_loaded_directives``.
     directives_config = _load_directives_config()
     agent_name = payload.get("agent")
     directive_name = payload.get("directive")
