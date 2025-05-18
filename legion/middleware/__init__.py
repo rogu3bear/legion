@@ -1,8 +1,15 @@
 # Initializes the middleware package
+"""High level middleware pipeline for directive and hallucination checks."""
+
+import logging
+
 from legion.agents.therapist.validation import therapist_validate
+from legion.utils.agent_feed import post_agent_feed
 
 from .hallucination_guard import guard_response
 from .validator import validate_directive
+
+logger = logging.getLogger(__name__)
 
 
 def run_middleware_pipeline(
@@ -16,8 +23,13 @@ def run_middleware_pipeline(
     """
     # Step 1: Initial directive validation (e.g., using validator.py)
     # The 'request_payload' should contain 'agent' and 'directive'
+    logger.info("Starting middleware pipeline", extra={"payload_agent": request_payload.get("agent")})
     directive_validation_result = validate_directive(request_payload)
+    logger.info(
+        "Directive validation result", extra={"result": directive_validation_result}
+    )
     if not directive_validation_result.get("is_valid", False):
+        post_agent_feed("Directive validation failed")
         return {
             "final_valid": False,
             "reason": directive_validation_result.get(
@@ -42,9 +54,10 @@ def run_middleware_pipeline(
         # Let's assume for a request flow, confidence is provided or defaulted.
         # For this example, we'll pass a default if not present to allow therapist to run.
         # In a real system, this would need careful consideration.
-        print(
-            "Warning: Confidence not found in request_payload for hallucination guard/therapist. Using default 0.0."
+        logger.warning(
+            "Confidence missing in payload; defaulting to 0.0"
         )
+        post_agent_feed("middleware missing confidence")
         initial_confidence = 0.0
 
     # Hallucination guard expects a 'response' like structure with 'confidence'
@@ -54,6 +67,10 @@ def run_middleware_pipeline(
     }  # Can add other relevant parts of payload if needed
     hallucination_result = guard_response(
         hallucination_check_input, threshold=confidence_threshold
+    )
+    logger.info(
+        "Hallucination guard result",
+        extra={"result": hallucination_result, "threshold": confidence_threshold},
     )
 
     middleware_passed_initial_checks = True  # From directive_validation_result
@@ -85,13 +102,20 @@ def run_middleware_pipeline(
     # If initial middleware (validator or hallucination) failed, therapist input reflects this.
     # The therapist may still choose to override.
     if not therapist_input["middleware_validation"]:
-        print(
-            f"Therapist review triggered despite initial middleware failure. Validator valid: {directive_validation_result.get('is_valid')}, Hallucination valid: {hallucination_result.get('valid')}"
+        logger.info(
+            "Therapist review triggered despite initial middleware failure",
+            extra={
+                "directive_valid": directive_validation_result.get("is_valid"),
+                "hallucination_valid": hallucination_result.get("valid"),
+            },
         )
+        post_agent_feed("Therapist review due to middleware failure")
 
     therapist_decision = therapist_validate(therapist_input)
+    logger.info("Therapist decision", extra={"result": therapist_decision})
 
     if not therapist_decision.get("valid", False):
+        post_agent_feed("Therapist rejected request")
         return {
             "final_valid": False,
             "reason": therapist_decision.get("reason", "Therapist rejected"),
@@ -99,11 +123,14 @@ def run_middleware_pipeline(
         }
 
     # If all checks pass
-    return {
+    final_result = {
         "final_valid": True,
         "directive": therapist_decision.get("directive"),
         "source": "all_middleware_approved",
     }
+    logger.info("Middleware pipeline approved", extra={"result": final_result})
+    post_agent_feed("Request approved by middleware")
+    return final_result
 
 
 # Example Usage (for illustration, not part of the library code to be run directly)

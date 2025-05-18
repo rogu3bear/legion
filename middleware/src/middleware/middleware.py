@@ -1,6 +1,8 @@
-"""
-Middleware for request processing, embedding validation, and directive compliance.
-"""
+"""Middleware for request processing, embedding validation, and directive compliance."""
+
+import logging
+
+from legion.utils.agent_feed import post_agent_feed
 
 from typing import Any, Dict, Optional, Tuple
 
@@ -8,6 +10,8 @@ from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
 
 from .directive_compliance import DirectiveCompliance
 
+# Standard logger for middleware events
+logger = logging.getLogger(__name__)
 # Threshold constants for embedding similarity validation
 THERAPIST_AGENT_THRESHOLD = 0.70  # Similarity below 0.70 triggers therapist review
 ACCEPTABLE_SIMILARITY = 0.85  # Similarity at or above 0.85 is acceptable
@@ -30,8 +34,10 @@ class RequestMiddleware:
         Returns a tuple: (status, details_dict)
         Status can be: "approved", "rejected", "needs_review", "escalated_therapist"
         """
+        logger.info("Processing middleware request")
         # 1. Input Validation
         if not request_text:
+            post_agent_feed("Request rejected: empty text")
             return "rejected", {
                 "reason": "Empty request text",
                 "source": "input_validation",
@@ -41,7 +47,8 @@ class RequestMiddleware:
         try:
             request_embedding = self.chroma_client.create_embedding(request_text)
         except Exception as e:
-            # Log exception e
+            logger.error("Embedding generation failed", exc_info=e)
+            post_agent_feed("Embedding generation error")
             return "rejected", {
                 "reason": f"Failed to create embedding: {e}",
                 "source": "embedding_system",
@@ -54,7 +61,8 @@ class RequestMiddleware:
                 top_k=1,  # Get the most similar for validation
             )
         except Exception as e:
-            # Log exception e
+            logger.error("Embedding retrieval failed", exc_info=e)
+            post_agent_feed("Embedding retrieval error")
             return "rejected", {
                 "reason": f"Failed to retrieve similar embeddings: {e}",
                 "source": "embedding_system",
@@ -68,6 +76,7 @@ class RequestMiddleware:
         if not similar_embeddings:
             embedding_derived_status = "needs_review_embedding"
             embedding_details["reason"] = "No similar context found"
+            logger.info("No similar context found")
         else:
             top_similarity = similar_embeddings[0].get("similarity", 0.0)
             embedding_details["top_similarity"] = top_similarity
@@ -75,6 +84,7 @@ class RequestMiddleware:
             # Apply threshold logic for embedding validation
             if top_similarity < REVIEW_SIMILARITY:
                 # Immediate rejection for very low similarity
+                post_agent_feed("Similarity below rejection threshold")
                 return "rejected", {
                     "reason": f"Similarity {top_similarity:.2f} below rejection threshold {REVIEW_SIMILARITY}",
                     "source": "embedding_validation",
@@ -86,6 +96,7 @@ class RequestMiddleware:
                 embedding_details["reason"] = (
                     f"Similarity {top_similarity:.2f} below therapist threshold {THERAPIST_AGENT_THRESHOLD}, needs review"
                 )
+                logger.info("Similarity below therapist threshold", extra={"similarity": top_similarity})
             elif top_similarity < ACCEPTABLE_SIMILARITY:
                 # Escalate to therapist for similarity between THERAPIST_AGENT_THRESHOLD and ACCEPTABLE_SIMILARITY
                 embedding_derived_status = "escalate_therapist_embedding"
@@ -93,6 +104,7 @@ class RequestMiddleware:
                     f"Similarity {top_similarity:.2f} below acceptable threshold {ACCEPTABLE_SIMILARITY}, escalating to therapist"
                 )
                 embedding_details["escalation_trigger"] = "low_semantic_similarity"
+                logger.info("Escalating to therapist", extra={"similarity": top_similarity})
             else:
                 # Approved for similarity at or above ACCEPTABLE_SIMILARITY
                 embedding_derived_status = "approved_embedding"
@@ -116,6 +128,8 @@ class RequestMiddleware:
             final_status = "rejected"
             final_details.update(directive_details)
             final_details["source"] = "directive_compliance"
+            logger.info("Directive non compliant", extra=final_details)
+            post_agent_feed("Request rejected: directive non compliant")
             return final_status, final_details
 
         # 5.2 Therapist Escalation Precedence
@@ -123,10 +137,14 @@ class RequestMiddleware:
             final_status = "escalated_therapist"
             final_details.update(directive_details)
             final_details["source"] = "directive_compliance"
+            logger.info("Therapist escalation from directive", extra=final_details)
+            post_agent_feed("Escalating to therapist (directive)")
             return final_status, final_details
         elif embedding_derived_status == "escalate_therapist_embedding":
             final_status = "escalated_therapist"
             final_details["source"] = "embedding_validation"
+            logger.info("Therapist escalation from embedding", extra=final_details)
+            post_agent_feed("Escalating to therapist (embedding)")
             return final_status, final_details
 
         # 5.3 Needs Review (if applicable)
@@ -136,6 +154,8 @@ class RequestMiddleware:
         ):
             final_status = "needs_review"
             final_details["source"] = "embedding_validation"
+            logger.info("Request marked for review", extra=final_details)
+            post_agent_feed("Request needs review")
             return final_status, final_details
 
         # 5.4 Approval
@@ -146,6 +166,8 @@ class RequestMiddleware:
             final_status = "approved"
             final_details.update(directive_details)
             final_details["source"] = "combined_approval"
+            logger.info("Request approved", extra=final_details)
+            post_agent_feed("Request approved")
             return final_status, final_details
 
         # Default fallback (should be caught by logic above, but just in case)
@@ -154,6 +176,10 @@ class RequestMiddleware:
             final_status = "rejected"
             final_details.update(directive_details)
             final_details["source"] = "directive_compliance"
+
+        logger.info("Request finalised", extra={"status": final_status, **final_details})
+        if final_status != "approved":
+            post_agent_feed(f"Request result: {final_status}")
 
         return final_status, final_details
 

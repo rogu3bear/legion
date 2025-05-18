@@ -5,6 +5,8 @@ Handles directive compliance checks for agent requests.
 import logging
 from typing import Any, Dict, Optional, Tuple
 
+from legion.utils.agent_feed import post_agent_feed
+
 logger = logging.getLogger(__name__)
 
 # Placeholder for actual directive definitions. These would be loaded from configs.
@@ -106,6 +108,8 @@ class DirectiveCompliance:
             log_level,
             f"Directive Compliance Check: Agent='{agent_id}', Status='{status}', Details='{details}', Request='{request_text[:100]}...'",
         )
+        if status != "compliant":
+            post_agent_feed(f"Directive compliance issue: {status}")
 
         return status, details
 

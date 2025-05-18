@@ -1,11 +1,14 @@
 """Validates agent directives against a predefined YAML configuration."""
 
+import logging
 import yaml
 
 # Assume directives.yaml is in legion/config/directives.yaml
 DIRECTIVES_PATH = "legion/config/directives.yaml"
 
 _loaded_directives = None
+
+logger = logging.getLogger(__name__)
 
 
 def _load_directives_config():
@@ -16,17 +19,13 @@ def _load_directives_config():
             with open(DIRECTIVES_PATH) as f:
                 _loaded_directives = yaml.safe_load(f)
             if not isinstance(_loaded_directives, dict):
-                print(f"Warning: {DIRECTIVES_PATH} did not load as a dictionary.")
+                logger.warning("%s did not load as a dictionary", DIRECTIVES_PATH)
                 _loaded_directives = {}
         except FileNotFoundError:
-            print(
-                f"Warning: {DIRECTIVES_PATH} not found. Directive validation will be permissive."
-            )
+            logger.warning("%s not found. Directive validation permissive", DIRECTIVES_PATH)
             _loaded_directives = {}
         except yaml.YAMLError as e:
-            print(
-                f"Warning: Error parsing {DIRECTIVES_PATH}: {e}. Directive validation will be permissive."
-            )
+            logger.warning("Error parsing %s: %s", DIRECTIVES_PATH, e)
             _loaded_directives = {}
     return _loaded_directives
 
@@ -46,18 +45,24 @@ def validate_directive(payload: dict) -> dict:
     directive_name = payload.get("directive")
 
     if not agent_name or not directive_name:
-        return {
+        result = {
             "is_valid": False,
             "reason": "Missing 'agent' or 'directive' in payload.",
         }
+        logger.warning("Directive payload missing keys", extra={"payload": payload})
+        return result
 
     agent_rules = directives_config.get(agent_name, {})
     allowed_directives = agent_rules.get("allowed_directives", [])
 
     if directive_name in allowed_directives:
-        return {"is_valid": True}
+        result = {"is_valid": True}
+        logger.info("Directive valid", extra={"agent": agent_name, "directive": directive_name})
+        return result
     else:
-        return {
+        result = {
             "is_valid": False,
             "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'.",
         }
+        logger.info("Directive invalid", extra={"agent": agent_name, "directive": directive_name})
+        return result

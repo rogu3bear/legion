@@ -1,5 +1,11 @@
 """Hallucination guard for agent responses."""
 
+import logging
+
+from legion.utils.agent_feed import post_agent_feed
+
+logger = logging.getLogger(__name__)
+
 
 def guard_response(response: dict, threshold: float = 0.75):
     """
@@ -14,5 +20,13 @@ def guard_response(response: dict, threshold: float = 0.75):
     """
     confidence = response.get("confidence", 0)
     if confidence < threshold:
+        logger.warning(
+            "Hallucination guard triggered", extra={"confidence": confidence, "threshold": threshold}
+        )
+        post_agent_feed(f"Hallucination detected: {confidence:.2f}")
         return {"valid": False, "reason": "Low confidence (possible hallucination)"}
+
+    logger.info(
+        "Hallucination guard passed", extra={"confidence": confidence, "threshold": threshold}
+    )
     return {"valid": True, "response": response}
