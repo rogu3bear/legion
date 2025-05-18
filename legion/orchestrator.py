@@ -41,6 +41,8 @@ from legion.ports import get_port  # Added for prometheus port replacement
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
+from legion.orchestrator.state_repo import repo as state_repo
+from legion.orchestrator.workload_queue import queue as workload_queue
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
@@ -259,8 +261,7 @@ class Orchestrator:
         # self.port_allocator = unified_port_manager # This line (original line 168) is now redundant
 
         self.client = None
-        self.task_queue = []
-        self.completed_tasks = []
+        self.queue = workload_queue
 
         # Load agent configs first
         self.load_agent_configs()
@@ -1658,6 +1659,14 @@ class Orchestrator:
             elif action == "list_tasks":
                 tasks, total = self.get_task_list(payload)  # Needs implementation
                 return {"status": "success", "tasks": tasks, "total": total}
+            elif action == "register_agent":
+                agent_id = payload.get("id")
+                role = payload.get("role", "")
+                capabilities = payload.get("capabilities", [])
+                if not agent_id:
+                    return {"status": "error", "detail": "Missing id"}
+                token = self.register_agent(agent_id, role, capabilities)
+                return {"status": "success", "token": token}
             elif action == "cancel_task":
                 task_id_str = payload.get("task_id")
                 if not task_id_str:
@@ -1873,16 +1882,21 @@ class Orchestrator:
             f"Middleware validation passed for agent '{agent_name}', directive '{validated_directive}'. Proceeding with task creation."
         )
 
-        # TODO: Implement actual task creation logic here
-        # (e.g., add to a queue, update state manager, interact with agent)
-        # For now, generate a dummy task ID
         new_task_id = uuid.uuid4()
         logger.info(
             f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'."
         )
 
-        # Example: Store task in a simple list or more sophisticated state management
-        # self.task_queue.append({"id": new_task_id, "agent": agent_name, "directive": validated_directive, "status": "pending", "payload": payload})
+        task_record = {
+            "id": str(new_task_id),
+            "agent": agent_name,
+            "directive": validated_directive,
+            "payload": payload,
+            "priority": payload.get("priority", 0),
+            "state": "pending",
+        }
+
+        self.queue.enqueue(task_record)
 
         return new_task_id
 
@@ -1946,6 +1960,22 @@ class Orchestrator:
         if not start_success:
             return False, f"Failed to start agent during restart: {start_detail}"
         return True, f"Agent '{agent_name}' restarted successfully (Placeholder)."
+
+    def register_agent(self, agent_id: str, role: str, capabilities: list[str]) -> str:
+        """Register an agent and assign any pending task."""
+        token = state_repo.register_agent(agent_id, role, capabilities)
+        if hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
+            try:
+                self._zmq_pub_socket.send_json({"type": "agent_registered", "agent_id": agent_id})
+            except Exception as e:  # noqa: BLE001
+                logger.error(f"Failed to publish agent_registered event: {e}")
+        task = self.queue.dequeue(agent_id)
+        if task and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
+            try:
+                self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task["id"], "agent_id": agent_id})
+            except Exception as e:  # noqa: BLE001
+                logger.error(f"Failed to publish task_assigned event: {e}")
+        return token
 
     def load_agent(self, key: str) -> Any:
         """
