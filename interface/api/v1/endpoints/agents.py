@@ -31,7 +31,7 @@ def create_agent_db(
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-):
+) -> Dict[str, Any]:
     """Create a new agent in the database (superuser only)."""
     name = agent_data.get("name")
     model = agent_data.get("model")
@@ -49,7 +49,7 @@ def get_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_user),
     db: Session = Depends(dependencies.get_db),
-):
+) -> Dict[str, Any]:
     """Retrieve an agent by its ID."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -63,7 +63,7 @@ def update_agent_db(
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-):
+) -> Dict[str, Any]:
     """Update an existing agent (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -72,6 +72,12 @@ def update_agent_db(
     # If name is being updated, check for conflicts first
     new_name = agent_data.get("name")
     if new_name and new_name != db_agent.name:
+        existing_agent_with_name = (
+            db.query(AgentModel)
+            .filter(AgentModel.name == new_name, AgentModel.id != agent_id)
+            .first()
+        )
+=======
         existing_agent_with_name = db.query(AgentModel).filter(
             AgentModel.name == new_name,
             AgentModel.id != agent_id
@@ -79,7 +85,7 @@ def update_agent_db(
         if existing_agent_with_name:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Agent name '{new_name}' already exists."
+                detail=f"Agent name '{new_name}' already exists.",
             )
 
     # Apply updates for provided fields
@@ -108,7 +114,7 @@ def delete_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-):
+) -> Dict[str, Any]:
     """Delete an agent by its ID (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -122,14 +128,14 @@ def delete_agent_db(
 @router.get("/", response_model=List[AgentStatusInfo], summary="List All Agents")
 def list_agents(
     current_user: User = Depends(dependencies.get_current_active_user),
-):
+) -> List[AgentStatusInfo]:
     """
     Retrieves a list of all registered agents and their current status.
 
     Communicates with the Orchestrator to get the latest information.
     Requires an active user session.
     """
-    agents = crud_agent.get_agents()  # Fetches from orchestrator
+    agents = crud_agent.get_all_agents_status()  # Changed from get_agents()
     return agents
 
 
@@ -137,7 +143,7 @@ def list_agents(
 def get_agent_status(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_user),
-):
+) -> AgentStatusInfo:
     """
     Retrieves the detailed status for a specific agent.
 
@@ -164,7 +170,7 @@ def get_agent_status(
 def get_agent_configuration(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_user),
-):
+) -> AgentConfigInfo:
     """
     Retrieves the current configuration for a specific agent.
 
@@ -193,7 +199,7 @@ def dispatch_message_to_agent(
     agent_name: str,
     payload: AgentDispatchPayload,
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> AgentDispatchResponse:
     """
     Sends a message or command to a specific agent via the Orchestrator.
 
@@ -263,7 +269,7 @@ def dispatch_message_to_agent(
 def trigger_agent_assessment(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-) -> Any:
+) -> AgentActionResponse:
     """
     Triggers a self-assessment process for a specific agent.
 
@@ -321,7 +327,7 @@ def trigger_agent_assessment(
 def start_agent(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-):
+) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to start a specific agent.
 
@@ -360,7 +366,7 @@ def start_agent(
 def stop_agent(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-):
+) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to stop a specific agent.
 
@@ -399,7 +405,7 @@ def stop_agent(
 def restart_agent(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-):
+) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to restart a specific agent.
 
@@ -441,40 +447,58 @@ def update_agent_configuration(
     agent_name: str,
     config_data: AgentConfigUpdate,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-):
+) -> AgentActionResponse:
     """
     Updates the configuration for a specific agent via the Orchestrator.
 
     - **agent_name**: The name of the agent to update.
-    - **config_data**: The new configuration settings (partial updates allowed).
+    - **config_data**: The new configuration settings.
 
+    Communicates with the Orchestrator.
     Requires superuser privileges.
     Raises HTTP 404 if the agent is not found.
-    Raises HTTP 502 if the orchestrator fails to update the configuration.
+    Raises HTTP 502 if communication with the orchestrator fails.
     """
     logger.info(
-        f"Superuser '{current_user.username}' updating configuration for agent '{agent_name}'."
+        f"User '{current_user.username}' updating config for agent '{agent_name}'."
     )
 
-    response = crud_agent.update_agent_config(name=agent_name, config_data=config_data)
-    if response is None:
-        raise HTTPException(
-            status_code=502,
-            detail="Failed to communicate with orchestrator or process request.",
+    # Call the CRUD operation with corrected parameter names
+    updated_config_response = crud_agent.update_agent_config(
+        agent_name=agent_name,
+        config_in=config_data,  # Corrected: agent_name, config_in
+    )
+
+    if updated_config_response is None:
+        # This case implies the agent might not have been found by the orchestrator,
+        # or another error occurred during the orchestrator call handled within crud_agent.
+        logger.warning(
+            f"Failed to update config for agent '{agent_name}' via orchestrator (crud returned None)."
         )
-    if response.status == "error":
-        if "not found" in (response.detail or "").lower():
-            raise HTTPException(
-                status_code=404,
-                detail=response.detail or f"Agent '{agent_name}' not found.",
-            )
-        else:
-            raise HTTPException(
-                status_code=502,
-                detail=response.detail
-                or "Orchestrator failed to update agent configuration.",
-            )
-    return response
+        # crud_agent.update_agent_config now returns Optional[Dict[str, Any]]
+        # We need to decide what AgentActionResponse to return here.
+        # Let's assume if crud_agent returns None, it's an issue communicated by orchestrator
+        # or the agent wasn't found by it.
+        # Raising an HTTPException might be more appropriate if crud_agent can't find the agent
+        # or if the response from orchestrator indicates a clear error.
+        # For now, let's return an error status in AgentActionResponse.
+        return AgentActionResponse(
+            agent_name=agent_name,
+            action="update_config",
+            status="error",
+            detail=f"Failed to update config for agent '{agent_name}'. Orchestrator did not confirm update or agent not found.",
+        )
+
+    # If crud_agent.update_agent_config was successful, it returns the new config dict.
+    # The endpoint is expected to return AgentActionResponse.
+    # We infer success if updated_config_response is not None.
+    return AgentActionResponse(
+        agent_name=agent_name,
+        action="update_config",
+        status="success",  # Assuming success if crud_agent returned a config
+        detail=f"Configuration for agent '{agent_name}' update process initiated.",
+        data=updated_config_response,  # Include the new config if available
+    )
 
 
 @router.post(
@@ -484,7 +508,7 @@ def update_agent_configuration(
 )
 def reload_all_agents_configs(
     current_user: User = Depends(dependencies.get_current_active_superuser),
-):
+) -> AgentActionResponse:
     """Triggers a reload of all agent configurations via the Orchestrator.
 
     This typically involves the Orchestrator re-reading configuration files.

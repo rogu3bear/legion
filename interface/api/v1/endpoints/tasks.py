@@ -5,9 +5,11 @@ import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi.responses import Response
 
 from interface import dependencies
 from interface.crud.crud_task import cancel_task, create_task, get_task, list_tasks
+from interface.models.user import User
 from interface.schemas.task import Task, TaskCreate, TaskCreatedResponse
 
 # Router for task management
@@ -23,8 +25,8 @@ logger = logging.getLogger(__name__)
 )
 def post_task(
     task_in: TaskCreate,
-    current_user=Depends(dependencies.get_current_active_user),
-):
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> TaskCreatedResponse:
     """
     Submits a new task to the Legion Orchestrator for processing.
 
@@ -52,41 +54,38 @@ def read_tasks(
     agent: Optional[str] = Query(
         None, description="Filter tasks by assigned agent name."
     ),
-    status: Optional[str] = Query(
+    task_status: Optional[str] = Query(
         None, description="Filter tasks by status (e.g., pending, completed, failed)."
     ),
-    current_user=Depends(dependencies.get_current_active_user),
-):
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> List[Task]:
     """
     Retrieves a list of tasks from the Orchestrator, with optional filtering and pagination.
 
     - **skip**: Number of initial tasks to skip (for pagination).
     - **limit**: Maximum number of tasks per page.
     - **agent**: Filter by agent name.
-    - **status**: Filter by task status.
+    - **task_status**: Filter by task status.
 
     Requires an active user session.
     Raises HTTP 502 if communication with the orchestrator fails.
     """
     # Note: CRUD function expects agent_id, but API uses agent name for usability
     # The CRUD layer or Orchestrator should handle this mapping if needed
-    result = list_tasks(skip=skip, limit=limit, agent_name=agent, status=status)
-    if result is None:
+    result = list_tasks(skip=skip, limit=limit, agent_id=agent, status=task_status)
+    if result is None or result.tasks is None:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to retrieve tasks from orchestrator",
         )
-    # The TaskList model might be redundant if crud returns List[Task]
-    # If list_tasks returns a dict like {'tasks': [...]}, use TaskList
-    # Assuming list_tasks now directly returns List[Task]
-    return result
+    return result.tasks
 
 
 @router.get("/{task_id}", response_model=Task, summary="Get Task Details")
 def read_task(
     task_id: uuid.UUID = Path(..., description="The UUID of the task to retrieve."),
-    current_user=Depends(dependencies.get_current_active_user),
-):
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> Task:
     """
     Retrieves the details and current status of a specific task by its UUID.
 
@@ -109,8 +108,8 @@ def read_task(
 )
 def delete_task(
     task_id: uuid.UUID = Path(..., description="The UUID of the task to cancel."),
-    current_user=Depends(dependencies.get_current_active_user),
-):
+    current_user: User = Depends(dependencies.get_current_active_user),
+) -> Response:
     """
     Requests the cancellation of an existing task by its UUID.
 
@@ -128,4 +127,4 @@ def delete_task(
             detail="Failed to cancel task in orchestrator",
         )
     # No content to return on successful deletion
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

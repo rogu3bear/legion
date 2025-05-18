@@ -1,5 +1,6 @@
 """Security related utilities (hashing, JWT)."""
 
+import typing
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union
 
@@ -37,7 +38,7 @@ def create_access_token(
         )
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return typing.cast(str, encoded_jwt)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -50,7 +51,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if the password matches, False otherwise.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return typing.cast(bool, pwd_context.verify(plain_password, hashed_password))
 
 
 def get_password_hash(password: str) -> str:
@@ -62,10 +63,10 @@ def get_password_hash(password: str) -> str:
     Returns:
         The hashed password.
     """
-    return pwd_context.hash(password)
+    return typing.cast(str, pwd_context.hash(password))
 
 
-def decode_token(token: str) -> dict | None:
+def decode_token(token: str) -> dict[str, Any] | None:
     """Decodes a JWT token.
 
     Args:
@@ -76,6 +77,6 @@ def decode_token(token: str) -> dict | None:
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        return typing.cast(dict[str, Any], payload)
     except JWTError:
         return None

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import typing
 from typing import Any, Dict, Optional
 
 import zmq
@@ -65,7 +66,9 @@ def send_request(
 
         # Wait for the reply using poll with timeout
         if socket.poll(timeout_ms, zmq.POLLIN):
-            response = socket.recv_json()
+            response_raw = socket.recv_json()
+            # Cast the response to the expected type
+            response = typing.cast(Dict[str, Any], response_raw)
             logger.debug(
                 f"Received ZMQ response (for ID: {request_id}): {json.dumps(response)}"
             )

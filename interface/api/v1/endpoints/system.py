@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -37,7 +37,7 @@ def _call_orchestrator(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error communicating with orchestrator.",
-        )
+        ) from e
 
     if response_data is None:
         raise HTTPException(
@@ -46,7 +46,7 @@ def _call_orchestrator(
         )
 
     # Response payload is nested under "response" key in the ZMQ reply
-    response_payload = response_data.get("response", {})
+    response_payload = cast(Dict[str, Any], response_data.get("response", {}))
     if response_payload.get("status") == "error":
         detail = response_payload.get("detail", "Unknown orchestrator error")
         logger.warning(f"Orchestrator returned error for action '{action}': {detail}")
@@ -62,7 +62,7 @@ def _call_orchestrator(
 @router.get("/status", response_model=Dict[str, Any], summary="Get System Status")
 def get_system_status(
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> Dict[str, Any]:
     """
     Retrieves the current overall system status from the Legion Orchestrator.
 
@@ -76,7 +76,7 @@ def get_system_status(
 @router.get("/metrics", response_model=Dict[str, Any], summary="Get System Metrics")
 def get_system_metrics(
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> Dict[str, Any]:
     """
     Retrieves system performance and operational metrics from the Orchestrator.
 
@@ -91,7 +91,7 @@ def get_system_metrics(
 def get_system_logs(
     # TODO: Add query parameters for filtering (e.g., level, agent, limit)
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> Dict[str, Any]:
     """
     Retrieves recent system logs from the Legion Orchestrator.
 
@@ -108,7 +108,7 @@ def get_system_logs(
 )
 def get_memory_stats(
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> Dict[str, Any]:
     """
     Retrieves usage statistics for the Legion memory system via the Orchestrator.
 

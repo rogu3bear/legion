@@ -1,10 +1,15 @@
 // js_tasks.js - Legion Task Management UI
 
-(function() {
-    const taskListContainer = document.getElementById('task-list');
+document.addEventListener('DOMContentLoaded', () => {
+    const taskListContainer = document.getElementById('task-list-container');
     const taskForm = document.getElementById('task-form');
     const taskAgentSelect = document.getElementById('task-agent');
     const notificationContainer = document.getElementById('notification-container');
+    const refreshTasksButton = document.getElementById('refresh-tasks-btn');
+    const filterStatusSelect = document.getElementById('filter-task-status');
+    const filterOwnerInput = document.getElementById('filter-task-owner');
+
+    const API_BASE_URL = '/api/v1/tasks';
 
     // Function to show a notification
     function showNotification(message, type = 'info') {
@@ -49,57 +54,76 @@
     // Function to render the task list
     function renderTasks(tasks) {
         if (!taskListContainer) {
-            console.warn("Task list container #task-list not found.");
+            console.warn('Task list container #task-list-container not found in DOM.');
             return;
         }
-        taskListContainer.innerHTML = '<h2>Tasks</h2>'; // Reset content
         if (!tasks || tasks.length === 0) {
-            taskListContainer.innerHTML += '<p>No tasks available.</p>';
+            taskListContainer.innerHTML = '<p class="text-gray-600">No tasks found matching your criteria.</p>';
             return;
         }
 
-        const list = document.createElement('ul');
-        list.className = 'list-group';
-        tasks.forEach(task => {
-            const item = document.createElement('li');
-            item.className = 'list-group-item task-item d-flex justify-content-between align-items-center';
-            item.innerHTML = `
-                <div>
-                    <strong>${task.title || 'Untitled Task'}</strong> - <span class="badge bg-${task.status === 'completed' ? 'success' : task.status === 'pending' ? 'warning' : 'secondary'} rounded-pill">${task.status || 'unknown'}</span>
-                    <p>${task.description || 'No description'}</p>
-                    <small>Assigned to: ${task.agent || 'None'} | ID: ${task.id}</small>
-                </div>
-                <button class="btn btn-danger btn-sm delete-task-btn" data-id="${task.id}">Delete</button>
-            `;
-            list.appendChild(item);
-        });
-        taskListContainer.appendChild(list);
+        taskListContainer.innerHTML = tasks.map(task => createTaskElement(task)).join('');
+        addEventListenersToTaskButtons();
+    }
 
-        // Attach event listeners to delete buttons
-        document.querySelectorAll('.delete-task-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const taskId = e.target.getAttribute('data-id');
-                await deleteTask(taskId);
-            });
-        });
+    function getStatusColor(status) {
+        if (!status) return 'bg-gray-300';
+        switch (status.toLowerCase()) {
+            case 'pending': return 'bg-yellow-500';
+            case 'running': return 'bg-blue-500';
+            case 'completed': return 'bg-green-500';
+            case 'failed': return 'bg-red-500';
+            case 'cancelled': return 'bg-gray-500';
+            default: return 'bg-gray-300';
+        }
+    }
+
+    function createTaskElement(task) {
+        const tags = task.metadata && task.metadata.tags && Array.isArray(task.metadata.tags) && task.metadata.tags.length > 0 ?
+            task.metadata.tags.map(tag => `<span class="tag-chip">${tag}</span>`).join(' ') :
+            '<span class="tag-chip tag-unset">No Tags</span>';
+
+        const owner = task.agent_id ? task.agent_id : '<span class="text-gray-500">Unassigned</span>';
+        const taskIdShort = task.id ? task.id.substring(0, 8) : 'N/A';
+
+        return `
+            <div class="task-item bg-white p-4 border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-shadow duration-200" id="task-${task.id}">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800">${task.title || 'Untitled Task'} (ID: ${taskIdShort})</h3>
+                    <span class="status-badge ${getStatusColor(task.status)} text-white text-xs font-semibold px-3 py-1 rounded-full">${task.status || 'UNKNOWN'}</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-1"><strong>Owner:</strong> ${owner}</p>
+                <p class="text-sm text-gray-700 mb-2">${task.description || 'No description provided.'}</p>
+                <div class="mb-2 text-sm"><strong>Tags:</strong> ${tags}</div>
+                <div class="text-xs text-gray-500">
+                    Created: ${task.created_at ? new Date(task.created_at).toLocaleString() : 'N/A'}
+                    ${task.priority ? `<span class="mx-1">|</span> Priority: ${task.priority}` : ''}
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <button class="delete-task-btn text-red-500 hover:text-red-700 text-xs font-medium py-1 px-2 rounded border border-red-500 hover:bg-red-50 transition-colors duration-150" data-task-id="${task.id}">Delete Task</button>
+                </div>
+            </div>
+        `;
     }
 
     // Function to fetch tasks from API
-    async function fetchTasks() {
+    async function fetchTasks(filters = {}) {
+        const queryParams = new URLSearchParams();
+        if (filters.status) queryParams.append('status', filters.status);
+        if (filters.agent) queryParams.append('agent', filters.agent); // agent_id is used as owner
+
         try {
-            const response = await fetch('/api/v1/tasks');
+            const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
             if (!response.ok) {
-                // Display error message if fetch fails
-                const errorText = await response.text();
-                taskListContainer.innerHTML = `<h2>Tasks</h2><p class="text-danger">Error fetching tasks: ${response.status} ${response.statusText}. ${errorText || ''}</p>`;
-                return;
+                console.error('Failed to fetch tasks:', response.status, await response.text());
+                if(taskListContainer) taskListContainer.innerHTML = '<p class="text-red-500">Error loading tasks.</p>';
+                return [];
             }
-            const tasks = await response.json();
-            renderTasks(tasks);
+            return await response.json();
         } catch (error) {
-            console.error('Failed to fetch or render tasks:', error);
-            // Display error message if fetch fails
-            taskListContainer.innerHTML = `<h2>Tasks</h2><p class="text-danger">Failed to fetch tasks: ${error.message}</p>`;
+            console.error('Error fetching tasks:', error);
+            if(taskListContainer) taskListContainer.innerHTML = '<p class="text-red-500">Error loading tasks.</p>';
+            return [];
         }
     }
 
@@ -161,26 +185,56 @@
 
     // Function to delete a task
     async function deleteTask(taskId) {
-        if (!confirm('Are you sure you want to delete this task?')) {
+        if (!taskId) {
+            console.error('Task ID is undefined, cannot delete.');
+            alert('Cannot delete task: Task ID is missing.');
+            return;
+        }
+        if (!confirm(`Are you sure you want to delete task ${taskId.substring(0,8)}...? This will attempt to cancel it.`)) {
             return;
         }
         try {
-            const response = await fetch(`/api/v1/tasks/${taskId}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-                console.error(`Error deleting task: ${response.status}`, errorData);
-                showNotification(`Failed to delete task ${taskId}: ${errorData.detail || response.statusText}`, 'error');
-                return;
+            const response = await fetch(`${API_BASE_URL}/${taskId}`, { method: 'DELETE' });
+            if (response.ok) { // 204 No Content is ok
+                console.log(`Task ${taskId} deleted/cancelled successfully.`);
+                // Optional: show a success message to the user
+                document.getElementById(`task-${taskId}`)?.remove(); // Optimistically remove from UI
+                // loadAndRenderTasks(); // Or, reload all tasks to confirm from server
+            } else {
+                const errorText = await response.text();
+                console.error(`Failed to delete task ${taskId}:`, response.status, errorText);
+                alert(`Failed to delete task: ${errorText || response.statusText}`);
             }
-            showNotification(`Task ${taskId} deleted successfully.`, 'success');
-            // Refresh task list immediately
-            await fetchTasks();
         } catch (error) {
-            console.error('Failed to delete task:', error);
-            showNotification(`Failed to delete task ${taskId}: ${error.message}`, 'error');
+            console.error('Error deleting task:', error);
+            alert('An error occurred while trying to delete the task.');
         }
+    }
+
+    function addEventListenersToTaskButtons() {
+        document.querySelectorAll('.delete-task-btn').forEach(button => {
+            // Remove old event listeners to prevent multiple fires if re-rendering
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+
+            newButton.addEventListener('click', (event) => {
+                const taskId = event.target.dataset.taskId;
+                deleteTask(taskId);
+            });
+        });
+    }
+
+    async function loadAndRenderTasks() {
+        const statusFilter = filterStatusSelect ? filterStatusSelect.value : '';
+        const ownerFilter = filterOwnerInput ? filterOwnerInput.value.trim() : '';
+
+        const filters = {};
+        if (statusFilter) filters.status = statusFilter;
+        if (ownerFilter) filters.agent = ownerFilter; // 'agent' is the query param for owner
+
+        if(taskListContainer) taskListContainer.innerHTML = '<p class="text-gray-600">Loading tasks...</p>';
+        const tasks = await fetchTasks(filters);
+        renderTasks(tasks);
     }
 
     // Event listener for task form submission
@@ -202,10 +256,10 @@
 
     // Initial setup
     if (taskListContainer) {
-        fetchTasks();
-        setInterval(fetchTasks, 10000); // Refresh tasks every 10 seconds
+        loadAndRenderTasks();
+        setInterval(loadAndRenderTasks, 10000); // Refresh tasks every 10 seconds
     } else {
-        console.warn("Task list container #task-list not found, skipping task updates.");
+        console.info('Task list container #task-list-container not found. Task script will not load initial tasks.');
     }
 
     // WebSocket connection for real-time updates
@@ -229,7 +283,7 @@
                     showNotification(`Task ${eventData.data.id} updated: ${eventData.data.status}`, 'info');
                     // Refresh the entire task list on any task update for simplicity
                     // A more sophisticated approach would update only the changed task
-                    fetchTasks();
+                    loadAndRenderTasks();
                 }
             } catch (e) {
                 console.error('Failed to parse WebSocket message:', e);
@@ -262,4 +316,16 @@
         console.warn("Task agent select #task-agent not found.");
     }
 
-})();
+    if (refreshTasksButton) {
+        refreshTasksButton.addEventListener('click', loadAndRenderTasks);
+    }
+    if (filterStatusSelect) {
+        filterStatusSelect.addEventListener('change', loadAndRenderTasks);
+    }
+    if (filterOwnerInput) {
+        filterOwnerInput.addEventListener('input', () => {
+            // Basic debounce could be added here if performance becomes an issue
+            loadAndRenderTasks();
+        });
+    }
+});

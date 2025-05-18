@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+
+# from sqlalchemy.ext.declarative import declarative_base # Old way
+from sqlalchemy.orm import DeclarativeBase  # New way
 
 from interface.core.config import settings
 
@@ -11,7 +13,11 @@ engine = create_engine(
     else {},
 )
 
-Base = declarative_base()
+
+# Base = declarative_base() # Old way
+class Base(DeclarativeBase):  # New way
+    pass
+
 
 # Import all models here for Alembic autogenerate support
 # Import models to register them with the Base class

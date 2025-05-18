@@ -4,46 +4,26 @@ Pydantic schemas for Task related API operations.
 
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-# Option 1: Define one set of names, conditionally.
-# This relies on mypy correctly understanding that only one branch is taken.
+# Removed conditional import logic for TaskStatus and TaskPriority
 
-# Attempt to import from core.db.models first. If this path is taken by mypy,
-# it should not complain about the except block definitions if they are guarded.
-# However, mypy might still analyze the except block independently.
 
-_TaskStatus_imported = None
-_TaskPriority_imported = None
+class TaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
 
-try:
-    from core.db.models import TaskPriority as _TaskPriority_imported_real
-    from core.db.models import TaskStatus as _TaskStatus_imported_real
 
-    _TaskStatus_imported = _TaskStatus_imported_real
-    _TaskPriority_imported = _TaskPriority_imported_real
-except ImportError:
-    pass  # Fallback definitions will occur below if imports failed
-
-if _TaskStatus_imported and _TaskPriority_imported:
-    TaskStatus = _TaskStatus_imported
-    TaskPriority = _TaskPriority_imported
-else:
-    from enum import Enum  # Keep import here for clarity if this branch is taken
-
-    class TaskStatus(str, Enum):
-        PENDING = "pending"
-        RUNNING = "running"
-        COMPLETED = "completed"
-        FAILED = "failed"
-        CANCELLED = "cancelled"
-
-    class TaskPriority(int, Enum):
-        LOW = 1
-        MEDIUM = 2
-        HIGH = 3
+class TaskPriority(int, Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
 
 
 # Base properties shared by all task schemas

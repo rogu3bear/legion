@@ -1,11 +1,18 @@
-"""Legion interface FastAPI app stub."""
+import sys # sys must be imported first for path modifications
+from pathlib import Path # pathlib for path manipulations
 
+# Ensure the project root directory is in the Python path very early.
+# This must be done before any other imports that might rely on this path.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Standard library imports
 import asyncio
 import json
-import os
-import sys
-from pathlib import Path
+# import os # No longer needed for os.path
 
+# Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -13,7 +20,11 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+# Project-specific imports
 from legion.core.logging_config import setup_logging
+# from legion.orchestrator import Orchestrator # Old import
+from legion import Orchestrator # New import
+=======
 from legion.orchestrator import Orchestrator
 
 # Ensure the project root directory is in the Python path
@@ -38,6 +49,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     system_router,
     task_registry_router,
     tasks_router,
+    lmstudio_proxy_router,
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
@@ -47,6 +59,7 @@ app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
+app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []

@@ -1,6 +1,6 @@
 """CRUD operations for User Preferences."""
 
-from typing import Optional
+from typing import Optional, cast
 
 from sqlalchemy.orm import Session
 
@@ -9,10 +9,13 @@ from interface import models, schemas
 
 def get_user_preference(db: Session, user_id: int) -> Optional[models.UserPreference]:
     """Get user preferences by user ID."""
-    return (
-        db.query(models.UserPreference)
-        .filter(models.UserPreference.user_id == user_id)
-        .first()
+    return cast(
+        Optional[models.UserPreference],
+        (
+            db.query(models.UserPreference)
+            .filter(models.UserPreference.user_id == user_id)
+            .first()
+        ),
     )
 
 
@@ -23,8 +26,10 @@ def create_user_preference(
     db_prefs = get_user_preference(db, user_id=user_id)
     if db_prefs:
         # If prefs somehow already exist, update them instead of creating
-        return update_user_preference(
-            db, user_id=user_id, preferences_update=preferences
+        # Cast is safe here because db_prefs existence implies update_user_preference will find it and return UserPreference
+        return cast(
+            models.UserPreference,
+            update_user_preference(db, user_id=user_id, preferences_update=preferences),
         )
 
     db_prefs = models.UserPreference(**preferences.model_dump(), user_id=user_id)
