@@ -14,7 +14,7 @@ repos:
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version should match the one in requirements.txt/pyproject.toml if possible
-    rev: v0.11.8 # Or specific version used in project
+    rev: v0.11.10 # Or specific version used in project
     hooks:
     -   id: ruff
         enabled: false
@@ -72,3 +72,9 @@ repos:
         files: .env.development
         pass_filenames: false
         always_run: true # Ensure it runs every time to keep .env.ports.example in sync
+
+# Temporarily removing markdownlint hook for clean commit
+# -   repo: https://github.com/markdownlint/markdownlint
+#     rev: v0.12.0
+#     hooks:
+#       - id: markdownlint

@@ -1,176 +1,115 @@
-# Legion Agents Directory
+# AGENTS.md
 
-A central reference for every agent active in the **Legion** ecosystem: roles, capabilities, endpoints, and health-check details.
-_Last updated: **May 17 2025**_
+## 0. Purpose & Reading Guide
 
----
-## Legend
-| Emoji | Meaning |
-|-------|---------|
-| 🔑 | Core / mission-critical |
-| 🛠️ | Development utility |
-| 📊 | Metrics & logging |
-| 💬 | Communication / UX |
-| 🩺 | Health & observability |
+This file defines and distinguishes Codex internal agents from Legion operational agents. It prevents confusion, enforces boundaries, and steers Codex's behaviour.
 
----
-## Orchestrator 🔑
-* **Role**  Central brain; delegates tasks, routes messages, enforces policy.
-* **Port Map**  PUB `7808` | SUB `7809` | REST `7803` | Interface API `7804` | Middleware `7805` | Researcher API `7807` | Redis `7810`
-* **Key Capabilities**
-  `dispatch_task` • `cancel_task` • `sync_state` • `rebalance_load`
-* **Heartbeat Expectation**  < 5 s.
-* **Endpoints**
-  `POST /api/v1/tasks` • `PATCH /api/v1/tasks/{id}`
+- [0. Purpose & Reading Guide](#0-purpose--reading-guide)
+- [1. Codex Internal Agents](#1-codex-internal-agents)
+- [2. Legion External Operational Agents](#2-legion-external-operational-agents)
+- [3. Naming & Directory Conventions](#3-naming--directory-conventions)
+- [4. Code Style & Lint Rules](#4-code-style--lint-rules)
+- [5. Testing & Validation](#5-testing--validation)
+- [6. Pull-Request (PR) Guidelines](#6-pull-request-pr-guidelines)
+- [7. Multi-AGENTS.md Precedence](#7-multi-agentsmd-precedence)
+- [8. Safety & Prohibited Actions](#8-safety--prohibited-actions)
 
----
-## Worker Agents
+## 1. Codex Internal Agents
 
-### Architect 🔑
-* **Role**  Generates high-level blueprints & multi-step plans.
-* **Capabilities**  `create_plan` • `validate_module` • `diagram_system`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client (e.g., for LMStudio). Config: `legion/configs/agents.yaml`.
-* **Default Owner Tags**  `design`, `system`
-* **Status Topics**  `architect.status`
+Codex agents are internal automation scripts. They are not Legion operational agents and must never interact with Legion's runtime directly.
 
-### Therapist 🔑
-* **Role**  Gate-keeps all agent function calls; enforces logic & ethics.
-* **Capabilities**  `validate_intent` • `sanitize_prompt` • `reroute`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
-* **Tags**  `compliance`, `guard`
+| Name                | Purpose                        | Permissions                | Hard Limits                       |
+|---------------------|-------------------------------|----------------------------|-----------------------------------|
+| CodexAgent-Scaffold | Generate stubs, boilerplate   | Read/write in repo         | - No direct writes outside repo   |
+| CodexAgent-Refactor | Refactor code, enforce style  | Read/write in repo         | - Never call external APIs unless stubbed |
+| CodexAgent-Test     | Run and validate tests        | Read, run tests            | - No network calls                |
 
-### Metrics 📊
-* **Role**  Collects runtime metrics, pushes to Prometheus or Influx.
-* **Capabilities**  `record_counter` • `record_histogram` • `push_metric`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
-* **Exports**  `/metrics` on port `7806`
+- Hard limits:
 
-### UX Designer 💬
-* **Role**  Improves prompts, copy, and UI micro-interactions.
-* **Capabilities**  `rewrite_text` • `suggest_layout`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
+  - No direct writes outside the repo
+  - Never call external APIs unless stubbed
+  - No network calls unless explicitly whitelisted (none by default)
+  - No destructive operations (e.g., `rm -rf /`)
 
-### Ping 🛠️
-* **Role**  Simple liveness echo; measures round-trip latency.
-* **Capabilities**  `ping` • `sleep`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
+## 1.1 Roles
 
-### Echo 🛠️
-* **Role**  Verbose logger; mirrors commands for audit & training data.
-* **Capabilities**  `echo_task` • `log_payload`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
-* **Note**  High output volume— route to `agent-feed` channel.
+- Scaffold: Create new files, stubs, and structure
+- Refactor: Enforce code style, rename, move, or clean code
+- Test: Run, validate, and report on test suites
 
-### Healthcheck 🩺
-* **Role**  Active monitoring of CPU, RAM, and container health.
-* **Capabilities**  `collect_health` • `report_anomaly`
-* **LLM Usage**: Utilizes model `meta-llama-3.1-8b-instruct` via the system's LLM client. Config: `legion/configs/agents.yaml`.
-* **Endpoints**  `GET /api/v1/agents/health`
+## 1.2 Permissions & Guard-rails
 
-### Developer 🛠️
-* **Role**  Go-based Developer agent for code review, refactoring, and debugging.
-* **Capabilities**  `code_review` • `refactor` • `debug`
-* **LLM Usage**: LLM model not explicitly specified in configuration (`legion/configs/developer.yaml`). Task execution may or may not involve direct LLM calls.
-* **Config**: `legion/configs/developer.yaml`
+- Must respect .gitignore and .env
+- May not alter Legion agent configs or runtime state
+- All changes must be reviewable via PR
 
----
-## Capability → Agent Map (excerpt)
-| Capability            | Primary Agent(s) |
-|-----------------------|------------------|
-| `create_plan`         | Architect        |
-| `validate_intent`     | Therapist        |
-| `record_counter`      | Metrics          |
-| `rewrite_text`        | UX Designer      |
-| `ping`                | Ping             |
-| `echo_task`           | Echo             |
-| `collect_health`      | Healthcheck      |
-| `code_review`         | Developer        |
-| `refactor`            | Developer        |
-| `debug`               | Developer        |
+## 2. Legion External Operational Agents
 
-_For a live list use `GET /api/v1/agents/capabilities`._
+Legion agents are runtime personas managed by the orchestrator. Codex must not manage, mutate, or impersonate these agents.
 
----
-## Heartbeat & SLA
-| Agent         | Status Window | Offline Threshold | Escalate To              |
-|---------------|---------------|-------------------|--------------------------|
-| Orchestrator  | 5 s           | 10 s              | PagerDuty #P0            |
-| Architect     | 15 s          | 30 s              | Orchestrator auto-restart |
-| Metrics       | 30 s          | 60 s              | Healthcheck agent        |
+| Name           | Purpose                        | Permissions         | Boundaries                       |
+|----------------|-------------------------------|---------------------|----------------------------------|
+| Architect      | Code review, architecture      | Read logs, suggest  | No code writes, read-only logs   |
+| Therapist      | Agent well-being, support      | Read logs           | No code writes, read-only logs   |
+| Metrics        | Collect/analyze metrics        | Read logs           | No code writes, read-only logs   |
+| UX Designer    | UX critique, suggestions       | Read logs           | No code writes, read-only logs   |
+| Ping           | Health check, connectivity     | None                | No code writes                   |
+| Echo           | Diagnostic echo                | None                | No code writes                   |
+| Healthcheck    | System health, uptime          | Read logs           | No code writes, read-only logs   |
+| Developer (Go) | Code tasks, review, debug      | Read logs           | No code writes, read-only logs   |
 
----
-## Development Notes
-* **Adding a new agent**
-  1. Reserve host port in `.env.ports.example`.
-  2. Implement heartbeat ping.
-  3. Update `legion/orchestrator/routing_map.py`.
-  4. Append entry here.
-* **LLM Interaction**: Agents configured with an `llm_model` typically interact with Large Language Models through a centralized client interface within the system (e.g., `ILLMClient`). This client is responsible for connecting to the configured LLM service, such as LMStudio.
-* **Tag Rules**  All persistent tasks must include at least one **project** tag (`[Legion | Development]`, `[Business | AuchShop]`, etc.) plus functional tags.
+### 2.1 Roles
 
----
-© 2025 AuchIndustries — internal use only.
+- Each agent has a single, well-defined persona and task domain.
 
-## AI Contributor Guide
+### 2.2 Interaction Boundaries
 
-This section provides integration instructions for AI agents such as OpenAI Codex or Cursor. Follow these guidelines when analyzing or modifying the repository.
+- Legion agents may only interact via orchestrator APIs or Discord events.
+- No agent may write to code or config files.
+- All logs are read-only for agents.
 
-### 1. Project Overview
-- **Purpose**: Legion orchestrates multiple specialized agents through a layered architecture, handling memory storage, task routing, and real-time interfaces.
-- **Key Features**: modular agent system, FastAPI backend, Discord bot, and structured logging.
+## 3. Naming & Directory Conventions
 
-### 2. Directory Structure
-```text
-artifacts/            # Logs and CI reports
-interface/            # FastAPI backend and web interface
-legion/               # Core orchestration logic and agent runtime
-memory/               # Memory subsystems (vector store, DB, logs)
-middleware/           # Request/response middleware services
-scripts/              # Utility and CI scripts
-tests/                # Pytest suites
-ui/                   # Vite/React frontend
-```
-Refer to `docs/architecture.md` for the enforced layered model.
+- Prefix Codex internal scripts with `codex_`
+- Prefix Legion helpers with `legion_`
+- Directory layout:
 
-### 3. Setup and Execution
-1. Create a virtual environment and install Python requirements:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-2. Initialize memory stores:
-   ```bash
-   ./scripts/init_memory.sh
-   ```
-3. Start development servers:
-   ```bash
-   make dev
-   ```
+  - `legion/agents/python/` for Python agents
+  - `legion/agents/go/` for Go agents
+  - `skills/`, `core/utils/`, `memory/` for helpers
+  - `integration/`, `interface/`, `tests/` for integrations and UI
 
-### 4. Testing and Validation
-- Run linting and tests with:
-  ```bash
-  make lint
-  make test
-  ```
-- CI runs additional checks including mypy and the agent instantiation guard.
-- Place new tests under `tests/` following the existing directory layout.
+## 4. Code Style & Lint Rules
 
-### 5. Coding Standards
-- Python style is enforced via `ruff` and type checking via `mypy` (see `pyproject.toml`).
-- Naming conventions follow `snake_case` for modules/functions and `PascalCase` for classes.
-- Activate pre-commit hooks with `pre-commit install` to run linters automatically.
+- Formatter: `black`-like, 88-char width, snake_case for functions/vars
+- Use `.editorconfig` if present; otherwise, default to PEP8
+- Codex must respect existing config before enforcing new rules
 
-### 6. Git and Contribution Workflow
-- Use GitHub Flow: create a feature branch, commit small logical changes, open a PR against `main`, and respond to reviews.
-- Example branch names: `feature/<short-desc>` or `fix/<issue>`.
-- Keep commit messages concise (e.g., `feat: add health endpoint`).
+## 5. Testing & Validation
 
-### 7. AI Agent Guidance
-- Respect the layered architecture and avoid direct agent instantiation—use `orchestrator.load_agent()`.
-- Update documentation alongside code changes when behavior or APIs change.
-- Validate changes locally (`make lint && make test`) before submitting a pull request.
-- Avoid editing generated artifacts under `artifacts/` or runtime logs under `memory/logs/`.
+- Run tests with: `pytest -q` or `make test`
+- Coverage threshold: 80% minimum
+- Always dry-run before commit
 
+## 6. Pull-Request (PR) Guidelines
 
+- PR title: `[Component] <imperative>`
+- PR must include:
+
+  - Context
+  - Changes
+  - Risk
+  - Checklist
+
+- Auto-assign reviewers: architect, therapist
+
+## 7. Multi-AGENTS.md Precedence
+
+- Deeper path AGENTS.md overrides root for that subtree
+- If conflict, root wins on safety clauses
+
+## 8. Safety & Prohibited Actions
+
+- No destructive ops (e.g., `rm -rf /`)
+- No network calls except whitelisted domains (none by default)
+- Fail fast on unknown commands
