@@ -18,7 +18,10 @@ from interface.schemas.agent import (
     AgentDispatchPayload,
     AgentDispatchResponse,
     AgentStatusInfo,
+    AgentRegisterRequest,
+    AgentRegisterResponse,
 )
+from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
 
 logger = logging.getLogger(__name__)
@@ -534,4 +537,17 @@ def list_agent_capabilities(
     """Return mapping of agents to their capability methods."""
 
     return get_capabilities()
+
+
+@router.post("/register", response_model=AgentRegisterResponse, summary="Register Agent")
+def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
+    """Register an agent and obtain an auth token."""
+    command = {
+        "action": "register_agent",
+        "payload": payload.model_dump(),
+    }
+    response = send_orchestrator_request(command)
+    if not response or response.get("status") != "success":
+        raise HTTPException(status_code=502, detail="Orchestrator registration failed")
+    return AgentRegisterResponse(token=response.get("token", ""))
 

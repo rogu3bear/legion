@@ -41,6 +41,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     task_registry_router,
     tasks_router,
     lmstudio_proxy_router,
+    queue_router,
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
@@ -49,6 +50,7 @@ app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
+app.include_router(queue_router, prefix="/api/v1", tags=["queue"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 
