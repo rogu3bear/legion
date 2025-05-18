@@ -1,7 +1,7 @@
 """API endpoints for agent management, status, configuration, and lifecycle control."""
 
 import logging
-from typing import Any, List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -30,7 +30,7 @@ def create_agent_db(
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-) -> dict:
+) -> Dict[str, Any]:
     """Create a new agent in the database (superuser only)."""
     name = agent_data.get("name")
     model = agent_data.get("model")
@@ -48,7 +48,7 @@ def get_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_user),
     db: Session = Depends(dependencies.get_db),
-) -> dict:
+) -> Dict[str, Any]:
     """Retrieve an agent by its ID."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -62,7 +62,7 @@ def update_agent_db(
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-) -> dict:
+) -> Dict[str, Any]:
     """Update an existing agent (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -108,7 +108,7 @@ def delete_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_superuser),
     db: Session = Depends(dependencies.get_db),
-) -> dict:
+) -> Dict[str, Any]:
     """Delete an agent by its ID (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
     if not db_agent:
@@ -193,7 +193,7 @@ def dispatch_message_to_agent(
     agent_name: str,
     payload: AgentDispatchPayload,
     current_user: User = Depends(dependencies.get_current_active_user),
-) -> Any:
+) -> AgentDispatchResponse:
     """
     Sends a message or command to a specific agent via the Orchestrator.
 
@@ -263,7 +263,7 @@ def dispatch_message_to_agent(
 def trigger_agent_assessment(
     agent_name: str,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-) -> Any:
+) -> AgentActionResponse:
     """
     Triggers a self-assessment process for a specific agent.
 
