@@ -65,7 +65,6 @@ async def test_llm_latency_benchmark(benchmark, monkeypatch):
     agent = orchestrator.agents["echo_agent"]
     # Patch post_to_discord
     monkeypatch.setattr(EchoAgent, "post_to_discord", AsyncMock(), raising=False)
-    thread_id = "bench"
     messages = [{"role": "user", "content": "hi"}]
     # Benchmark LLM call
     result = benchmark(lambda: asyncio_run(agent.llm.call(messages)))

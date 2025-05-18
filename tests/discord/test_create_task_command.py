@@ -17,9 +17,9 @@ async def bot_and_cog(monkeypatch):
 
 
 class MockAuthor:
-    def __init__(self, name="TestUser", id=123):
+    def __init__(self, name="TestUser", author_id=123):
         self.name = name
-        self.id = id
+        self.id = author_id
         self.display_name = name
 
 
