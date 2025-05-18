@@ -7,7 +7,7 @@ from typing import Dict, List
 logger = logging.getLogger(__name__)
 
 
-def placeholder_indexing(docs: List[Dict], field: str = "text") -> Dict[str, List[int]]:
+def build_inverted_index(docs: List[Dict], field: str = "text") -> Dict[str, List[int]]:
     """
     Build a simple inverted index for a list of docs.
     Returns a dict: word -> list of doc indices.

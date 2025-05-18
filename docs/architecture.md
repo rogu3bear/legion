@@ -89,12 +89,12 @@ Legion is a modular, ruthlessly layered agent orchestration system. Every file, 
 ### Core Utilities
 - `health_check(url, timeout)` — HTTP 200 check.
 - `fetch_with_retries(url, retries, timeout, backoff)` — HTTP GET with retries.
-- `placeholder_network(url, timeout)` — Health check with status/elapsed.
-- `placeholder_indexing(docs, field)` — Inverted index builder.
+- `basic_health_check(url, timeout)` — Health check with status/elapsed.
+- `build_inverted_index(docs, field)` — Inverted index builder.
 
 ### Skills
-- `search_placeholder(query_embedding, docs, top_k)` — Cosine similarity search.
-- `summarize_placeholder(snippets, model, max_tokens, temperature)` — LLM-based summarization.
+- `vector_search(query_embedding, docs, top_k)` — Cosine similarity search.
+- `summarize_snippets(snippets, model, max_tokens, temperature)` — LLM-based summarization.
 
 ---
 

@@ -4,7 +4,7 @@ Middleware for request processing, embedding validation, and directive complianc
 
 from typing import Any, Dict, Optional, Tuple
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.async_chroma_client import AsyncChromaClient
 
 from .directive_compliance import DirectiveCompliance
 
@@ -16,7 +16,7 @@ REVIEW_SIMILARITY = 0.60  # Similarity below 0.60 is rejected outright
 
 class RequestMiddleware:
     def __init__(
-        self, chroma_client: ChromaClient, directive_checker: DirectiveCompliance
+        self, chroma_client: AsyncChromaClient, directive_checker: DirectiveCompliance
     ):
         self.chroma_client = chroma_client
         self.directive_checker = directive_checker

@@ -1,8 +1,10 @@
 # Initializes the middleware package
 from legion.agents.therapist.validation import therapist_validate
 
-from .hallucination_guard import guard_response
+from .hallucination_guard import HallucinationGuard
 from .validator import validate_directive
+from .directive_compliance import DirectiveCompliance
+from .request_middleware import RequestMiddleware
 
 
 def run_middleware_pipeline(
@@ -52,7 +54,7 @@ def run_middleware_pipeline(
     hallucination_check_input = {
         "confidence": initial_confidence
     }  # Can add other relevant parts of payload if needed
-    hallucination_result = guard_response(
+    hallucination_result = HallucinationGuard.guard_response(
         hallucination_check_input, threshold=confidence_threshold
     )
 

@@ -18,7 +18,7 @@ from legion.database.chroma_interface import query_context
 
 # Import the new pipeline function
 from legion.middleware import run_middleware_pipeline
-from legion.middleware.hallucination_guard import guard_response
+from legion.middleware.hallucination_guard import HallucinationGuard
 from legion.middleware.validator import validate_directive
 
 
@@ -72,10 +72,10 @@ class TestMiddleware(unittest.TestCase):
             "result": "just enough",
         }
 
-        good_guarded = guard_response(good_response)
-        bad_guarded = guard_response(bad_response)
-        no_confidence_guarded = guard_response(edge_case_response_no_confidence)
-        exact_threshold_guarded = guard_response(edge_case_response_exact_threshold)
+        good_guarded = HallucinationGuard.guard_response(good_response)
+        bad_guarded = HallucinationGuard.guard_response(bad_response)
+        no_confidence_guarded = HallucinationGuard.guard_response(edge_case_response_no_confidence)
+        exact_threshold_guarded = HallucinationGuard.guard_response(edge_case_response_exact_threshold)
 
         self.assertTrue(good_guarded["valid"])
         if good_guarded.get("response"):  # mypy check

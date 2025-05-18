@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 from legion.core.logging_config import setup_logging
 from legion.orchestrator import Orchestrator, ProcessRunningError
+from .utils import fetch_thread_history
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -26,26 +27,6 @@ logger = logging.getLogger(__name__)
 
 message_processing_lock = asyncio.Lock()
 processed_message_ids = set()
-
-
-async def fetch_thread_history(channel, thread, limit):
-    """
-    Fetch up to `limit` messages from the given thread (or channel).
-    Returns a list of messages, or [] on error (rate-limit, perms, etc.).
-    """
-    try:
-        # If thread is a discord.Thread, use thread.history; else, use channel.history
-        history_obj = thread if hasattr(thread, "history") else channel
-        messages = []
-        history = history_obj.history(limit=limit)
-        if hasattr(history, "__await__"):
-            history = await history
-        async for msg in history:
-            messages.append(msg)
-        return list(reversed(messages))
-    except Exception as e:
-        logging.warning(f"[fetch_thread_history] Failed to fetch thread history: {e}")
-        return []
 
 
 class LegionBot(commands.Bot):
@@ -170,12 +151,12 @@ class LegionBot(commands.Bot):
             # Initial self-assess after 10 minutes
             await asyncio.sleep(600)
             if not self._shutdown_event.is_set():
-                await run_self_assess_all(self.orchestrator)
+                await self.orchestrator.run_self_assess_all()
 
             # Hourly tasks
             while not self._shutdown_event.is_set():
                 await asyncio.sleep(3600)
-                await run_self_assess_all(self.orchestrator)
+                await self.orchestrator.run_self_assess_all()
                 processed_message_ids.clear()
 
         except asyncio.CancelledError:
@@ -221,14 +202,6 @@ class LegionBot(commands.Bot):
                 )
 
 
-# New helper for self-assessment rounds
-async def run_self_assess_all(orchestrator):
-    logger.info("Self-assessment round starting...")
-    for agent in orchestrator.agents.values():
-        try:
-            await agent.self_assess()
-        except Exception as e:
-            logger.error(f"Self-assess failed for {agent.name}: {e}")
 
 
 async def main():

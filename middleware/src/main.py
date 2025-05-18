@@ -7,7 +7,7 @@ import prometheus_client
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.async_chroma_client import AsyncChromaClient
 
 from .config import settings
 from .middleware.context_manager import ContextManager
@@ -47,7 +47,10 @@ async def orchestrate(payload: dict):
 ctx_mgr = ContextManager(None)
 # Initialize Chroma client and hallucination guard
 try:
-    tmp_chroma = ChromaClient(settings.CHROMA_API_URL, settings.CHROMA_API_KEY)
+    tmp_chroma = AsyncChromaClient(
+        settings.CHROMA_API_URL,
+        settings.CHROMA_API_KEY,
+    )
     # Fallback if client does not support get_collection
     if not hasattr(tmp_chroma.client, "get_collection"):
         raise ValueError("Chroma client unavailable")

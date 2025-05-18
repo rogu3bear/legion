@@ -460,7 +460,7 @@ flowchart LR
 | `integration/discord/cogs/orchestrator.py` <br/>`class OrchestratorCog` | `dispatch_message`, `setup_hook` | Primary Message Flow, Composite Integration |
 | `integration/discord/bot.py` <br/>`class Bot` | `on_ready`, `setup_hook` | High‑Level Architecture, Composite Integration |
 | `skills/search.py`, `skills/summarize.py` | `search`, `summarize` | Layer Interaction Map |
-| `core/utils/network.py` | `health_check`, `placeholder_network` | Security Layers, Composite Integration |
+| `core/utils/network.py` | `health_check`, `basic_health_check` | Security Layers, Composite Integration |
 | `scripts/deploy.sh` (CI) | Docker build & push | Deployment Pipeline |
 
 **Legend**

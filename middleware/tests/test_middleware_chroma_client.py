@@ -8,7 +8,7 @@ import types
 
 import pytest
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.async_chroma_client import AsyncChromaClient
 from middleware.src.models import ChromaRecord
 
 # Stub chromadb AsyncClient for test environment
@@ -27,7 +27,7 @@ async def test_upsert_and_query(monkeypatch):
 
         return Coll()
 
-    cc = ChromaClient(api_url="http://test", api_key="key")
+    cc = AsyncChromaClient(api_url="http://test", api_key="key")
     cc.client = type(
         "C", (), {"get_or_create_collection": dummy_get_or_create_collection}
     )

@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from integration.discord.bot import fetch_thread_history
+from integration.discord.utils import fetch_thread_history
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent

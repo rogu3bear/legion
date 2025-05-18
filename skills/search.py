@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import numpy as np
 
 
-def search_placeholder(
+def vector_search(
     query_embedding: List[float], docs: List[Dict[str, Any]], top_k: int = 3
 ) -> List[Dict[str, Any]]:
     """

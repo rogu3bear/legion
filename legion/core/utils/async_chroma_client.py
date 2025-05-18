@@ -1,4 +1,4 @@
-"""Async wrapper for Chroma vector store operations"""
+"""Asynchronous client wrapper for Chroma vector store operations."""
 
 import asyncio
 from types import SimpleNamespace
@@ -11,7 +11,7 @@ import chromadb  # New import
 from middleware.src.models import ChromaRecord
 
 
-class ChromaClient:
+class AsyncChromaClient:
     def __setattr__(self, name, value):
         # Ensure any assigned client has a get_collection attribute for tests and main fallback
         if name == "client":

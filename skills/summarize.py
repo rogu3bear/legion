@@ -5,7 +5,7 @@ from typing import List
 import openai
 
 
-def summarize_placeholder(
+def summarize_snippets(
     snippets: List[str],
     model: str = "gpt-3.5-turbo",
     max_tokens: int = 128,

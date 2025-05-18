@@ -281,7 +281,7 @@
 | legion/core/di_container.py | DIContainer | get | (self, service_type) | Retrieve a service instance by its type. |
 | legion/core/di_container.py | DIContainer | register_factory | (self, service_type, factory) | Register a factory function for creating a service instance. |
 | legion/core/di_container.py | DIContainer | register_instance | (self, service_type, instance) | Register a pre-created instance of a service. |
-| legion/core/indexing.py | - | placeholder_indexing | (docs, field) | Build a simple inverted index for a list of docs. |
+| legion/core/indexing.py | - | build_inverted_index | (docs, field) | Build a simple inverted index for a list of docs. |
 | legion/core/init_memory.py | - | main | () | Needs Documentation |
 | legion/core/interfaces.py | ILLMClient | call | (self, messages, **kwargs) | Call the LLM with a list of messages and return the response. |
 | legion/core/interfaces.py | ILLMClient | get_embedding | (self, text) | Generate an embedding for the given text. |
@@ -298,7 +298,7 @@
 | legion/core/logging_config.py | JsonFormatter | format | (self, record) | Needs Documentation |
 | legion/core/network.py | - | fetch_with_retries | (url, retries, timeout, backoff) | HTTP GET with retry logic. Returns response or raises last error. |
 | legion/core/network.py | - | health_check | (url, timeout) | HTTP GET, return True if 200 else False. |
-| legion/core/network.py | - | placeholder_network | (url, timeout) | Perform a basic HTTP GET health check and return status and response time. |
+| legion/core/network.py | - | basic_health_check | (url, timeout) | Perform a basic HTTP GET health check and return status and response time. |
 | legion/core/prompt_builder.py | PromptBuilder | build | (system_prompt, memories, thread_history, user_query, memory_prefix, reflection_prompt) | Constructs a list of message dicts for LLM consumption. |
 | legion/core/state.py | StateManager | __init__ | (self, state_dir) | Initialize state directory, files, and default config. |
 | legion/core/state.py | StateManager | _save_state | (self, state) | Save state to JSON file. |
@@ -525,11 +525,11 @@
 | scripts/test_lmstudio_models.py | - | main | () | Needs Documentation |
 | scripts/test_lmstudio_models.py | - | test_text_model | () | Needs Documentation |
 | skills/search.py | - | cosine | (a, b) | Needs Documentation |
-| skills/search.py | - | search_placeholder | (query_embedding, docs, top_k) | Perform a vector similarity search over docs. |
-| skills/summarize.py | - | summarize_placeholder | (snippets, model, max_tokens, temperature) | Summarize a list of memory snippets using the LLM. |
-| src/common/http_client.py | HTTPClient | __init__ | (self, max_retries, backoff_factor, timeout) | Needs Documentation |
-| src/common/http_client.py | HTTPClient | get | (self, path, headers) | Needs Documentation |
-| src/common/http_client.py | HTTPClient | post | (self, path, json, headers) | Needs Documentation |
+| skills/search.py | - | vector_search | (query_embedding, docs, top_k) | Perform a vector similarity search over docs. |
+| skills/summarize.py | - | summarize_snippets | (snippets, model, max_tokens, temperature) | Summarize a list of memory snippets using the LLM. |
+| legion/utils/http_client.py | HTTPClient | __init__ | (self, max_retries, backoff_factor, timeout) | Needs Documentation |
+| legion/utils/http_client.py | HTTPClient | get | (self, path, headers) | Needs Documentation |
+| legion/utils/http_client.py | HTTPClient | post | (self, path, json, headers) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | fake_call_llm | (thread_id, history, **kwargs) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | fake_post | (msg) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | test_architect_handle_review_override | (monkeypatch) | Needs Documentation |
@@ -602,10 +602,10 @@
 | tests/agents/test_skills_and_utils.py | - | fail_create | (**kwargs) | Needs Documentation |
 | tests/agents/test_skills_and_utils.py | - | fake_create | (**kwargs) | Needs Documentation |
 | tests/agents/test_skills_and_utils.py | - | fake_get | (url, timeout) | Needs Documentation |
-| tests/agents/test_skills_and_utils.py | - | test_placeholder_indexing | () | Needs Documentation |
-| tests/agents/test_skills_and_utils.py | - | test_placeholder_network | (monkeypatch) | Needs Documentation |
-| tests/agents/test_skills_and_utils.py | - | test_search_placeholder_basic | () | Needs Documentation |
-| tests/agents/test_skills_and_utils.py | - | test_summarize_placeholder | (monkeypatch) | Needs Documentation |
+| tests/agents/test_skills_and_utils.py | - | test_build_inverted_index | () | Needs Documentation |
+| tests/agents/test_skills_and_utils.py | - | test_basic_health_check | (monkeypatch) | Needs Documentation |
+| tests/agents/test_skills_and_utils.py | - | test_vector_search_basic | () | Needs Documentation |
+| tests/agents/test_skills_and_utils.py | - | test_summarize_snippets | (monkeypatch) | Needs Documentation |
 | tests/agents/test_skills_and_utils.py | Choice | __init__ | (self, content) | Needs Documentation |
 | tests/agents/test_skills_and_utils.py | DummyResp | __init__ | (self, code) | Needs Documentation |
 | tests/agents/test_skills_and_utils.py | DummyResp | __init__ | (self, content) | Needs Documentation |

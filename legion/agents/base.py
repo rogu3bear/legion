@@ -16,6 +16,7 @@ from legion.core.di_container import ILLMClient, container
 from legion.core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
+from integration.discord.utils import fetch_thread_history as discord_fetch_history
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -368,11 +369,11 @@ class BaseAgent:
                     f"[BaseAgent] Channel {channel_id} not found in fetch_thread_history"
                 )
                 return []
-            history = []
-            async for msg in channel.history(limit=limit):
-                role = "assistant" if msg.author.bot else "user"
-                history.append({"role": role, "content": msg.content})
-            return list(reversed(history))
+            msgs = await discord_fetch_history(channel, channel, limit)
+            return [
+                {"role": "assistant" if m.author.bot else "user", "content": m.content}
+                for m in msgs
+            ]
         except AttributeError as e:
             logging.error(f"[BaseAgent] Attribute error in fetch_thread_history: {e}")
             return []

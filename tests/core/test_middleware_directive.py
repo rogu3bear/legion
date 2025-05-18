@@ -2,11 +2,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from legion.core.utils.chroma_client import ChromaClient
+from legion.core.utils.sync_chroma_client import SyncChromaClient
 from legion.core.middleware.directive_definitions import (AGENT_DIRECTIVE_STRING,
                                                         MIDDLEWARE_DIRECTIVE_PROMPT)
-from middleware.src.middleware.directive_compliance import DirectiveCompliance
-from middleware.src.middleware.middleware import (
+from legion.middleware.directive_compliance import DirectiveCompliance
+from legion.middleware.request_middleware import (
     ACCEPTABLE_SIMILARITY,
     REVIEW_SIMILARITY,
     THERAPIST_AGENT_THRESHOLD,
@@ -16,7 +16,7 @@ from middleware.src.middleware.middleware import (
 
 @pytest.fixture
 def mock_chroma_client():
-    client = MagicMock(spec=ChromaClient)
+    client = MagicMock(spec=SyncChromaClient)
     client.create_embedding.return_value = [0.1, 0.2, 0.3]  # Dummy embedding
     return client
 

@@ -1,4 +1,4 @@
-"""Module for interacting with ChromaDB for embedding storage and retrieval."""
+"""Synchronous client wrapper for ChromaDB embedding operations."""
 
 import os
 from typing import Dict, List, Optional
@@ -7,7 +7,7 @@ import numpy as np
 import openai
 
 
-class ChromaClient:
+class SyncChromaClient:
     """
     Client wrapper for ChromaDB embedding operations.
     """

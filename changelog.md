@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Identified and added core Python dependencies to `requirements.txt`.
 - Basic `package.json` structure for potential frontend dependencies.
 - Added `legion/core/logging_config.py` for structured JSON logging setup.
-- Added API documentation for the indexing utility (`placeholder_indexing`) in `docs/architecture.md`.
+- Added API documentation for the indexing utility (`build_inverted_index`) in `docs/architecture.md`.
 - Enhanced structured JSON logging in `logging_config.py` and integrated it into `BaseAgent` and Discord bot for consistent telemetry.
 - Added unit tests for agent error handling and edge cases in `tests/agents/test_agents.py`.
 - Added integration tests for orchestrator-agent interaction and error handling in `tests/test_orchestrator.py`.

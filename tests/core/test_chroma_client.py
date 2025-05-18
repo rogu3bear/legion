@@ -1,7 +1,7 @@
 import openai
 import pytest
 from unittest.mock import MagicMock, patch
-from legion.core.utils.chroma_client import ChromaClient
+from legion.core.utils.sync_chroma_client import SyncChromaClient
 
 
 class DummyCollection:
@@ -28,19 +28,19 @@ def test_create_embedding_invokes_openai(monkeypatch):
         lambda model, input_arg: fake_create(model, input_text=input_arg),
     )
 
-    client = ChromaClient()
+    client = SyncChromaClient()
     emb = client.create_embedding("test text")
     assert emb == dummy_embedding
 
 
 def test_create_embedding_empty_text_error():
-    client = ChromaClient()
+    client = SyncChromaClient()
     with pytest.raises(ValueError):
         client.create_embedding("")
 
 
 def test_compute_similarity_correct():
-    client = ChromaClient()
+    client = SyncChromaClient()
     emb1 = [1.0, 0.0, 0.0]
     emb2 = [1.0, 0.0, 0.0]
     assert client.compute_similarity(emb1, emb2) == pytest.approx(1.0)
@@ -49,7 +49,7 @@ def test_compute_similarity_correct():
 
 
 def test_compute_similarity_zero_vector():
-    client = ChromaClient()
+    client = SyncChromaClient()
     zero = [0.0, 0.0, 0.0]
     nonzero = [1.0, 2.0, 3.0]
     assert client.compute_similarity(zero, nonzero) == pytest.approx(0.0)
@@ -57,7 +57,7 @@ def test_compute_similarity_zero_vector():
 
 def test_store_embedding_calls_upsert(monkeypatch):
     called = {}
-    client = ChromaClient()
+    client = SyncChromaClient()
 
     def fake_upsert(ids, embeddings, metadatas, documents):
         called["ids"] = ids
@@ -75,7 +75,7 @@ def test_store_embedding_calls_upsert(monkeypatch):
 
 
 def test_store_embedding_invalid_inputs():
-    client = ChromaClient()
+    client = SyncChromaClient()
     with pytest.raises(ValueError):
         client.store_embedding("", [0.1], {})
     with pytest.raises(ValueError):
@@ -89,7 +89,7 @@ def test_retrieve_similar_embeddings_filters_threshold():
         "embeddings": [[[0.1], [0.2]]],
         "distances": [[0.1, 0.5]],
     }
-    client = ChromaClient()
+    client = SyncChromaClient()
     client.collection = DummyCollection(dummy_result)
     results = client.retrieve_similar_embeddings([0.1], top_k=2, threshold=0.8)
     # Only id1 has similarity 0.9
@@ -99,13 +99,13 @@ def test_retrieve_similar_embeddings_filters_threshold():
 
 
 def test_retrieve_similar_embeddings_empty_query_error():
-    client = ChromaClient()
+    client = SyncChromaClient()
     with pytest.raises(ValueError):
         client.retrieve_similar_embeddings([], top_k=1, threshold=0.5)
 
 
 def test_compute_similarity_raises_not_implemented():
-    client = ChromaClient()
+    client = SyncChromaClient()
     # Validate compute_similarity returns a float between 0 and 1
     result = client.compute_similarity([0.1, 0.2], [0.2, 0.3])
     assert isinstance(result, float)
@@ -113,7 +113,7 @@ def test_compute_similarity_raises_not_implemented():
 
 
 def test_query_embeddings_raises_not_implemented():
-    client = ChromaClient()
+    client = SyncChromaClient()
     # Behavior: query_embeddings delegates to retrieve_similar_embeddings
     client.retrieve_similar_embeddings = lambda e, top_k: [{"id": "x"}]
     results = client.query_embeddings([0.1, 0.2], top_k=3)

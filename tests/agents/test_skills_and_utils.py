@@ -1,33 +1,33 @@
-from legion.core.indexing import placeholder_indexing
-from legion.core.network import placeholder_network
-from skills.search import search_placeholder
-from skills.summarize import summarize_placeholder
+from legion.core.indexing import build_inverted_index
+from legion.core.network import basic_health_check
+from skills.search import vector_search
+from skills.summarize import summarize_snippets
 
 
-def test_search_placeholder_basic():
+def test_vector_search_basic():
     docs = [
         {"text": "foo", "embedding": [1, 0]},
         {"text": "bar", "embedding": [0, 1]},
         {"text": "baz", "embedding": [0.7, 0.7]},
     ]
     query = [1, 0]
-    out = search_placeholder(query, docs, top_k=2)
+    out = vector_search(query, docs, top_k=2)
     assert out[0]["text"] == "foo"
     assert len(out) == 2
 
 
-def test_placeholder_indexing():
+def test_build_inverted_index():
     docs = [
         {"text": "Hello world"},
         {"text": "world of code"},
         {"text": "hello again"},
     ]
-    idx = placeholder_indexing(docs)
+    idx = build_inverted_index(docs)
     assert "hello" in idx and 0 in idx["hello"] and 2 in idx["hello"]
     assert "world" in idx and 0 in idx["world"] and 1 in idx["world"]
 
 
-def test_placeholder_network(monkeypatch):
+def test_basic_health_check(monkeypatch):
     class DummyResp:
         def __init__(self, code):
             self.status_code = code
@@ -36,13 +36,13 @@ def test_placeholder_network(monkeypatch):
         return DummyResp(200)
 
     monkeypatch.setattr("requests.get", fake_get)
-    out = placeholder_network("http://test/", timeout=0.1)
+    out = basic_health_check("http://test/", timeout=0.1)
     assert out["ok"] is True
     assert out["status"] == 200
     assert "elapsed" in out
 
 
-def test_summarize_placeholder(monkeypatch):
+def test_summarize_snippets(monkeypatch):
     # Patch openai.ChatCompletion.create
     class DummyResp:
         class Choice:
@@ -59,7 +59,7 @@ def test_summarize_placeholder(monkeypatch):
 
     monkeypatch.setattr(openai.ChatCompletion, "create", fake_create)
     snippets = ["foo", "bar"]
-    out = summarize_placeholder(snippets, model="gpt-3.5-turbo", max_tokens=32)
+    out = summarize_snippets(snippets, model="gpt-3.5-turbo", max_tokens=32)
     assert out == "summary"
 
     # Test error path
@@ -67,5 +67,5 @@ def test_summarize_placeholder(monkeypatch):
         raise Exception("fail")
 
     monkeypatch.setattr(openai.ChatCompletion, "create", fail_create)
-    out2 = summarize_placeholder(snippets)
+    out2 = summarize_snippets(snippets)
     assert out2.startswith("[Summarization error:")
