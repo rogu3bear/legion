@@ -1,12 +1,12 @@
 | Path | Module/Class | Function | Signature | Summary |
 |------|-------------|----------|-----------|---------|
-| core/utils/chroma_client.py | ChromaClient | __init__ | (self, api_url, api_key) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | __setattr__ | (self, name, value) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | delete_by_id | (self, agent_name, interaction_id) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | get_collection_stub | (name_arg) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | query_similar | (self, agent_name, embedding, n_results) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | upsert_batch | (self, records) | Needs Documentation |
-| core/utils/chroma_client.py | ChromaClient | upsert_embedding | (self, record) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | __init__ | (self, api_url, api_key) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | __setattr__ | (self, name, value) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | delete_by_id | (self, agent_name, interaction_id) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | get_collection_stub | (name_arg) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | query_similar | (self, agent_name, embedding, n_results) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | upsert_batch | (self, records) | Needs Documentation |
+| legion/core/utils/chroma_client.py | AsyncChromaClient | upsert_embedding | (self, record) | Needs Documentation |
 | integration/discord/bot.py | - | fetch_thread_history | (channel, thread, limit) | Fetch up to `limit` messages from the given thread (or channel). |
 | integration/discord/bot.py | - | main | () | Main entry point for the Discord bot. |
 | integration/discord/bot.py | - | run_self_assess_all | (orchestrator) | Needs Documentation |
@@ -296,7 +296,6 @@
 | legion/core/llm_client.py | LLMClient | generate | (self, agent_name, thread_id, dynamic_rules, history, **override_kwargs) | Generate a completion using dynamic rules and history. |
 | legion/core/logging_config.py | - | setup_logging | (log_level) | Configure structured JSON logging for the Legion system. |
 | legion/core/logging_config.py | JsonFormatter | format | (self, record) | Needs Documentation |
-| legion/core/network.py | - | fetch_with_retries | (url, retries, timeout, backoff) | HTTP GET with retry logic. Returns response or raises last error. |
 | legion/core/network.py | - | health_check | (url, timeout) | HTTP GET, return True if 200 else False. |
 | legion/core/network.py | - | placeholder_network | (url, timeout) | Perform a basic HTTP GET health check and return status and response time. |
 | legion/core/prompt_builder.py | PromptBuilder | build | (system_prompt, memories, thread_history, user_query, memory_prefix, reflection_prompt) | Constructs a list of message dicts for LLM consumption. |
@@ -527,9 +526,9 @@
 | skills/search.py | - | cosine | (a, b) | Needs Documentation |
 | skills/search.py | - | search_placeholder | (query_embedding, docs, top_k) | Perform a vector similarity search over docs. |
 | skills/summarize.py | - | summarize_placeholder | (snippets, model, max_tokens, temperature) | Summarize a list of memory snippets using the LLM. |
-| src/common/http_client.py | HTTPClient | __init__ | (self, max_retries, backoff_factor, timeout) | Needs Documentation |
-| src/common/http_client.py | HTTPClient | get | (self, path, headers) | Needs Documentation |
-| src/common/http_client.py | HTTPClient | post | (self, path, json, headers) | Needs Documentation |
+| legion/utils/http_client.py | HTTPClient | __init__ | (self, max_retries, backoff_factor, timeout) | Needs Documentation |
+| legion/utils/http_client.py | HTTPClient | get | (self, path, headers) | Needs Documentation |
+| legion/utils/http_client.py | HTTPClient | post | (self, path, json, headers) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | fake_call_llm | (thread_id, history, **kwargs) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | fake_post | (msg) | Needs Documentation |
 | tests/agents/test_agent_contracts.py | - | test_architect_handle_review_override | (monkeypatch) | Needs Documentation |

@@ -7,7 +7,7 @@ import prometheus_client
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
 
 from .config import settings
 from .middleware.context_manager import ContextManager

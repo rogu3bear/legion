@@ -3,6 +3,8 @@
 import logging
 import time
 
+from .utils.network import fetch_with_retries
+
 import requests
 
 logger = logging.getLogger(__name__)
@@ -49,54 +51,3 @@ def health_check(url: str, timeout: float = 2.0) -> bool:
         return False
 
 
-def fetch_with_retries(url, retries=3, timeout=2.0, backoff=0.5):
-    """HTTP GET with retry logic. Returns response or raises last error."""
-    logger.info(
-        "Fetching with retries",
-        extra={"url": url, "retries": retries, "timeout": timeout, "backoff": backoff},
-    )
-    last_error = None
-    for attempt in range(retries):
-        try:
-            start_time = time.time()
-            resp = requests.get(url, timeout=timeout)
-            elapsed = time.time() - start_time
-            if resp.status_code == 200:
-                logger.info(
-                    "Fetch successful",
-                    extra={
-                        "url": url,
-                        "status_code": resp.status_code,
-                        "elapsed_time": elapsed,
-                        "attempt": attempt + 1,
-                    },
-                )
-                return resp
-            else:
-                logger.warning(
-                    "Fetch failed",
-                    extra={
-                        "url": url,
-                        "status_code": resp.status_code,
-                        "elapsed_time": elapsed,
-                        "attempt": attempt + 1,
-                    },
-                )
-                last_error = Exception(f"Status code: {resp.status_code}")
-        except requests.exceptions.RequestException as e:
-            logger.error(
-                "Fetch error",
-                extra={"url": url, "error": str(e), "attempt": attempt + 1},
-            )
-            last_error = e
-        if attempt < retries - 1:
-            logger.info(
-                "Retrying after backoff",
-                extra={"url": url, "attempt": attempt + 1, "backoff": backoff},
-            )
-            time.sleep(backoff)
-    logger.error(
-        "All retries failed",
-        extra={"url": url, "retries": retries, "last_error": str(last_error)},
-    )
-    raise last_error

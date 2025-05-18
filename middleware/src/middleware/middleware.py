@@ -4,7 +4,7 @@ Middleware for request processing, embedding validation, and directive complianc
 
 from typing import Any, Dict, Optional, Tuple
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
 
 from .directive_compliance import DirectiveCompliance
 

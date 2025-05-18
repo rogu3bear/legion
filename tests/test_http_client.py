@@ -2,17 +2,10 @@
 
 import os
 
-# Ensure src directory is on PYTHONPATH for common imports
-import sys
-
 import pytest
 import requests
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
-
-from common.http_client import HTTPClient
+from legion.utils.http_client import HTTPClient
 
 
 class DummyResp:
