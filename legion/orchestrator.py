@@ -292,15 +292,15 @@ class Orchestrator:
                 agent_class = CLASS_MAP[config["class"]]
 
                 # Prepare arguments for the specific agent's constructor
-                ctor_kwargs = {
-                    "name": agent_name,
-                    "config": config,
-                }
                 agent_sig = inspect.signature(agent_class.__init__)
-                if (
-                    "llm_client" in agent_sig.parameters
-                ):  # Check specific agent's signature
+                ctor_kwargs = {}
+                if "name" in agent_sig.parameters:
+                    ctor_kwargs["name"] = agent_name
+                if "config" in agent_sig.parameters:
+                    ctor_kwargs["config"] = config
+                if "llm_client" in agent_sig.parameters:
                     ctor_kwargs["llm_client"] = self.llm_client
+
                 # state_manager is usually resolved by BaseAgent via DI if not passed.
                 # If a specific agent *directly* needs state_manager in its __init__ (not via BaseAgent),
                 # this could be added:

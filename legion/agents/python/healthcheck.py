@@ -15,7 +15,7 @@ class HealthcheckAgent(BaseAgent):
     4. Providing status reports
     """
 
-    def __init__(self, orchestrator, llm_client=None):
+    def __init__(self, orchestrator, llm_client=None, **kwargs):
         super().__init__(orchestrator, llm_client)
         self.start_time = time.time()
         self.check_interval = self.config.get(
