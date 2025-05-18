@@ -72,15 +72,9 @@ def update_agent_db(
     # If name is being updated, check for conflicts first
     new_name = agent_data.get("name")
     if new_name and new_name != db_agent.name:
-        existing_agent_with_name = (
-            db.query(AgentModel)
-            .filter(AgentModel.name == new_name, AgentModel.id != agent_id)
-            .first()
-        )
-=======
         existing_agent_with_name = db.query(AgentModel).filter(
             AgentModel.name == new_name,
-            AgentModel.id != agent_id
+            AgentModel.id != agent_id,
         ).first()
         if existing_agent_with_name:
             raise HTTPException(
