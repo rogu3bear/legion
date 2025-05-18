@@ -15,3 +15,12 @@ SQLAlchemy>=2.0.0
 numpy>=1.20.0,<2.0.0
 libcst>=0.4.9 # Required for pre-commit hook: guard-agent-instantiation
 chromadb>=0.4.0,<0.5.0 # Added for ChromaClient functionality
+python-jose
+passlib
+pydantic-settings
+click
+flask
+flask-cors
+redis
+ruamel.yaml
+prometheus_client

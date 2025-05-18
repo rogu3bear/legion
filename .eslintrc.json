@@ -1,0 +1,4 @@
+{
+  "root": true,
+  "extends": ["./ui/frontend/eslint.config.js"]
+}

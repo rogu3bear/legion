@@ -8,8 +8,12 @@ This repository manages Legion, an agent orchestration system. The following con
 - **Documentation**: `docs/` directory at the repo root.
 
 ## Development Workflow
-1. Ensure `ruff`, `mypy`, and `eslint` run clean.
-2. Run `make lint` and `make test` before committing. Tests are located in `tests/`.
+1. Ensure `ruff`, `mypy`, and `eslint` run clean. In limited environments where
+   these tools cannot be executed, perform a manual static review and update
+   configuration files accordingly.
+2. Run `make lint` and `make test` before committing when dependencies are
+   available. If execution is not possible, document the manual checks
+   performed.
 3. New features must include doc updates and minimal, deterministic tests.
 4. Ports are defined via `.env.ports`; do not hard-code port numbers or secrets.
 

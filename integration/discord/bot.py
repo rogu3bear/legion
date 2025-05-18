@@ -53,7 +53,7 @@ class LegionBot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.messages = True
-        super().__init__(command_prefix="!", intents=intents, *args, **kwargs)
+        super().__init__(*args, command_prefix="!", intents=intents, **kwargs)
         self.agent_tasks = []
         self.orchestrator = orchestrator
         self._shutdown_event = asyncio.Event()
@@ -125,10 +125,10 @@ class LegionBot(commands.Bot):
 
         # Announce in agent-feed or general channel with agent list
         emoji_map = {
-            "architect_agent": "🏗️",
+            "architect_agent": "🏗",
             "metrics_agent": "📊",
             "ux_designer_agent": "🎨",
-            "therapist_agent": "🗣️",
+            "therapist_agent": "🗣",
             "ping_agent": "📶",
             "echo_agent": "🔁",
             "healthcheck_agent": "✅",
@@ -213,15 +213,10 @@ class LegionBot(commands.Bot):
 
                 if response:
                     await message.channel.send(response)
+                except Exception as e:
+                    logger.error(f"Error processing message: {e}")
+                    await message.channel.send("⚠️ Error processing message.")
 
-            except Exception as e:
-                logger.error(f"Error processing message: {e}")
-                await message.channel.send(
-                    "⚠️ An error occurred while processing your message"
-                )
-
-
-# New helper for self-assessment rounds
 async def run_self_assess_all(orchestrator):
     logger.info("Self-assessment round starting...")
     for agent in orchestrator.agents.values():

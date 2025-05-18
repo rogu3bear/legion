@@ -3,6 +3,8 @@
 from typing import Any, Dict, Type, TypeVar
 
 from legion.core.interfaces import ILLMClient, IMemoryManager, IStateManager
+from legion.core.llm_client import LLMClient
+from legion.core.state import StateManager
 
 T = TypeVar("T")
 
@@ -59,10 +61,6 @@ def get_memory_manager() -> IMemoryManager:
     """Get the registered memory manager."""
     return container.get(IMemoryManager)
 
-
-# Default service registrations
-from legion.core.llm_client import LLMClient
-from legion.core.state import StateManager
 
 container.register_factory(ILLMClient, LLMClient)
 container.register_factory(IStateManager, StateManager)
