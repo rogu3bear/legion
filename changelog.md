@@ -184,9 +184,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 5/10 Discord tests fail if orchestrator is running due to PID file lock (ProcessRunningError/SystemExit). This blocks CI for concurrent orchestrator/test runs. [diff:tests/discord/test_discord_integration.py lines 1–264]
 - Test coverage includes: slash command parsing, config update, state query, feedback, alert subscribe, message event flow, and error handling. [diff:tests/discord/test_commands.py lines 1–123]
 - To pass all tests, ensure no orchestrator process is running before test execution.
-
-### Known Issues
-- A persistent `mypy` configuration error ('Source file found twice under different module names') is currently bypassed using `--no-verify` for commits. A GitHub issue (#2) has been created to track and resolve this.
-
-## 0.2.0 – Deep Audit
-- Repository audit tasks executed.

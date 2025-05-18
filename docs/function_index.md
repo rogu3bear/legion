@@ -68,7 +68,7 @@ The following methods lack docstrings or have unclear intent:
 - **Agents** (`legion/agents/...` & `memory/legion_memory.py`): core agent logic, memory, LLM integration
 - **Core Utilities** (`legion/core/`): LLM client, state management, networking, indexing, prompt building, DB stubs
 - **Integration** (`integration/discord/`): Discord bot and command cogs
-- **Presentation** (`interface/`): FastAPI endpoints, WebSocket feed, static UI
+- **Presentation** (`backend/`; currently `interface/`): FastAPI endpoints, WebSocket feed, static UI
 - **Skills** (`skills/`): placeholder search and summarization logic
 
 ### Grouping & Naming Suggestions
