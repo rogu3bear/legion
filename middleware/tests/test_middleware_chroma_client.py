@@ -8,7 +8,7 @@ import types
 
 import pytest
 
-from core.utils.chroma_client import ChromaClient
+from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
 from middleware.src.models import ChromaRecord
 
 # Stub chromadb AsyncClient for test environment
