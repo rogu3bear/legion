@@ -95,3 +95,4 @@ This repository uses topics for discoverability. Key topics might include: `agen
 
 ## Recent Updates
 See [Changelog](changelog.md) for the full history.
+- [ASCII Diagrams](ASCII_DIAGRAMS.md): Quick textual overview of key flows.
