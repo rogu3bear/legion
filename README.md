@@ -17,33 +17,42 @@ Current development focus is on completing the web interface backend according t
 - ⏳ Phase 6 In Progress: Finalizing API Documentation, User Guide, and System Hardening
 
 ## Quick Start
-1. Environment Setup
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
 
-2. Initialize System
-   ```bash
-   ./scripts/init_memory.sh
-   ```
+### Development
+```bash
+cp .env.example .env
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+make dev
+```
 
-3. Start Services
-   ```bash
-   # Start Discord bot
-   ./scripts/start_bot.sh
+### Production
+```bash
+docker-compose up -d --build
+```
 
-   # Start web interface
-   ./scripts/start_web.sh
-   ```
+## Port Map
 
-4. Docker Deployment (Alternative)
-   ```bash
-   docker-compose up -d
-   ```
+| Service | Port |
+|---------|------|
+| Backend API | 7801 |
+| Frontend UI | 7802 |
+| Metrics | 7803 |
+| Prometheus | 7804 |
+| Grafana | 7805 |
+| Redis | 7806 |
+| Postgres | 7807 |
+| Chroma | 7808 |
+| Unused | 7809 |
+| Reserved | 7810 |
+
+## Tag Glossary
+
+| Tag | Meaning |
+|-----|---------|
+| 🔑 Core | Required core functionality |
+| 💬 Ephemeral | Temporary or short-lived |
 
 ## Documentation
 For comprehensive documentation, see:

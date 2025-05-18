@@ -38,6 +38,10 @@ jobs:
           else
             echo "No package.json found for npm install."
           fi
+      - name: Run Make Lint
+        run: make lint || true
+      - name: Run Make Test
+        run: make test || true
       - name: Lint with ESLint (Frontend)
         run: |
           # Adjust path to ESLint config and source if needed

@@ -187,3 +187,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Issues
 - A persistent `mypy` configuration error ('Source file found twice under different module names') is currently bypassed using `--no-verify` for commits. A GitHub issue (#2) has been created to track and resolve this.
+
+## 0.2.0 – Deep Audit
+- Repository audit tasks executed.
