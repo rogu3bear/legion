@@ -10,7 +10,6 @@ if str(PROJECT_ROOT) not in sys.path:
 # Standard library imports
 import asyncio
 import json
-# import os # No longer needed for os.path
 
 # Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -22,16 +21,7 @@ from starlette.responses import Response
 
 # Project-specific imports
 from legion.core.logging_config import setup_logging
-# from legion.orchestrator import Orchestrator # Old import
-from legion import Orchestrator # New import
-=======
 from legion.orchestrator import Orchestrator
-
-# Ensure the project root directory is in the Python path
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa: PTH100,PTH118,PTH120
-)
-# Needs to be after sys.path modification:
 
 logger = setup_logging(__name__)
 
