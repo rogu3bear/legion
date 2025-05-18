@@ -5,12 +5,6 @@ confidence check on an agent's output.  The logic mirrors the
 "Hallucination Guard" section described in ``docs/middleware.md`` and
 emits a message to the ``agent-feed`` when a response falls below the
 configured threshold.
-=======
-This module exposes :func:`guard_response` which performs a
-straightforward confidence check on an agent's output. The behaviour
-matches the "Hallucination Guard" logic described in
-``docs/middleware.md`` and posts a notification to ``agent-feed`` when a
-response falls below the configured threshold.
 """
 
 import logging
@@ -19,9 +13,6 @@ from legion.utils.agent_feed import post_agent_feed
 
 logger = logging.getLogger(__name__)
 
-
-def guard_response(response: dict, threshold: float = 0.75):
-=======
 def guard_response(response: dict, threshold: float = 0.75) -> dict:
     """Validate an agent response by its confidence score.
 
@@ -32,8 +23,6 @@ def guard_response(response: dict, threshold: float = 0.75) -> dict:
     threshold:
         Minimum allowed confidence for a response to be considered valid.
 
-=======
-        
     Returns
     -------
     dict
@@ -41,7 +30,6 @@ def guard_response(response: dict, threshold: float = 0.75) -> dict:
         threshold, otherwise ``{"valid": False, "reason": str}``.
     """
     confidence = response.get("confidence", 0)
-=======
     # Missing confidence is treated as ``0`` so the guard fails fast
     # rather than silently approving uncertain responses.
 
