@@ -307,7 +307,7 @@ chmod +x scripts/*.sh
 - **Agents**: `legion/agents/` for agent implementations
 - **Memory**: `legion/memory/` for memory system
 - **Integration**: `integration/` for external integrations
-- **Interface**: `interface/` for web interface
+- **Interface**: `backend/` (currently `interface/`) for web interface
 - **Skills**: `skills/` for reusable skills
 - **Tests**: `tests/` for test suites
 

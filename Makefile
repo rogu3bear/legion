@@ -1,5 +1,10 @@
 # Legion Makefile
-.PHONY: test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv
+.PHONY: test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv dev backend frontend lint
+
+-include .env.ports
+
+PORT_API ?= $(PORT_ALLOCATOR_UI_BACKEND)
+PORT_UI ?= $(PORT_ALLOCATOR_UI_FRONTEND)
 
 venv:
 	@echo "Activating virtual environment..."
@@ -45,5 +50,17 @@ clean:
 	rm -rf scripts/logs/*
 
 docs_refresh:
-	@echo "Updating port map in docs..."
-	python3 scripts/doc_ports.py
+        @echo "Updating port map in docs..."
+        python3 scripts/doc_ports.py
+
+dev: backend frontend
+
+backend:
+	uvicorn interface.main:app --port $(PORT_API) --reload
+
+frontend:
+	cd ui/frontend && vite --port $(PORT_UI)
+
+lint:
+	ruff check .
+	npx eslint ui/frontend/src --ext .jsx,.js || true

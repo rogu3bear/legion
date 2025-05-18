@@ -1,0 +1,3 @@
+state_repository CRUD: SKIPPED (missing dependencies)
+health_monitor simulation: SKIPPED (module missing)
+routing_map lookup: SKIPPED (missing dependencies)
