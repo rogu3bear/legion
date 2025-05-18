@@ -1,6 +1,7 @@
 """API endpoints for user authentication, registration, and preferences."""
 
 from datetime import timedelta
+from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -18,7 +19,7 @@ router = APIRouter()
 def login_for_access_token(
     db: Session = Depends(dependencies.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
-):
+) -> Dict[str, str]:
     """
     Authenticates a user using username and password (OAuth2 password flow).
 
@@ -50,7 +51,7 @@ def login_for_access_token(
 @router.get("/me", response_model=schemas.User, summary="Get Current User")
 def read_users_me(
     current_user: schemas.User = Depends(dependencies.get_current_user),
-):
+) -> schemas.User:
     """
     Retrieves the details of the currently authenticated user.
 
@@ -68,7 +69,7 @@ def read_users_me(
 def register_user(
     user_in: schemas.UserCreate,
     db: Session = Depends(dependencies.get_db),
-):
+) -> schemas.User:
     """
     Registers a new user in the system.
 
@@ -105,7 +106,7 @@ def logout(
     current_user: schemas.User = Depends(
         dependencies.get_current_user
     ),  # Ensure user is logged in to log out
-):
+) -> dict:
     """
     Logs the currently authenticated user out.
 
@@ -136,7 +137,7 @@ def logout(
 def get_user_preferences(
     current_user: schemas.User = Depends(dependencies.get_current_user),
     db: Session = Depends(dependencies.get_db),
-):
+) -> schemas.UserPreference:
     """
     Retrieves the preferences for the currently authenticated user.
 
@@ -163,7 +164,7 @@ def update_user_preferences(
     preferences_in: schemas.UserPreferenceUpdate,  # Use an update schema
     current_user: schemas.User = Depends(dependencies.get_current_user),
     db: Session = Depends(dependencies.get_db),
-):
+) -> schemas.UserPreference:
     """
     Updates the preferences for the currently authenticated user.
 

@@ -1,7 +1,9 @@
 """Database session management."""
 
+from typing import Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from interface.core.config import settings
 
@@ -24,7 +26,7 @@ TestingSessionLocal = SessionLocal  # Provides same configured sessionmaker
 Base = declarative_base()
 
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
     """FastAPI dependency to get a DB session."""
     db = SessionLocal()
     try:

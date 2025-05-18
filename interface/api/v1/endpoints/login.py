@@ -1,3 +1,5 @@
+from typing import Dict, cast
+
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -14,8 +16,8 @@ router = APIRouter()
 def login_access_token(
     db: Session = Depends(dependencies.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
-):
+) -> Dict[str, str]:
     """
     Authenticate user and return access token.
     """
-    return auth_login(db, form_data)
+    return cast(Dict[str, str], auth_login(db, form_data))

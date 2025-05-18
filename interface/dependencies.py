@@ -1,7 +1,7 @@
 """Common FastAPI dependencies."""
 
 import enum
-from typing import Generator
+from typing import Callable, Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -14,7 +14,6 @@ from interface.core.config import settings
 from interface.crud import crud_user
 from interface.db.session import SessionLocal
 from interface.models.user import User
-from interface.schemas.token import TokenData
 
 
 # Define Roles
@@ -50,14 +49,14 @@ def get_current_user(
         payload = security.decode_token(token)
         if payload is None:
             raise credentials_exception
-        username: str = payload.get("sub")
-        if username is None:
+        username_val = payload.get("sub")
+        if username_val is None or not isinstance(username_val, str):
             raise credentials_exception
-        token_data = TokenData(username=username)
-    except (JWTError, ValidationError):
-        raise credentials_exception
+        username: str = username_val
+    except (JWTError, ValidationError) as e:
+        raise credentials_exception from e
 
-    user = crud_user.get_user_by_username(db, username=token_data.username)
+    user = crud_user.get_user_by_username(db, username=username)
     if user is None:
         raise credentials_exception
     return user
@@ -83,7 +82,7 @@ def get_current_active_superuser(
     return current_user
 
 
-def require_role(required_role: UserRole):
+def require_role(required_role: UserRole) -> Callable[[User], User]:
     """Dependency factory to require a specific user role."""
 
     def _require_role(current_user: User = Depends(get_current_active_user)) -> User:
@@ -106,16 +105,16 @@ def require_role(required_role: UserRole):
 
 
 # Example usage for specific roles (can be used directly in endpoint dependencies)
-def require_admin_role(user: User = Depends(require_role(UserRole.ADMIN))):
+def require_admin_role(user: User = Depends(require_role(UserRole.ADMIN))) -> User:
     return user
 
 
 def require_agent_operator_role(
     user: User = Depends(require_role(UserRole.AGENT_OPERATOR)),
-):
+) -> User:
     return user
 
 
-def require_viewer_role(user: User = Depends(require_role(UserRole.VIEWER))):
+def require_viewer_role(user: User = Depends(require_role(UserRole.VIEWER))) -> User:
     # Note: Usually you just need get_current_active_user for viewer-level access
     return user

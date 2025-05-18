@@ -1,7 +1,7 @@
 """Agent related CRUD operations."""
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from sqlalchemy import select  # Added for consistency
 from sqlalchemy.orm import Session
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_agent(db: Session, agent_id: int) -> Optional[Agent]:
     """Fetches an agent by its ID."""
-    return db.get(Agent, agent_id)
+    return cast(Optional[Agent], db.get(Agent, agent_id))
 
 
 def get_agent_by_name(name: str) -> Optional[AgentStatusInfo]:
@@ -53,7 +53,9 @@ def get_agents(
     db: Session, skip: int = 0, limit: int = 100
 ) -> List[Agent]:  # Added pagination
     """Retrieve agents with pagination."""
-    return db.execute(select(Agent).offset(skip).limit(limit)).scalars().all()
+    return cast(
+        List[Agent], db.execute(select(Agent).offset(skip).limit(limit)).scalars().all()
+    )
 
 
 def create_agent(db: Session, agent_in: AgentCreate) -> Agent:  # Removed *
@@ -84,7 +86,7 @@ def delete_agent(
     db: Session, agent_id: int
 ) -> Optional[Agent]:  # Changed signature to use ID
     """Delete an agent by ID."""
-    db_agent = db.get(Agent, agent_id)
+    db_agent = cast(Optional[Agent], db.get(Agent, agent_id))
     if db_agent:
         db.delete(db_agent)
         db.commit()
@@ -95,7 +97,7 @@ def delete_agent(
 # --- Read Operations (Fetching data from Orchestrator) ---
 
 
-def get_agents() -> List[AgentStatusInfo]:
+def get_all_agents_status() -> List[AgentStatusInfo]:
     """Retrieve list of all agents and their status from the Orchestrator."""
     try:
         response = send_orchestrator_request({"action": "list_agents"})
@@ -124,7 +126,7 @@ def get_agent_config(name: str) -> Optional[Dict[str, Any]]:
             {"action": "get_agent_config", "agent_name": name}
         )
         if response and response.get("status") == "success" and "config" in response:
-            return response["config"]
+            return cast(Dict[str, Any], response["config"])
         else:
             logger.error(
                 f"Failed to get agent config for '{name}'. Response: {response}"
@@ -188,7 +190,7 @@ def update_agent_config(
             }
         )
         if response and response.get("status") == "success" and "config" in response:
-            return response["config"]
+            return cast(Dict[str, Any], response["config"])
         else:
             logger.error(
                 f"Failed to update agent config for '{agent_name}'. Response: {response}"
@@ -204,22 +206,16 @@ def update_agent_config(
 def dispatch_to_agent(
     agent_name: str, message: AgentDispatchPayload
 ) -> Optional[Dict[str, Any]]:
-    """Dispatch a message to a specific agent via the Orchestrator."""
+    """Dispatch a message or task to a specific agent via the Orchestrator."""
     try:
         response = send_orchestrator_request(
             {
                 "action": "dispatch_to_agent",
                 "agent_name": agent_name,
-                "message": message.dict(),
+                "payload": message.model_dump(),  # Use model_dump for Pydantic v2
             }
         )
-        if response and response.get("status") == "success" and "result" in response:
-            return response["result"]
-        else:
-            logger.error(
-                f"Failed to dispatch message to '{agent_name}'. Response: {response}"
-            )
-            return None
+        return response
     except Exception as e:
         logger.exception(
             f"Error communicating with orchestrator for dispatch_to_agent({agent_name}): {e}"
@@ -233,11 +229,7 @@ def assess_agent(agent_name: str) -> Optional[Dict[str, Any]]:
         response = send_orchestrator_request(
             {"action": "assess_agent", "agent_name": agent_name}
         )
-        if response and response.get("status") == "success" and "result" in response:
-            return response["result"]
-        else:
-            logger.error(f"Failed to assess agent '{agent_name}'. Response: {response}")
-            return None
+        return response
     except Exception as e:
         logger.exception(
             f"Error communicating with orchestrator for assess_agent({agent_name}): {e}"
