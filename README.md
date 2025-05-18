@@ -63,6 +63,7 @@ For comprehensive documentation, see:
 - [Discord Integration](docs/discord_integration.md)
 - [Function Index](docs/function_index.md)
 - [Changelog](changelog.md)
+- [ASCII Dispatch Diagrams](docs/dispatch_flow_ascii.md)
 
 ## Project Structure
 Legion follows a strict layered architecture enforced by CI:
