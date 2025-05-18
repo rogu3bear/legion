@@ -65,6 +65,42 @@ For comprehensive documentation, see:
 - [Changelog](changelog.md)
 - [ASCII Dispatch Diagrams](docs/dispatch_flow_ascii.md)
 
+## Full System Operation
+
+Below is a high‑level view of how the pieces fit together when all services are running:
+
+```
+   +---------+     +--------------+     +---------------+
+   |  User   +---> |  Interfaces  +---> |  Orchestrator |
+   +---------+     +--------------+     +---------------+
+                                       /               \
+                                      v                 v
+                               +-----------+    +---------------+
+                               |   Agents  |    | Monitoring/DB |
+                               +-----------+    +---------------+
+```
+
+### Message Handling Pipeline
+
+```
+User
+  |
+  v
+[Discord/Web/API] --dispatch_message--> [Orchestrator]
+  |
+  v
+[BaseAgent]
+   |-- validate_request
+   |-- retrieve_memories
+   |-- build_prompt
+   |-- call_llm
+   |-- store_memories
+   '-- post_to_discord
+  |
+  v
+User receives reply
+```
+
 ## Project Structure
 Legion follows a strict layered architecture enforced by CI:
 1. **Configuration Layer**: YAML agent definitions, environment variables
