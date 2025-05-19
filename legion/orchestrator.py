@@ -124,6 +124,7 @@ class AgentRuntimeMeta:
     last_seen: float
     errors: list[str] = field(default_factory=list)
     task_count: int = 0
+    capabilities: list[str] = field(default_factory=list)
 
 
 
@@ -278,6 +279,7 @@ class Orchestrator:
         self.agents = {}  # Initialize agents dict *before* loading configs
         self._agent_instances = {}  # Cache for instantiated agents
         self.agent_meta: dict[str, AgentRuntimeMeta] = {}
+        self.capability_registry: dict[str, list[str]] = {}
         self.state_manager = state_manager or container.get(IStateManager)
         self.llm_client = llm_client or container.get(ILLMClient)
         # Initialize dynamic port allocator
@@ -391,6 +393,36 @@ class Orchestrator:
         self.agent_channel_ids.update(
             CHANNEL_ID_MAP
         )  # Ensure all defined channels are available
+
+        self._build_capability_registry()
+
+    def _get_agent_capabilities(self, name: str, agent: Any) -> list[str]:
+        config_caps = self.config.get(name, {}).get("capabilities")
+        if isinstance(config_caps, list):
+            return list(config_caps)
+        if hasattr(agent, "capabilities"):
+            try:
+                caps = agent.capabilities
+                if callable(caps):
+                    caps = caps()
+            except Exception:
+                caps = []
+            return list(caps) if isinstance(caps, (list, tuple, set)) else []
+        if hasattr(agent, "register_capabilities"):
+            try:
+                caps = agent.register_capabilities()
+                return list(caps) if isinstance(caps, (list, tuple, set)) else []
+            except Exception:
+                return []
+        return []
+
+    def _build_capability_registry(self) -> None:
+        self.capability_registry = {}
+        for name, agent in self.agents.items():
+            caps = self._get_agent_capabilities(name, agent)
+            self.capability_registry[name] = caps
+            if name in self.agent_meta:
+                self.agent_meta[name].capabilities = caps
 
     def _acquire_lock(self):
         """Acquire an exclusive lock on the PID file."""
@@ -1671,6 +1703,12 @@ class Orchestrator:
                     payload.get("check", False)
                 )
                 return {"status": "success", **diagnostics}
+            elif action == "agents_capabilities":
+                return {
+                    "status": "success",
+                    "timestamp": datetime.datetime.now(tz=UTC).isoformat(),
+                    "capabilities": self.capability_registry,
+                }
 
             # --- Task Management Actions ---
             elif action == "create_task":

@@ -44,7 +44,8 @@ from interface.api.v1.endpoints import (  # noqa: E402
     lmstudio_proxy_router,
     queue_router,
 )
-from interface.internal.diagnostics import router as internal_router
+from interface.internal.diagnostics import router as diagnostics_router
+from interface.internal.capabilities import router as capabilities_router
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
@@ -55,7 +56,8 @@ app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=[
 app.include_router(queue_router, prefix="/api/v1", tags=["queue"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
-app.include_router(internal_router, prefix="/internal", tags=["internal"])
+app.include_router(diagnostics_router, prefix="/internal", tags=["internal"])
+app.include_router(capabilities_router, prefix="/internal", tags=["internal"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []
