@@ -7,7 +7,16 @@ and analyzing system metrics to provide insights and improve system performance.
 
 import json
 import os
+import asyncio
 from collections import defaultdict
+from typing import Dict
+
+try:
+    import redis  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    redis = None
+
+from legion.task_queue import queue as task_queue
 
 from legion.agents.base import BaseAgent
 
@@ -22,6 +31,76 @@ class MetricsAgent(BaseAgent):
         self.orchestrator = orchestrator_ref
         self.system_prompt = self._default_prompt()
         self.counts = defaultdict(int)
+        self._redis = self._get_redis()
+        self._heartbeat_task = None
+
+    def _get_redis(self):
+        if redis is None:
+            return None
+        try:
+            port = int(os.getenv("REDIS_PORT", 7810))
+            return redis.Redis(host="localhost", port=port, decode_responses=True)
+        except Exception:
+            return None
+
+    def setup(self) -> None:
+        """Start periodic metrics collection."""
+        if self._heartbeat_task is None:
+            loop = asyncio.get_event_loop()
+            self._heartbeat_task = loop.create_task(self._heartbeat())
+
+    async def _heartbeat(self) -> None:
+        while True:
+            await self.collect_stats()
+            await asyncio.sleep(15)
+
+    async def collect_stats(self) -> None:
+        """Collect queue and agent stats then push to Redis."""
+        stats: Dict[str, int] = {}
+        # Task queue length
+        if task_queue.client:
+            try:
+                qlen = task_queue.client.zcard("task_queue")
+            except Exception:
+                qlen = 0
+        else:
+            qlen = len(task_queue.store)
+        stats["task_queue_length"] = int(qlen)
+
+        # Dead letter queue length
+        if task_queue.client:
+            try:
+                dead_len = task_queue.client.llen(getattr(task_queue, "dead_letter_key", "dead_tasks"))
+            except Exception:
+                dead_len = 0
+        else:
+            dead_len = len(getattr(task_queue, "dead_letter", {}))
+        stats["dead_letter_queue_length"] = int(dead_len)
+
+        # Agent state counts
+        state_counts: Dict[str, int] = {}
+        client = self._redis
+        if client is not None:
+            try:
+                for key in client.keys("agent:*:state"):
+                    val = client.get(key)
+                    state_counts[val] = state_counts.get(val, 0) + 1
+            except Exception:
+                pass
+        stats.update({f"agents_{k}": v for k, v in state_counts.items()})
+
+        await self.push_to_redis(stats)
+
+    async def push_to_redis(self, stats: Dict[str, int]) -> None:
+        """Store metrics in Redis and increment counters."""
+        if self._redis is None:
+            return
+        try:
+            self._redis.hset("metrics:latest", mapping=stats)
+            for key, value in stats.items():
+                self._redis.incrby(f"metrics:{key}:total", int(value))
+        except Exception:
+            pass
 
     def _default_prompt(self):
         """Return the default system prompt for the MetricsAgent."""

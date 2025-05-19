@@ -8,6 +8,8 @@ from .tasks import router as tasks_router
 from .tasks_registry import router as task_registry_router
 from .echo import router as echo_router
 from .queue import router as queue_router
+from .metrics import router as metrics_router
+=======
 from .handshake import bp as handshake_bp
 
 __all__ = [
@@ -21,5 +23,7 @@ __all__ = [
     "task_registry_router",
     "echo_router",
     "queue_router",
+    "metrics_router",
+=======
     "handshake_bp",
 ]
