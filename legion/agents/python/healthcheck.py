@@ -1,6 +1,8 @@
 import asyncio
+import json
 import time
 from datetime import datetime
+from pathlib import Path
 
 from legion.agents.base import BaseAgent
 
@@ -22,6 +24,7 @@ class HealthcheckAgent(BaseAgent):
             "check_interval", 300
         )  # 5 minutes default
         self.health_task = None
+        self.status_path = Path("memory/state/uptime.json")
 
     async def start(self):
         """Start the health monitoring loop."""
@@ -50,9 +53,18 @@ class HealthcheckAgent(BaseAgent):
                 if uptime < threshold:
                     message = f"⚠️ System uptime ({uptime:.2f}s) below threshold ({threshold}s)"
                     await self.post_to_discord(message)
+                    self._record_status(False)
                 else:
                     message = f"✅ System healthy - Uptime: {uptime:.2f}s"
                     await self.post_to_discord(message)
+                    self._record_status(True)
+
+                # Ping all agents and log failures
+                failed = await self.ping_agents()
+                if failed:
+                    warn = f"Unresponsive agents: {', '.join(failed)}"
+                    await self.post_to_discord(warn)
+                    self.logger.warning(warn)
 
                 # Log metrics
                 self.logger.info(f"Health check - Uptime: {uptime:.2f}s")
@@ -114,6 +126,32 @@ class HealthcheckAgent(BaseAgent):
                 self.logger.error("Discord check failed")
 
         return deps
+
+    async def ping_agents(self) -> list[str]:
+        """Ping all agents via orchestrator."""
+        unresponsive = []
+        for name, agent in self.orchestrator.agents.items():
+            if name == self.name:
+                continue
+            try:
+                if hasattr(agent, "handle_message"):
+                    await agent.handle_message(content="ping", author=self.name)
+            except Exception:
+                unresponsive.append(name)
+        return unresponsive
+
+    def _record_status(self, healthy: bool) -> None:
+        """Persist uptime status to JSON for simple history."""
+        entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "healthy": healthy,
+        }
+        try:
+            self.status_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.status_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry) + "\n")
+        except Exception:
+            self.logger.error("Failed to record health status", exc_info=True)
 
     async def generate_report(self):
         """Generate comprehensive health report."""
