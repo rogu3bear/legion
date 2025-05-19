@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from typing import Dict, Optional
+import time
 
 import logging
 
@@ -26,7 +27,13 @@ class Task:
 
 
 class TaskQueue:
-    def __init__(self, host: str = "localhost", port: int = 7810) -> None:
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 7810,
+        max_retries: int = 5,
+        base_delay: int = 5,
+    ) -> None:
         if redis is None:
             self.client = None
             self.store: Dict[str, Task] = {}
@@ -34,12 +41,15 @@ class TaskQueue:
         else:
             self.client = redis.Redis(host=host, port=port, decode_responses=True)
             self.dead_letter_key = "dead_tasks"
+        self.max_retries = max_retries
+        self.base_delay = base_delay
 
     def enqueue(self, task: Task) -> None:
         logger = logging.getLogger(__name__)
         if self.client:
             self.client.set(f"task:{task.id}", json.dumps(task.__dict__))
             self.client.zadd("task_queue", {task.id: task.priority})
+            self.client.set(f"task:{task.id}:retry_count", 0)
         else:
             self.store[task.id] = task
         logger.info(
@@ -91,7 +101,7 @@ class TaskQueue:
         if not task:
             return
         task.retries += 1
-        if task.retries > task.max_retries:
+        if task.retries > self.max_retries:
             task.state = "failed"
             if self.client:
                 self.client.set(f"task:{task_id}", json.dumps(task.__dict__))
@@ -103,17 +113,18 @@ class TaskQueue:
                 extra={"props": {"task_id": task_id, "retries": task.retries}},
             )
             return
-        backoff = 2 ** (task.retries - 1)
+        delay = min(self.base_delay * 2 ** (task.retries - 1), 60)
         task.state = "queued"
         task.priority += 1
         if self.client:
             self.client.set(f"task:{task_id}", json.dumps(task.__dict__))
-            self.client.zadd("task_queue", {task_id: task.priority + backoff})
+            self.client.zadd("task_queue", {task_id: task.priority})
+            self.client.set(f"task:{task_id}:retry_count", task.retries)
         else:
             self.store[task_id] = task
         logger.info(
             "task retry",
-            extra={"props": {"task_id": task_id, "attempt": task.retries, "next_priority": task.priority}},
+            extra={"props": {"task_id": task_id, "attempt": task.retries, "delay": delay}},
         )
 
     def update_state(self, task_id: str, state: str) -> None:
@@ -135,6 +146,17 @@ class TaskQueue:
                 return Task(**data)
             return None
         return self.store.get(task_id)
+
+    def record_failure(self, task_id: str, error: str) -> None:
+        """Handle task failure with retry and logging."""
+        logger = logging.getLogger(__name__)
+        if self.client:
+            self.client.rpush(f"task:{task_id}:error_log", json.dumps({"error": error, "ts": time.time()}))
+        if self.get(task_id):
+            self.retry_task(task_id)
+            logger.error("task error", extra={"props": {"task_id": task_id, "error": error}})
+        else:
+            logger.error("unknown task", extra={"props": {"task_id": task_id}})
 
 
 queue = TaskQueue()
