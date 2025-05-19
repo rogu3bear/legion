@@ -7,6 +7,7 @@ Legion is a sophisticated agent orchestration system built on a canonical layere
 - **Modular Agent System**: BaseAgent framework with strict contracts, vector memory, and self-assessment
 - **Advanced Memory Management**: Dual vector/SQL storage for semantic search and structured data
 - **Task Management**: Priority-based scheduling with real-time status updates
+- **Agent Registration**: Agents obtain persistent tokens via `/agent/register`
 - **Web Interface**: FastAPI backend with WebSockets for real-time updates
 - **Discord Integration**: Bot integration with channel-based agent interactions
 - **Comprehensive Logging & Telemetry**: Structured JSON logging and metric collection

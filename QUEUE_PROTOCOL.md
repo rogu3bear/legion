@@ -21,7 +21,9 @@ sequenceDiagram
 3. **Delegation** – When an agent registers or the queue receives a new task, the orchestrator matches by capability and assigns the next task, publishing `task_assigned`.
 4. **Completion** – Agents report completion via existing channels (not covered here).
 
-Use `/queue/summary` and `/agent/{id}/tasks` to inspect queue state.
+Use `/queue/summary` and `/agent/{id}/tasks` to inspect queue state. The queue
+now respects a simple numeric `priority` field where lower values are dequeued
+first.
 
 ---
 
