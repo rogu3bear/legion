@@ -26,3 +26,9 @@ flowchart TD
 /docs        # Documentation
 /tests       # Pytest and Jest suites
 ```
+
+### Agent Matrix (excerpt)
+| Agent | Purpose | Key Methods |
+|-------|---------|-------------|
+| DoctorAgent | Diagnose issues and suggest fixes | `diagnose_issue`, `suggest_remedy` |
+| ResearcherAgent | Gather information and compile reports | `conduct_research`, `synthesize_findings` |

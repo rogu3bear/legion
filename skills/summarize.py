@@ -34,3 +34,23 @@ def summarize_placeholder(
         return resp.choices[0].message.content.strip()
     except Exception as e:
         return f"[Summarization error: {e}]"
+
+
+def summarize_texts(snippets: List[str]) -> str:
+    """Simple deterministic summarization placeholder.
+
+    Parameters
+    ----------
+    snippets : List[str]
+        Text snippets to summarize.
+
+    Returns
+    -------
+    str
+        Concatenated summary text.
+    """
+    if not snippets:
+        return ""
+    # Deterministic summary by joining and truncating
+    combined = " ".join(snippets)
+    return combined[:500]
