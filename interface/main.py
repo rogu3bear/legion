@@ -115,9 +115,11 @@ async def websocket_endpoint(websocket: WebSocket):
         pass
 
 
-@app.get("/")
-def root():
-    return {"message": "Legion Interface Stub"}
+
+@app.get("/health")
+def health_check() -> dict[str, str]:
+    """Simple health check endpoint."""
+    return {"status": "ok"}
 
 
 async def send_to_all(message: str):
@@ -174,3 +176,4 @@ async def push_updates():
     while True:
         await asyncio.sleep(5)  # Simulate delay
         count += 1
+        await send_to_all(f"Update {count}")
