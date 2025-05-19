@@ -17,6 +17,7 @@ class Task:
     id: str
     agent: str
     payload: dict
+    priority: int = 0
     state: str = "queued"
 
 
@@ -48,11 +49,15 @@ class TaskQueue:
                     return Task(**data)
             return None
         else:
-            for _tid, task in list(self.store.items()):
-                if task.agent == agent and task.state == "queued":
-                    task.state = "in_progress"
-                    return task
-            return None
+            queued = [
+                t for t in self.store.values() if t.agent == agent and t.state == "queued"
+            ]
+            if not queued:
+                return None
+            queued.sort(key=lambda t: t.priority)
+            task = queued[0]
+            task.state = "in_progress"
+            return task
 
     def summary(self) -> Dict[str, int]:
         counts: Dict[str, int] = {}

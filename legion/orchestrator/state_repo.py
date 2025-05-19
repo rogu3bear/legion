@@ -12,6 +12,7 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
+from uuid import uuid4
 
 from sqlalchemy import Column, String, create_engine, JSON
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -44,10 +45,21 @@ class TaskRecord:
     status: TaskState = TaskState.PENDING
 
 
+@dataclass
+class AgentRecord:
+    """Metadata for a registered agent."""
+
+    agent_id: str
+    role: str
+    capabilities: List[str]
+    token: str
+
+
 class _StateRepo:
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._tasks: Dict[str, TaskRecord] = {}
+        self._agents: Dict[str, AgentRecord] = {}
         self._session = None
         if BACKEND == "sqlite":
             DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -127,14 +139,40 @@ class _StateRepo:
                     self._session.commit()
             return True
 
+    def register_agent(self, agent_id: str, role: str, capabilities: List[str]) -> str:
+        """Register an agent and generate an auth token."""
+        token = uuid4().hex
+        with self._lock:
+            self._agents[agent_id] = AgentRecord(
+                agent_id=agent_id,
+                role=role,
+                capabilities=capabilities,
+                token=token,
+            )
+        return token
+
+    def get_agent(self, agent_id: str) -> Optional[AgentRecord]:
+        """Retrieve stored agent metadata."""
+        with self._lock:
+            return self._agents.get(agent_id)
+
+    def get_agent_tasks(self, agent_id: str) -> List[TaskRecord]:
+        """Return tasks assigned to the given agent."""
+        with self._lock:
+            return [t for t in self._tasks.values() if t.agent == agent_id]
+
 
 _repo = _StateRepo()
+repo = _repo
 
 add_task = _repo.add_task
 get_task = _repo.get_task
 update_task = _repo.update_task
 list_tasks = _repo.list_tasks
 remove_task = _repo.remove_task
+register_agent = _repo.register_agent
+get_agent = _repo.get_agent
+get_agent_tasks = _repo.get_agent_tasks
 
 
 def main() -> None:
