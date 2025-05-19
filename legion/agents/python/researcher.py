@@ -15,5 +15,7 @@ class ResearcherAgent(BaseAgent):
 
     async def gather_sources(self, topic: str) -> list[str]:
         """Return list of sources for topic (stub)."""
-        # TODO: implement search logic
-        return []
+        if not topic:
+            return []
+        query = topic.replace(" ", "+")
+        return [f"https://example.com/search?q={query}"]

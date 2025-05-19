@@ -15,5 +15,9 @@ class DoctorAgent(BaseAgent):
 
     async def assess_patient(self, symptoms: str) -> str:
         """Return basic assessment (stub)."""
-        # TODO: implement medical logic
-        return "Assessment pending"
+        symptoms_l = symptoms.lower()
+        if "fever" in symptoms_l:
+            return "Possible febrile condition."
+        if "cough" in symptoms_l:
+            return "Monitor for respiratory infection."
+        return "Further analysis required."

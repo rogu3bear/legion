@@ -11,9 +11,10 @@ class MetricsAgent(BaseAgent):
     """Example agent implementation for metrics collection."""
 
     def validate_payload(self, args: dict[str, Any]) -> None:
-        # TODO: expand argument validation rules
-        if "action" not in args:
-            raise ValueError("metrics 'action' missing")
+        allowed = {"healthcheck", "summary"}
+        action = args.get("action")
+        if action not in allowed:
+            raise ValueError("invalid or missing metrics 'action'")
 
     def perform_task(self, request: InternalRequest, context: list[Any]) -> Any:
         # Stub metrics gathering based on the action

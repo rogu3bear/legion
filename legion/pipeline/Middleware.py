@@ -13,9 +13,10 @@ class Middleware:
     @staticmethod
     def authenticate(request: InternalRequest) -> None:
         """Verify the user has permissions to run the command."""
-        # TODO: implement real authentication rules
         if not request.user_id:
             raise PermissionError("anonymous access denied")
+        if request.user_id.startswith("bot"):
+            raise PermissionError("bot accounts not permitted")
 
     @staticmethod
     def enrich_context(request: InternalRequest) -> None:
@@ -25,7 +26,6 @@ class Middleware:
     @staticmethod
     def rate_limit(request: InternalRequest) -> None:
         """Enforce simple rate limits per user (placeholder)."""
-        # TODO: integrate rate limit store
         _ = request
 
     @staticmethod
