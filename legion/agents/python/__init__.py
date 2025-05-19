@@ -7,6 +7,8 @@ from .metrics import MetricsAgent
 from .ping import PingAgent
 from .therapist import TherapistAgent
 from .ux_designer import UxDesignerAgent
+from .doctor import DoctorAgent
+from .researcher import ResearcherAgent
 
 # This __init__ intentionally imports all agents
 # for easier registration and potential future dynamic loading.
@@ -20,4 +22,6 @@ __all__ = [
     "PingAgent",
     "TherapistAgent",
     "UxDesignerAgent",
+    "DoctorAgent",
+    "ResearcherAgent",
 ]
