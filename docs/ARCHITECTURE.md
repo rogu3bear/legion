@@ -26,3 +26,4 @@ flowchart TD
 /docs        # Documentation
 /tests       # Pytest and Jest suites
 ```
+\nThe orchestrator communicates with worker agents through a registration handshake and a priority-based task queue in Redis.
