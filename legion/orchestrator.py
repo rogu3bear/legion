@@ -1906,7 +1906,11 @@ class Orchestrator:
         )
 
         task_record = Task(
-            id=str(new_task_id), agent=agent_name, payload=payload, state="queued"
+            id=str(new_task_id),
+            agent=agent_name,
+            payload=payload,
+            state="queued",
+            priority=payload.get("priority", 0) if isinstance(payload, dict) else 0,
         )
         self.queue.enqueue(task_record)
 
@@ -1976,6 +1980,10 @@ class Orchestrator:
     def register_agent(self, agent_id: str, role: str, capabilities: list[str]) -> str:
         """Register an agent and assign any pending task."""
         token = state_repo.register_agent(agent_id, role, capabilities)
+        logger.info(
+            "agent registration handshake",
+            extra={"props": {"agent_id": agent_id, "role": role}},
+        )
         if hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
                 self._zmq_pub_socket.send_json({"type": "agent_registered", "agent_id": agent_id})
@@ -1987,6 +1995,11 @@ class Orchestrator:
                 self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task.id, "agent_id": agent_id})
             except Exception as e:  # noqa: BLE001
                 logger.error(f"Failed to publish task_assigned event: {e}")
+        if task:
+            logger.info(
+                "task assigned",
+                extra={"props": {"agent_id": agent_id, "task_id": task.id}},
+            )
         return token
 
     def load_agent(self, key: str) -> Any:
