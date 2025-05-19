@@ -12,5 +12,8 @@ class TherapistAgent:
         """Raise an exception if the request fails therapist checks."""
         if not request.command:
             raise ValueError("command missing")
-        # Placeholder for additional logic such as directive checks
-        # TODO: integrate real therapist validation
+        banned = {"shutdown", "rm -rf"}
+        text = str(request.args.get("raw", "")).lower()
+        for word in banned:
+            if word in text:
+                raise ValueError("unsafe command detected")

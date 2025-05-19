@@ -8,6 +8,7 @@ and analyzing system metrics to provide insights and improve system performance.
 import json
 import os
 from collections import defaultdict
+import datetime
 
 from legion.agents.base import BaseAgent
 
@@ -32,19 +33,28 @@ class MetricsAgent(BaseAgent):
         )
 
     async def collect_metrics(self):
-        """Stub method to collect system metrics."""
-        # TODO: Implement metrics collection logic
-        pass
+        """Collect basic runtime metrics."""
+        self.counts["collect_calls"] += 1
+        metrics = {
+            "pid": os.getpid(),
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+        }
+        self._latest_metrics = metrics
+        return metrics
 
     async def analyze_metrics(self):
-        """Stub method to analyze collected metrics and generate insights."""
-        # TODO: Implement metrics analysis logic
-        pass
+        """Analyze collected metrics and produce a summary."""
+        metrics = getattr(self, "_latest_metrics", {})
+        analysis = {"metric_keys": list(metrics.keys())}
+        self._latest_analysis = analysis
+        return analysis
 
     async def report_metrics(self):
-        """Stub method to report metrics and insights to relevant channels or logs."""
-        # TODO: Implement reporting logic
-        pass
+        """Send the latest metrics analysis to Discord."""
+        analysis = await self.analyze_metrics()
+        report = json.dumps(analysis)
+        await self.post_to_discord(report)
+        return report
 
     async def report(self):
         # Fetch recent messages from all agent channels

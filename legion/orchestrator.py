@@ -1917,65 +1917,85 @@ class Orchestrator:
         return new_task_id
 
     def get_task_details(self, task_id: uuid.UUID) -> Optional[dict]:
-        # TODO: Fetch task details from StateManager or task queue
-        logger.info(f"Placeholder: Fetching task details for {task_id}")
-        # task_data = self.state_manager.get_task(task_id)
-        # return task_data if task_data else None
-        return {
-            "id": str(task_id),
-            "status": "pending",
-            "title": "Dummy Task",
-        }  # Dummy response
+        record = state_repo.get_task(str(task_id))
+        if record:
+            return {
+                "id": record.task_id,
+                "status": record.status.value,
+                "owner": record.owner,
+                "agent": record.agent,
+                "tags": record.tags,
+            }
+        task = self.queue.get(str(task_id))
+        if task:
+            return {"id": task.id, "status": task.state, "payload": task.payload}
+        return None
 
     def get_task_list(self, filters: dict) -> (list, int):
-        # TODO: Fetch task list from StateManager with filters
-        logger.info(f"Placeholder: Listing tasks with filters: {filters}")
-        # tasks, total = self.state_manager.list_tasks(**filters)
-        # return tasks, total
-        dummy_task = {
-            "id": str(uuid.uuid4()),
-            "status": "pending",
-            "title": "Dummy Task",
-        }
-        return [dummy_task], 1  # Dummy response
+        status = filters.get("status")
+        owner = filters.get("owner")
+        tag = filters.get("tag")
+        state_enum = TaskState(status) if status else None
+        records = list(state_repo.list_tasks(status=state_enum, owner=owner, tag=tag))
+        tasks = [
+            {
+                "id": rec.task_id,
+                "status": rec.status.value,
+                "owner": rec.owner,
+                "agent": rec.agent,
+                "tags": rec.tags,
+            }
+            for rec in records
+        ]
+        return tasks, len(tasks)
 
     def request_task_cancellation(self, task_id: uuid.UUID) -> bool:
-        # TODO: Send cancellation request (e.g., update status, signal worker)
-        logger.info(f"Placeholder: Requesting cancellation for task {task_id}")
-        # success = self.state_manager.update_task_status(task_id, "cancelled")
-        # return success
-        return True  # Dummy response
+        state_repo.update_task(str(task_id), status=TaskState.FAILED)
+        self.queue.update_state(str(task_id), "cancelled")
+        logger.info("Cancellation requested", extra={"props": {"task_id": str(task_id)}})
+        return True
 
     # --- Placeholder Agent Lifecycle Methods ---
     def start_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Start the specified agent."""
         if agent_name not in self.agents:
             return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Starting agent '{agent_name}'...")
-        # TODO: Implement actual agent start logic (e.g., process creation, state update)
-        return True, f"Agent '{agent_name}' started successfully (Placeholder)."
+        logger.info(f"Starting agent '{agent_name}'...")
+        agent = self.agents[agent_name]
+        if hasattr(agent, "start"):
+            try:
+                agent.start()
+            except Exception as e:  # noqa: BLE001
+                logger.error(f"Failed to start agent {agent_name}: {e}")
+                return False, str(e)
+        return True, f"Agent '{agent_name}' started successfully."
 
     def stop_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Stop the specified agent."""
         if agent_name not in self.agents:
             return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Stopping agent '{agent_name}'...")
-        # TODO: Implement actual agent stop logic (e.g., signal process, state update)
-        return True, f"Agent '{agent_name}' stopped successfully (Placeholder)."
+        logger.info(f"Stopping agent '{agent_name}'...")
+        agent = self.agents[agent_name]
+        if hasattr(agent, "stop"):
+            try:
+                agent.stop()
+            except Exception as e:  # noqa: BLE001
+                logger.error(f"Failed to stop agent {agent_name}: {e}")
+                return False, str(e)
+        return True, f"Agent '{agent_name}' stopped successfully."
 
     def restart_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Restart the specified agent."""
         if agent_name not in self.agents:
             return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Restarting agent '{agent_name}'...")
-        # TODO: Implement actual agent restart logic (stop then start)
+        logger.info(f"Restarting agent '{agent_name}'...")
         stop_success, stop_detail = self.stop_agent(agent_name)
         if not stop_success:
             return False, f"Failed to stop agent during restart: {stop_detail}"
         start_success, start_detail = self.start_agent(agent_name)
         if not start_success:
             return False, f"Failed to start agent during restart: {start_detail}"
-        return True, f"Agent '{agent_name}' restarted successfully (Placeholder)."
+        return True, f"Agent '{agent_name}' restarted successfully."
 
     def register_agent(self, agent_id: str, role: str, capabilities: list[str]) -> str:
         """Register an agent and assign any pending task."""
@@ -2132,19 +2152,30 @@ class Orchestrator:
     # --- Therapist communication stubs ---------------------------------
     def send_to_therapist(self, task_id: str, payload: dict) -> None:
         """Queue a message for the Therapist agent."""
-        pass  # TODO: implement routing
+        task = Task(id=str(uuid.uuid4()), agent="therapist", payload={"task_id": task_id, "data": payload})
+        self.queue.enqueue(task)
 
     def receive_from_therapist(self, message: dict) -> None:
         """Handle Therapist → Orchestrator callbacks."""
-        pass  # TODO: integrate with dispatch pipeline
+        target = message.get("agent")
+        payload = message.get("payload", {})
+        if target:
+            self.dispatch(target, payload)
 
     def agent_comm_router(self, msg: dict) -> None:
         """Central router deciding which agent receives a message."""
-        pass  # TODO: unify dispatch rules
+        agent = msg.get("agent")
+        if not agent:
+            logger.error("agent key missing in message")
+            return
+        payload = msg.get("payload", {})
+        self.dispatch(agent, payload)
 
     def call_directive(self, directive_name: str, **kwargs) -> None:
         """Invoke a registered directive on an agent."""
-        pass  # TODO: directive registry hookup
+        handler = self.directives.get(directive_name) if hasattr(self, "directives") else None
+        if handler:
+            handler(**kwargs)
 
 
 # Allow direct execution to start the orchestrator loop

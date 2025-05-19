@@ -170,25 +170,45 @@ func (a *Agent) handleMessageType(msg Message) error {
 
 // handleCodeReview processes code review requests
 func (a *Agent) handleCodeReview(msg Message) error {
-	a.logger.Infof("Processing code review request: %s", msg.ID)
-	// TODO: Implement code review logic
-	return nil
+        a.logger.Infof("Processing code review request: %s", msg.ID)
+        var snippet string
+        if err := json.Unmarshal(msg.Payload, &snippet); err != nil {
+                return fmt.Errorf("invalid code review payload: %w", err)
+        }
+        a.logger.Debugf("Reviewing snippet: %.30s", snippet)
+        // Simulated analysis delay
+        time.Sleep(10 * time.Millisecond)
+        return nil
 }
 
 // handleRefactor processes refactoring requests
 func (a *Agent) handleRefactor(msg Message) error {
-	a.logger.Infof("Processing refactor request: %s", msg.ID)
-	// TODO: Implement refactoring logic
-	return nil
+        a.logger.Infof("Processing refactor request: %s", msg.ID)
+        var snippet string
+        if err := json.Unmarshal(msg.Payload, &snippet); err != nil {
+                return fmt.Errorf("invalid refactor payload: %w", err)
+        }
+        a.logger.Debugf("Refactoring snippet: %.30s", snippet)
+        time.Sleep(10 * time.Millisecond)
+        return nil
 }
 
 // handleDebug processes debugging requests
 func (a *Agent) handleDebug(msg Message) error {
-	a.logger.Infof("Processing debug request: %s", msg.ID)
-	// TODO: Implement debugging logic
-	return nil
+        a.logger.Infof("Processing debug request: %s", msg.ID)
+        var info string
+        if err := json.Unmarshal(msg.Payload, &info); err != nil {
+                return fmt.Errorf("invalid debug payload: %w", err)
+        }
+        a.logger.Debugf("Debug info: %s", info)
+        return nil
 }
 
 func main() {
-	// TODO: implement developer agent logic
+        agent := NewAgent("developer")
+        if err := agent.Start(); err != nil {
+                log.Fatalf("failed to start agent: %v", err)
+        }
+        defer agent.Stop()
+        select {}
 }

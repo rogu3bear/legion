@@ -46,5 +46,9 @@ class DiscordAdapter:
 
     @staticmethod
     def send_message(channel_id: str, text: str) -> None:
-        # TODO: integrate with real Discord client
+        if hasattr(Middleware, "client") and Middleware.client:
+            channel = Middleware.client.get_channel(channel_id)
+            if channel:
+                Middleware.client.loop.create_task(channel.send(text))
+                return
         print(f"[Discord:{channel_id}] {text}")

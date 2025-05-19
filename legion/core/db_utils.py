@@ -12,13 +12,9 @@ def init_db(db_path):
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
-        # TODO: Execute schema.sql or define tables here
         cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='example';"
+            "CREATE TABLE IF NOT EXISTS example (id INTEGER PRIMARY KEY, data TEXT)"
         )
-        if not cursor.fetchone():
-            print("Creating example table...")
-            # cursor.execute("CREATE TABLE example (id INTEGER PRIMARY KEY, data TEXT)")
         conn.commit()
     finally:
         conn.close()
@@ -26,5 +22,17 @@ def init_db(db_path):
 
 def run_migrations(db_path):
     """Run database migrations (stub)."""
-    # TODO: Implement basic migration logic
-    pass
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA user_version")
+        version = cursor.fetchone()[0]
+        if version < 1:
+            cursor.execute(
+                "CREATE TABLE IF NOT EXISTS migration_log (version INTEGER)"
+            )
+            cursor.execute("INSERT INTO migration_log(version) VALUES (1)")
+            cursor.execute("PRAGMA user_version = 1")
+        conn.commit()
+    finally:
+        conn.close()
