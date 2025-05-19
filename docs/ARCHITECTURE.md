@@ -26,3 +26,14 @@ flowchart TD
 /docs        # Documentation
 /tests       # Pytest and Jest suites
 ```
+
+### Metrics Flow
+
+```mermaid
+flowchart LR
+    subgraph Metrics
+        A[MetricsAgent] --> B[(Redis)]
+        C[metrics_collector.py] --> B
+        B --> D[/metrics Endpoint]
+    end
+```
