@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path
 
 from legion.task_queue import queue
-from legion.orchestrator.state_repo import repo as state_repo
+from legion.orchestrator import state_repo
 
 router = APIRouter()
 
@@ -15,4 +15,5 @@ def get_queue_summary() -> dict:
 @router.get("/agent/{agent_id}/tasks")
 def get_agent_tasks(agent_id: str = Path(...)) -> list:
     """List current and recent tasks for an agent."""
-    return state_repo.get_agent_tasks(agent_id)
+    records = state_repo.get_agent_tasks(agent_id)
+    return [r.__dict__ for r in records]
