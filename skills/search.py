@@ -30,3 +30,25 @@ def search_placeholder(
     ]
     scored.sort(reverse=True, key=lambda x: x[0])
     return [doc for _, doc in scored[:top_k]]
+
+
+def search_web(query: str, sources: List[str]) -> List[str]:
+    """Return placeholder search results for the given query.
+
+    Parameters
+    ----------
+    query : str
+        Search query string.
+    sources : List[str]
+        Sources to search. Currently unused but kept for API parity.
+
+    Returns
+    -------
+    List[str]
+        List of raw text snippets representing search results.
+    """
+    # Placeholder implementation: echo query with source names.
+    if not query:
+        return []
+    results = [f"Result for '{query}' from {src}" for src in sources or ["web"]]
+    return results

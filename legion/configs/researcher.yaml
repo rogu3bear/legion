@@ -1,2 +1,12 @@
-# Researcher agent config stub
-{}
+# Configuration for ResearcherAgent
+name: researcher
+version: 1.0.0
+description: "Web search and synthesis agent"
+logging:
+  level: info
+skills:
+  - name: conduct_research
+    enabled: true
+  - name: synthesize_findings
+    enabled: true
+cache_ttl_seconds: 86400
