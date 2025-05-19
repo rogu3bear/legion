@@ -140,5 +140,17 @@ Use the `orchestrator.load_agent()` API to instantiate agents correctly.
 `tasks` — orchestrator routes
 `registry_tasks` — public task registry endpoints
 
+## Scaffolding Roadmap
+The table below tracks scaffolded files introduced by Codex.
+
+| Path | Purpose |
+|------|---------|
+| `core/` | Wrapper exposing `legion.core` modules |
+| `core/utils/network.py` | Re-exports network helpers |
+| `core/utils/indexing.py` | Re-exports indexing helpers |
+| `core/db/schema.sql` | Database schema mirror |
+| `legion/agents/python/doctor.py` | Doctor agent stub |
+| `legion/agents/python/researcher.py` | Researcher agent stub |
+
 ## License
 All rights reserved. This codebase is proprietary and confidential.
