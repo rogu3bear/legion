@@ -1,36 +1,36 @@
 # Legion orchestrator config with all required agents
 architect_agent:
-  discord_channel_id: 1363184898470445256
+  channel_id: 1363184898470445256
   name: architect
   class: ArchitectAgent
   prompt: "Architect prompt here"
 therapist_agent:
-  discord_channel_id: 1363185156759752865
+  channel_id: 1363185156759752865
   name: therapist
   class: TherapistAgent
   prompt: "Therapist prompt here"
 metrics_agent:
-  discord_channel_id: 1363185079173513358
+  channel_id: 1363185079173513358
   name: metrics
   class: MetricsAgent
   prompt: "Metrics prompt here"
 ux_designer_agent:
-  discord_channel_id: 1363185227953868900
+  channel_id: 1363185227953868900
   name: ux_designer
   class: UxDesignerAgent
   prompt: "UX Designer prompt here"
 ping_agent:
-  discord_channel_id: 123
+  channel_id: 123
   name: ping
   class: PingAgent
   prompt: ""
 echo_agent:
-  discord_channel_id: 123
+  channel_id: 123
   name: echo
   class: EchoAgent
   prompt: ""
 healthcheck_agent:
-  discord_channel_id: 123
+  channel_id: 123
   name: healthcheck
   class: HealthcheckAgent
   prompt: ""

@@ -294,6 +294,8 @@ class Orchestrator:
                 # Prepare arguments for the specific agent's constructor
                 agent_sig = inspect.signature(agent_class.__init__)
                 ctor_kwargs = {}
+                if "orchestrator" in agent_sig.parameters:
+                    ctor_kwargs["orchestrator"] = self
                 if "name" in agent_sig.parameters:
                     ctor_kwargs["name"] = agent_name
                 if "config" in agent_sig.parameters:
