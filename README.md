@@ -149,8 +149,8 @@ The table below tracks scaffolded files introduced by Codex.
 | `core/utils/network.py` | Re-exports network helpers |
 | `core/utils/indexing.py` | Re-exports indexing helpers |
 | `core/db/schema.sql` | Database schema mirror |
-| `legion/agents/python/doctor.py` | Doctor agent stub |
-| `legion/agents/python/researcher.py` | Researcher agent stub |
+| `legion/agents/python/doctor.py` | Doctor agent implementation |
+| `legion/agents/python/researcher.py` | Researcher agent implementation |
 
 ## License
 All rights reserved. This codebase is proprietary and confidential.
