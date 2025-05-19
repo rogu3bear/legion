@@ -21,7 +21,6 @@ class Task:
     payload: dict
     priority: int = 0
     state: str = "queued"
-    priority: int = 0
     retries: int = 0
     max_retries: int = 3
 
