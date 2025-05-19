@@ -23,6 +23,7 @@ from starlette.responses import Response
 # Project-specific imports
 from legion.core.logging_config import setup_logging
 from legion import Orchestrator
+from interface.orchestrator_comm import send_request
 
 logger = setup_logging(__name__)
 
@@ -116,6 +117,23 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.get("/")
 def root():
     return {"message": "Legion Interface Stub"}
+
+
+@app.get("/status")
+def health_status():
+    """Simple healthcheck returning orchestrator uptime and agents."""
+    resp = send_request({"action": "status"})
+    if not resp or "response" not in resp:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "detail": "Orchestrator unavailable"},
+        )
+    data = resp["response"]
+    return {
+        "status": "ok",
+        "uptime": data.get("uptime", 0),
+        "agents": data.get("active_agents", []),
+    }
 
 
 async def send_to_all(message: str):

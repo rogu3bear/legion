@@ -139,6 +139,8 @@ class Orchestrator:
     ):
         self.port_allocator = unified_port_manager
         self._background_tasks = set()  # MODIFIED: Reverted to set
+        # Track orchestrator start time for uptime reporting
+        self.start_time = time.time()
         # Only enforce locking when a pid_file is explicitly provided
         self._lock_fd = None
         self._lock_acquired = False
@@ -1783,6 +1785,7 @@ class Orchestrator:
         return {
             "detail": "Orchestrator is running",
             "pid": os.getpid(),
+            "uptime": time.time() - self.start_time,
             "active_agents": list(self.agents.keys()),
         }
 
