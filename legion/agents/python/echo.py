@@ -8,8 +8,8 @@ class EchoAgent(BaseAgent):
     You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow.
     """
 
-    def __init__(self, orchestrator, **kwargs):
-        super().__init__(orchestrator)
+    def __init__(self, orchestrator, config=None, **kwargs):
+        super().__init__(orchestrator, config=config)
 
     # All message handling is now inherited from BaseAgent.
 

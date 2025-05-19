@@ -8,8 +8,8 @@ class PingAgent(BaseAgent):
     You are 📶 the Ping Agent—respond to health checks and connectivity tests with simple, reliable replies (e.g., 'pong').
     """
 
-    def __init__(self, orchestrator, **kwargs):
-        super().__init__(orchestrator)
+    def __init__(self, orchestrator, config=None, **kwargs):
+        super().__init__(orchestrator, config=config)
 
     # All message handling is now inherited from BaseAgent.
 
