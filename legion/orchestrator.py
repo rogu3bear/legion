@@ -36,13 +36,14 @@ from legion.agents.python import (
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
+from legion.agent_registry import registry as agent_registry
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
 from legion.orchestrator.state_repo import repo as state_repo
-from legion.orchestrator.workload_queue import queue as workload_queue
+from legion.task_queue import Task, queue as task_queue
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
@@ -261,7 +262,7 @@ class Orchestrator:
         # self.port_allocator = unified_port_manager # This line (original line 168) is now redundant
 
         self.client = None
-        self.queue = workload_queue
+        self.queue = task_queue
 
         # Load agent configs first
         self.load_agent_configs()
@@ -362,6 +363,24 @@ class Orchestrator:
         self.agent_channel_ids.update(
             CHANNEL_ID_MAP
         )  # Ensure all defined channels are available
+
+        # Register loaded agents in the registry and log
+        for agent_name in self.agents:
+            meta = agent_registry.get(agent_name)
+            self._log_registry_change(
+                f"Registered {agent_name} priority={meta.priority if meta else 'n/a'}"
+            )
+
+    def _log_registry_change(self, message: str) -> None:
+        """Send registry updates through Echo if available."""
+        echo_agent = self.agents.get("echo_agent")
+        if echo_agent:
+            try:
+                asyncio.create_task(echo_agent.handle_echo(message))
+            except Exception:  # pragma: no cover - echo failures are non-fatal
+                logger.error("Failed to log registry change via echo", exc_info=True)
+        else:
+            logger.info(message)
 
     def _acquire_lock(self):
         """Acquire an exclusive lock on the PID file."""
@@ -841,9 +860,8 @@ class Orchestrator:
 
     @property
     def agent_registry(self):
-        """Returns agent configuration registry."""
-        # Return a dict of agent_name: agent_obj (here just names)
-        return self.config
+        """Return loaded agent metadata."""
+        return agent_registry.all()
 
     def get_agent_channel(self, agent_name):
         """Returns Discord channel ID for an agent."""
@@ -956,7 +974,7 @@ class Orchestrator:
                 )
                 return f"Agent '{agent_name}' not found for self-assessment."
 
-            agent_config = self.agent_registry[agent_name]  # Agent config
+            agent_config = self.config.get(agent_name, {})
             prompt_template = agent_config.get(
                 "self_assessment_prompt",
                 "Reflect on your recent actions. What went well, what could be improved?",
@@ -1887,15 +1905,9 @@ class Orchestrator:
             f"Task {new_task_id} created successfully for agent '{agent_name}' with directive '{validated_directive}'."
         )
 
-        task_record = {
-            "id": str(new_task_id),
-            "agent": agent_name,
-            "directive": validated_directive,
-            "payload": payload,
-            "priority": payload.get("priority", 0),
-            "state": "pending",
-        }
-
+        task_record = Task(
+            id=str(new_task_id), agent=agent_name, payload=payload, state="queued"
+        )
         self.queue.enqueue(task_record)
 
         return new_task_id
@@ -1972,7 +1984,7 @@ class Orchestrator:
         task = self.queue.dequeue(agent_id)
         if task and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
-                self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task["id"], "agent_id": agent_id})
+                self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task.id, "agent_id": agent_id})
             except Exception as e:  # noqa: BLE001
                 logger.error(f"Failed to publish task_assigned event: {e}")
         return token

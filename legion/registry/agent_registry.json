@@ -1,0 +1,51 @@
+{
+  "architect": {
+    "priority": 8,
+    "status_route": "/api/v1/agents/architect/status",
+    "function_tags": ["create_plan", "validate_module", "diagram_system"],
+    "max_retries": 3,
+    "cooldown": 2
+  },
+  "metrics": {
+    "priority": 7,
+    "status_route": "/api/v1/agents/metrics/status",
+    "function_tags": ["record_counter", "record_histogram", "push_metric"],
+    "max_retries": 2,
+    "cooldown": 2
+  },
+  "ux_designer": {
+    "priority": 5,
+    "status_route": "/api/v1/agents/ux_designer/status",
+    "function_tags": ["rewrite_text", "suggest_layout"],
+    "max_retries": 2,
+    "cooldown": 1
+  },
+  "therapist": {
+    "priority": 10,
+    "status_route": "/api/v1/agents/therapist/status",
+    "function_tags": ["validate_intent", "sanitize_prompt", "reroute"],
+    "max_retries": 5,
+    "cooldown": 1
+  },
+  "ping": {
+    "priority": 1,
+    "status_route": "/api/v1/agents/ping/status",
+    "function_tags": ["ping", "sleep"],
+    "max_retries": 1,
+    "cooldown": 0
+  },
+  "echo": {
+    "priority": 1,
+    "status_route": "/api/v1/agents/echo/status",
+    "function_tags": ["echo_task", "log_payload"],
+    "max_retries": 1,
+    "cooldown": 0
+  },
+  "healthcheck": {
+    "priority": 9,
+    "status_route": "/api/v1/agents/healthcheck/status",
+    "function_tags": ["collect_health", "report_anomaly"],
+    "max_retries": 3,
+    "cooldown": 5
+  }
+}
