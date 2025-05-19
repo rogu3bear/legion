@@ -1,0 +1,73 @@
+2025-05-19T22:02:13.611102Z
+
+INFO:interface.orchestrator_comm:ZeroMQ context initialized.
+/Users/vix/Dev/Programs/Legion/.venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:373: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+core (unittest.loader._FailedTest.core) ... ERROR
+interface.api.v1.endpoints (unittest.loader._FailedTest.interface.api.v1.endpoints) ... ERROR
+legion (unittest.loader._FailedTest.legion) ... ERROR
+
+======================================================================
+ERROR: core (unittest.loader._FailedTest.core)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: core
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 429, in _find_test_path
+    package = self._get_module_from_name(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/vix/Dev/Programs/Legion/core/__init__.py", line 8, in <module>
+    from legion.core import *  # noqa: F401,F403
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vix/Dev/Programs/Legion/legion/__init__.py", line 2, in <module>
+    from .orchestrator import Orchestrator
+  File "/Users/vix/Dev/Programs/Legion/legion/orchestrator.py", line 45, in <module>
+    from legion.orchestrator.state_repo import repo as state_repo
+ModuleNotFoundError: No module named 'legion.orchestrator.state_repo'; 'legion.orchestrator' is not a package
+
+
+======================================================================
+ERROR: interface.api.v1.endpoints (unittest.loader._FailedTest.interface.api.v1.endpoints)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: interface.api.v1.endpoints
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 429, in _find_test_path
+    package = self._get_module_from_name(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/vix/Dev/Programs/Legion/interface/api/v1/endpoints/__init__.py", line 1, in <module>
+    from .agents import router as agents_router
+  File "/Users/vix/Dev/Programs/Legion/interface/api/v1/endpoints/agents.py", line 25, in <module>
+    from legion.orchestrator.capability_indexer import get_capabilities
+  File "/Users/vix/Dev/Programs/Legion/legion/__init__.py", line 2, in <module>
+    from .orchestrator import Orchestrator
+  File "/Users/vix/Dev/Programs/Legion/legion/orchestrator.py", line 45, in <module>
+    from legion.orchestrator.state_repo import repo as state_repo
+ModuleNotFoundError: No module named 'legion.orchestrator.state_repo'; 'legion.orchestrator' is not a package
+
+
+======================================================================
+ERROR: legion (unittest.loader._FailedTest.legion)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: legion
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 429, in _find_test_path
+    package = self._get_module_from_name(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/vix/Dev/Programs/Legion/legion/__init__.py", line 2, in <module>
+    from .orchestrator import Orchestrator
+  File "/Users/vix/Dev/Programs/Legion/legion/orchestrator.py", line 45, in <module>
+    from legion.orchestrator.state_repo import repo as state_repo
+ModuleNotFoundError: No module named 'legion.orchestrator.state_repo'; 'legion.orchestrator' is not a package
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+FAILED (errors=3)
+WARNING: OPENAI_API_BASE not set! LLM calls will fail.
