@@ -74,6 +74,14 @@ CONFIG_UPDATES_CHANNEL_ID = int(os.getenv("CONFIG_UPDATES_CHANNEL_ID", "0"))
 ALERTS_CHANNEL_ID = int(os.getenv("ALERTS_CHANNEL_ID", "0"))
 METRICS_DASH_CHANNEL_ID = int(os.getenv("METRICS_DASH_CHANNEL_ID", "0"))
 
+# Configuration gate for using a combined agent config file (e.g. doctor.yaml)
+# Defaults to False so individual agent YAMLs are preferred
+USE_COMBINED_AGENT_CONFIGS = (
+    os.getenv("USE_COMBINED_AGENT_CONFIGS", "false").lower() in ("1", "true", "yes")
+)
+# Optional override for the combined config file name
+COMBINED_AGENT_CONFIG_FILE = os.getenv("COMBINED_AGENT_CONFIG_FILE", "doctor.yaml")
+
 CHANNEL_ID_MAP = {
     "general_agent": GENERAL_CHANNEL_ID,
     "agent_feed_agent": AGENT_FEED_CHANNEL_ID,
@@ -692,26 +700,35 @@ class Orchestrator:
         if not config_dir.exists():
             raise FileNotFoundError(f"Config directory not found: {config_dir}")
 
-        # Track loaded configs for validation
-        loaded_configs = {}
+        loaded_configs: dict[str, dict] = {}
+        source_map: dict[str, str] = {}
         required_fields = {"name", "class", "prompt", "channel_id"}
 
-        # Files to explicitly skip
-        skip_files = ["test_agents.yaml", "discord_channels.yaml", "developer.yaml"]
+        skip_files = {"test_agents.yaml", "discord_channels.yaml", "developer.yaml"}
 
-        # Load and validate each config file
+        # Determine which YAML files to process
+        yaml_files = []
         for item in config_dir.iterdir():
             if not item.is_file() or not item.name.endswith(".yaml"):
                 continue
-
-            filename = item.name  # Keep filename for logging and skip_files check
-
-            # Skip test-specific or non-agent config files
-            if filename in skip_files:
-                logger.debug(f"Skipping non-agent config file: {filename}")
+            if item.name in skip_files:
+                logger.debug(f"Skipping non-agent config file: {item.name}")
                 continue
+            if USE_COMBINED_AGENT_CONFIGS:
+                if item.name == COMBINED_AGENT_CONFIG_FILE:
+                    yaml_files = [item]
+                    break
+                continue
+            if item.name == COMBINED_AGENT_CONFIG_FILE:
+                logger.debug(
+                    "Skipping combined config file %s due to USE_COMBINED_AGENT_CONFIGS=False",
+                    item.name,
+                )
+                continue
+            yaml_files.append(item)
 
-            config_path = item  # Use the Path object directly
+        for config_path in yaml_files:
+            filename = config_path.name
             try:
                 with config_path.open() as f:
                     content = f.read()
@@ -762,14 +779,22 @@ class Orchestrator:
                         agent_name = agent_config["name"].lower()
                         if agent_name != agent_key.lower():
                             logger.warning(
-                                f"Agent key '{agent_key}' does not match name '{agent_name}' in {filename}. Using name field."
+                                "Config key '%s' declares agent '%s' in %s; using name field",
+                                agent_key,
+                                agent_name,
+                                filename,
                             )
 
                         if agent_name in loaded_configs:
                             logger.warning(
-                                f"Duplicate agent name '{agent_name}' found (from {filename}), overwriting previous definition."
+                                "Duplicate agent '%s' defined in %s; keeping first from %s",
+                                agent_name,
+                                filename,
+                                source_map[agent_name],
                             )
+                            continue
                         loaded_configs[agent_name] = agent_config
+                        source_map[agent_name] = filename
 
                 else:
                     raise ValueError(
