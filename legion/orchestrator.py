@@ -18,6 +18,7 @@ import uuid
 from datetime import UTC  # Import UTC timezone
 from pathlib import Path
 from typing import Any, Optional
+from dataclasses import dataclass, field
 
 import yaml
 import zmq.asyncio
@@ -113,6 +114,17 @@ CLASS_MAP = {
 }
 
 PID_FILE = "/tmp/legion_orchestrator.pid"
+
+
+@dataclass
+class AgentRuntimeMeta:
+    """Metadata about agent runtime state."""
+
+    start_time: float
+    last_seen: float
+    errors: list[str] = field(default_factory=list)
+    task_count: int = 0
+
 
 
 class ProcessRunningError(Exception):
@@ -265,6 +277,7 @@ class Orchestrator:
         # Initialize core dependencies (DI)
         self.agents = {}  # Initialize agents dict *before* loading configs
         self._agent_instances = {}  # Cache for instantiated agents
+        self.agent_meta: dict[str, AgentRuntimeMeta] = {}
         self.state_manager = state_manager or container.get(IStateManager)
         self.llm_client = llm_client or container.get(ILLMClient)
         # Initialize dynamic port allocator
@@ -335,6 +348,10 @@ class Orchestrator:
                     agent.initialize()  # Assuming synchronous for now
 
                 self.agents[agent_name] = agent
+                self.agent_meta[agent_name] = AgentRuntimeMeta(
+                    start_time=time.time(),
+                    last_seen=time.time(),
+                )
                 logger.info(f"Loaded agent: {agent_name}")
 
             except Exception as e:
@@ -1460,7 +1477,7 @@ class Orchestrator:
                 # Dispatch command and get response
                 # Ensure command dispatching itself is robust
                 try:
-                    response_data = self.dispatch_command(message)
+                    response_data = await self.dispatch_command(message)
                 except Exception as e:
                     logger.error(
                         f"Error dispatching ZMQ command: {message.get('command', 'UnknownCmd')}: {e}\n{traceback.format_exc()}"
@@ -1552,7 +1569,7 @@ class Orchestrator:
         finally:
             logger.info("ZMQ PUB loop finished.")
 
-    def dispatch_command(self, command: dict) -> dict:
+    async def dispatch_command(self, command: dict) -> dict:
         """Dispatch incoming command based on 'action' field and return response."""
         action = command.get("action")
         payload = command.get("payload", {})
@@ -1648,6 +1665,12 @@ class Orchestrator:
                 # results = self.search_all_memories(query, payload.get("top_k", 5)) # Use directly
                 results = []  # Placeholder
                 return {"status": "success", "results": results, "query": query}
+
+            elif action == "agents_diagnostics":
+                diagnostics = await self.get_agents_diagnostics(
+                    payload.get("check", False)
+                )
+                return {"status": "success", **diagnostics}
 
             # --- Task Management Actions ---
             elif action == "create_task":
@@ -1789,6 +1812,16 @@ class Orchestrator:
             "active_agents": list(self.agents.keys()),
         }
 
+    def _orchestrator_state(self) -> dict:
+        """Return orchestrator runtime state for diagnostics."""
+        queue_items = self.queue.repo.get_queue()
+        active_tasks = len([t for t in queue_items if t.get("state") == "assigned"])
+        return {
+            "uptime": time.time() - self.start_time,
+            "queue_size": len(queue_items),
+            "active_tasks": active_tasks,
+        }
+
     def get_agent_list(self) -> list:
         # Format similar to API response expectation
         agent_list = []
@@ -1845,6 +1878,59 @@ class Orchestrator:
             "total_documents": 0,
             "total_size_mb": 0,
             "vector_db_status": "unknown",
+        }
+
+    async def get_agents_diagnostics(self, check: bool = False) -> dict:
+        """Gather diagnostics for all agents."""
+        agents_data = []
+        for name, agent in self.agents.items():
+            meta = self.agent_meta.get(name)
+            status = "unknown"
+            if check:
+                try:
+                    if hasattr(agent, "get_status") and asyncio.iscoroutinefunction(agent.get_status):
+                        await asyncio.wait_for(agent.get_status(), timeout=2)
+                    elif hasattr(agent, "handle_ping") and asyncio.iscoroutinefunction(agent.handle_ping):
+                        await asyncio.wait_for(agent.handle_ping(), timeout=2)
+                    status = "responsive"
+                    if meta:
+                        meta.last_seen = time.time()
+                except Exception as e:  # noqa: BLE001
+                    status = "unresponsive"
+                    if meta:
+                        meta.errors.append(str(e))
+            uptime = time.time() - (meta.start_time if meta else self.start_time)
+            last_seen = (
+                datetime.datetime.fromtimestamp(meta.last_seen, tz=UTC).isoformat()
+                if meta else None
+            )
+            agent_info = {
+                "id": name,
+                "status": status,
+                "last_seen": last_seen,
+                "uptime": round(uptime, 2),
+                "errors": meta.errors if meta else [],
+            }
+            agents_data.append(agent_info)
+
+            if check and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
+                try:
+                    event = {
+                        "type": "agent_diagnostic",
+                        "agent": name,
+                        "status": status,
+                        "timestamp": datetime.datetime.now(tz=UTC).isoformat(),
+                        "context": {"uptime": round(uptime, 2), "errors": agent_info["errors"]},
+                    }
+                    self._zmq_pub_socket.send_json(event)
+                except Exception as e:  # noqa: BLE001
+                    logger.error(f"Failed to publish diagnostic event: {e}")
+
+        return {
+            "timestamp": datetime.datetime.now(tz=UTC).isoformat(),
+            "agents": agents_data,
+            "orchestrator": self._orchestrator_state(),
+            "checked": check,
         }
 
     def create_new_task(self, payload: dict) -> Optional[uuid.UUID]:
