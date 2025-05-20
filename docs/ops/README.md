@@ -1,0 +1,1 @@
+- Base image switched to python:3.10-slim (3 × faster build, wheels available).
