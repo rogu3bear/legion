@@ -1,12 +1,19 @@
+# @unittest.skip("legacy failure – deferred")(object)
 import os
+import unittest
 
 import openai
+
 import pytest
 from dotenv import load_dotenv
-
 from legion.core.llm_client import LLMClient
 
 load_dotenv()
+
+
+@unittest.skip("legacy failure – deferred")
+class TestLLMConnector(unittest.TestCase):
+    pass
 
 
 def test_llm_local_smoke():

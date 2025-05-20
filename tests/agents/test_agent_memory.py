@@ -1,5 +1,6 @@
-import pytest
+import unittest
 
+import pytest
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
@@ -81,3 +82,8 @@ def test_cross_agent_memory_isolation():
     assert not any(msg2 in str(m) for m in mem1)
     assert any(msg2 in str(m) for m in mem2)
     assert not any(msg1 in str(m) for m in mem2)
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

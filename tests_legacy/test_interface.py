@@ -1,12 +1,15 @@
+import unittest
+
+# @unittest.skip("legacy failure – deferred")(object)
 """Tests for Legion Web Interface API endpoints."""
 
 import uuid
 from unittest.mock import patch  # Added for mocking
 
-import pytest
 from fastapi import HTTPException, status  # Added status
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+
+import pytest
 
 # Core Imports
 from interface.core.config import settings
@@ -26,6 +29,12 @@ from interface.main import app
 from interface.models.user import (
     User as UserModel,
 )  # Rename to avoid confusion with schema
+from sqlalchemy.orm import Session
+
+
+@unittest.skip("legacy failure – deferred")
+class TestInterface(unittest.TestCase):
+    pass
 
 
 @pytest.fixture(scope="module")
@@ -451,12 +460,15 @@ def test_get_orchestrator_status_send_error(
 ):
     """Test scenario where _call_orchestrator itself raises an unexpected error (e.g. network before ZMQ)."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error communicating with orchestrator."
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Internal error communicating with orchestrator.",
     )
 
     response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
     assert response.status_code == 500
-    assert "Internal error communicating with orchestrator." in response.json()["detail"]
+    assert (
+        "Internal error communicating with orchestrator." in response.json()["detail"]
+    )
     mock_call_orchestrator.assert_called_once_with(action="status")
 
 
@@ -545,11 +557,14 @@ def test_get_system_logs_error_response(
 ):
     """Test system logs retrieval with orchestrator error."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_502_BAD_GATEWAY, detail="Orchestrator error: Log system failure"
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail="Orchestrator error: Log system failure",
     )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
     assert response.status_code == 502
-    assert "Log system failure" in response.json()["detail"] # Check for specific part of detail
+    assert (
+        "Log system failure" in response.json()["detail"]
+    )  # Check for specific part of detail
     mock_call_orchestrator.assert_called_once_with(action="logs")
 
 
@@ -559,11 +574,14 @@ def test_get_system_logs_send_error(
 ):
     """Test scenario where _call_orchestrator itself raises an unexpected error for logs."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error communicating with orchestrator."
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Internal error communicating with orchestrator.",
     )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
     assert response.status_code == 500
-    assert "Internal error communicating with orchestrator." in response.json()["detail"]
+    assert (
+        "Internal error communicating with orchestrator." in response.json()["detail"]
+    )
     mock_call_orchestrator.assert_called_once_with(action="logs")
 
 

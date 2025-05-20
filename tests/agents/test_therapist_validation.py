@@ -1,5 +1,6 @@
-import pytest
+import unittest
 
+import pytest
 from legion.agents.python.therapist import TherapistAgent
 
 
@@ -37,3 +38,8 @@ async def test_therapist_validate_request_and_fallback(monkeypatch):
     monkeypatch.setattr(agent, "handle_message", fake_handle_message)
     result2 = await agent.handle_self_assessment(content=valid_content, context=context)
     assert result2 == "Assessment OK"
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

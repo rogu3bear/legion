@@ -6,7 +6,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-
 from legion import ports as legion_ports  # To access the module-level RUNTIME_PORTS
 from legion.orchestrator import Orchestrator
 

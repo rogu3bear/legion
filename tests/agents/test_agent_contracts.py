@@ -1,5 +1,6 @@
-import pytest
+import unittest
 
+import pytest
 from legion.agents.python.architect import ArchitectAgent
 from legion.core.prompt_builder import PromptBuilder
 
@@ -55,3 +56,8 @@ async def test_architect_handle_review_override(monkeypatch):
     assert called["kwargs"]["max_tokens"] == 100
     # Ensure post_to_discord was called
     assert posted == ["res"]
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

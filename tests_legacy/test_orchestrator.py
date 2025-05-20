@@ -4,7 +4,6 @@ import sys
 import tempfile
 
 import pytest
-
 from legion.orchestrator import Orchestrator
 
 

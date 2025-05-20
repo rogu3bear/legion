@@ -1,4 +1,4 @@
-from legion.orchestrator.tag_middleware import tag_payload, CORE_TAG
+from legion.orchestrator.tag_middleware import CORE_TAG, tag_payload
 
 
 def dummy(payload):
