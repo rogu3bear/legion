@@ -8,7 +8,6 @@ def apply_stubs():
         "discord.ext",
         "discord.ext.commands",
         "pytest",
-        "zmq",
         "httpx",
         "dotenv",
     ]
