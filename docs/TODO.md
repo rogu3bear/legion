@@ -48,6 +48,11 @@ This index lists all TODO comments found across the repository (May 2025) with r
 | tests/test_websockets.py | 90 | Add test for the actual background task if feasible (might require more complex mocking) | Investigate async background task mocking |
 | docs/architecture.md | 1 | RESOLVED: populated with detailed architecture doc |
 | docs/ARCHITECTURE.md | 1 | RESOLVED: removed duplicate |
+=======
+| docs/architecture.md | 1 | Empty placeholder file | Populate or remove to avoid confusion |
+| docs/ARCHITECTURE.md | 1 | Duplicate empty file | Remove or link to `Legion Architecture and Diagrams.md` |
+| docs/api/endpoints.md | 1 | Incomplete auto-generated table | Fix generator script |
+| docs/agents/ping.md | 21 | Missing configuration details | Document additional settings |
 
 ## Legacy Tests (quarantined)
 
