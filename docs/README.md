@@ -6,7 +6,7 @@ Legion is a modular agent orchestration system built on a canonical layered arch
 **Core Documents:**
 - [Legion Architecture](architecture.md): System design, APIs, layers, rules.
 - [Deployment Guide](DEPLOYMENT.md): Environment setup, scripts, CI/CD, troubleshooting.
-- [Changelog](changelog.md): History of all notable changes.
+- [Changelog](../changelog.md): History of all notable changes.
 - [Metrics Agent Brief](../research/metrics_tech_brief.md): Guidance for offline-safe telemetry.
 
 ## Structure & Layers
@@ -80,7 +80,9 @@ The Legion web interface provides visibility into agent status, including assign
 - **Task Owner:** If an agent is currently assigned to or working on a task initiated by a user or another process, the `task_owner` field will indicate the originator.
 
 **Demo of UI Tagging:**
-[View Tag UI Demo (GIF)](assets/demos/tag-ui-0517.gif) (Note: Ensure `assets/demos/tag-ui-0517.gif` is present)
+*Tag UI Demo GIF unavailable*
+
+> **TODO:** Add `assets/demos/tag-ui-0517.gif` or remove this section.
 
 ## Port Mapping and Configuration
 Legion services use a defined set of network ports for communication. These are managed centrally to avoid conflicts.
@@ -95,5 +97,5 @@ Legion services use a defined set of network ports for communication. These are 
 This repository uses topics for discoverability. Key topics might include: `agent-orchestration`, `discord-bot`, `python`, `llm`, `modular-architecture`. [[Cite: Topics](https://docs.github.com/articles/classifying-your-repository-with-topics)]
 
 ## Recent Updates
-See [Changelog](changelog.md) for the full history.
+See [Changelog](../changelog.md) for the full history.
 - [ASCII Diagrams](ASCII_DIAGRAMS.md): Quick textual overview of key flows.
