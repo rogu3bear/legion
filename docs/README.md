@@ -7,6 +7,7 @@ Legion is a modular agent orchestration system built on a canonical layered arch
 - [Legion Architecture](architecture.md): System design, APIs, layers, rules.
 - [Deployment Guide](DEPLOYMENT.md): Environment setup, scripts, CI/CD, troubleshooting.
 - [Changelog](changelog.md): History of all notable changes.
+- [Metrics Agent Brief](../research/metrics_tech_brief.md): Guidance for offline-safe telemetry.
 
 ## Structure & Layers
 Refer to [Legion Architecture](architecture.md) for the definitive 8-layer model. All files and directories MUST conform.
