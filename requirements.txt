@@ -19,4 +19,3 @@ httpx>=0.25.0,<0.28.0 # Added for async HTTP requests in API endpoints
 pre-commit>=3.0.0,<4.0.0 # For git pre-commit hooks
 types-python-jose>=3.3.0 # Type stubs for python-jose
 types-passlib>=1.7.0 # Type stubs for passlib
-types-pyzmq>=22.3.0 # Type stubs for pyzmq
