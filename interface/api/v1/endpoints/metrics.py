@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 from fastapi import APIRouter, Response
 
 try:
@@ -45,3 +46,22 @@ def metrics() -> Response:
         lines.append(f"{key} {value}")
     body = "\n".join(lines) + "\n"
     return Response(content=body, media_type="text/plain")
+
+
+@router.get("/summary", summary="Latest metrics summary")
+def metrics_summary() -> dict:
+    """Return the latest metrics JSON payload."""
+    client = get_redis_client()
+    if client is None:
+        return {}
+    try:
+        raw = client.get("metrics:latest")
+    except Exception:
+        logger.exception("Failed reading metrics")
+        return {}
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {}

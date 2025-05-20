@@ -61,6 +61,7 @@ for path, methods in schema.get('paths', {}).items():
 | POST | /api/v1/lmstudio/echo | No | Proxy payload to LM Studio completion endpoint | 200 |
 | POST | /api/v1/echo/ | No | Send message to Echo agent | 200, 422 |
 | GET | /api/v1/metrics/ | No | Prometheus metrics | 200 |
+| GET | /api/v1/metrics/summary | No | Latest metrics | 200 |
 | GET | / | No | Read Root | 200 |
 | GET | /api/feed | No | Get Feed | 200 |
 | GET | /health | No | Health Check | 200 |
@@ -72,6 +73,7 @@ for path, methods in schema.get('paths', {}).items():
 | GET | /api/v1/agents | Token | JSON list |
 | POST | /api/v1/tasks | Token | Task ID |
 | GET | /api/v1/metrics | None | Prometheus |
+| GET | /api/v1/metrics/summary | None | Latest metrics |
 | POST | /api/v1/agent/register | None | Token string |
 | GET | /api/v1/agent/{id}/status | None | Agent JSON |
 

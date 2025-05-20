@@ -3,6 +3,8 @@ actor Agent
 participant Orchestrator
 participant Queue
 participant Echo
+participant MetricsAgent
+participant DiscordBridge
 
 Agent -> Orchestrator: task request (port 7808)
 Orchestrator -> Queue: enqueue task (port 7810)
@@ -10,4 +12,7 @@ Queue --> Orchestrator: ack
 Orchestrator --> Agent: response
 Queue -> Echo: publish message
 Echo -> Queue: log to redis
+Orchestrator -> MetricsAgent: report stats
+MetricsAgent -> Queue: update metrics
+MetricsAgent -> DiscordBridge: push summary
 @enduml
