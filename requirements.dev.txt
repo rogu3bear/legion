@@ -1,0 +1,9 @@
+
+# Dev tools
+pytest>=7.0.0,<8.0.0
+pytest-asyncio>=0.20.0,<0.24.0
+bandit>=1.7.0,<2.0.0
+mypy>=1.0.0,<2.0.0
+ruff>=0.11.0,<0.12.0
+libcst>=0.4.9 # Required for pre-commit hook: guard-agent-instantiation
+pre-commit>=3.0.0,<4.0.0 # For git pre-commit hooks

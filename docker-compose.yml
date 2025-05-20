@@ -1,6 +1,5 @@
 # docker-compose.yml for Legion Web Interface
 
-version: '3.8'
 
 services:
   web:
@@ -9,6 +8,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: "runtime"
     container_name: legion-web
     command: bash -c "alembic upgrade head && uvicorn interface.main:app --host 0.0.0.0 --port 8000 --reload" # Use reload for dev
     volumes:
@@ -22,6 +22,8 @@ services:
       - ./.env:/app/.env # Mount .env file
     ports:
       - "${PORT_ALLOCATOR_DEV_FRONTEND}:8000"
+    healthcheck:
+      test: "curl -f http://web:7803/health || exit 1"
     environment:
       - PYTHONUNBUFFERED=1
       - PORT_ALLOCATOR_DEV_FRONTEND=8000
