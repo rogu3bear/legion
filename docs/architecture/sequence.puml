@@ -1,0 +1,10 @@
+@startuml
+actor Agent
+participant Orchestrator
+participant Queue
+
+Agent -> Orchestrator: task request (port 7808)
+Orchestrator -> Queue: enqueue task (port 7810)
+Queue --> Orchestrator: ack
+Orchestrator --> Agent: response
+@enduml

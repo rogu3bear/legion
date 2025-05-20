@@ -1,0 +1,27 @@
+site_name: Legion Docs
+theme:
+  name: material
+nav:
+  - Home: docs/index.md
+  - Architecture:
+      - Overview: docs/architecture/overview.md
+      - Sequence: docs/architecture/sequence.puml
+  - Agents:
+      - Architect: docs/agents/architect.md
+      - Therapist: docs/agents/therapist.md
+      - Metrics: docs/agents/metrics.md
+      - UX Designer: docs/agents/ux_designer.md
+      - Ping: docs/agents/ping.md
+      - Echo: docs/agents/echo.md
+      - Healthcheck: docs/agents/healthcheck.md
+  - API:
+      - OpenAPI: docs/api/openapi.yaml
+      - Endpoints: docs/api/endpoints.md
+  - Ops:
+      - Ports: docs/ops/ports.md
+      - Env Vars: docs/ops/env_vars.md
+      - CI/CD: docs/ops/ci_cd.md
+  - Guides:
+      - Local Dev: docs/guides/local_dev.md
+      - Docker Dev: docs/guides/docker_dev.md
+      - Contributing: docs/guides/contributing.md

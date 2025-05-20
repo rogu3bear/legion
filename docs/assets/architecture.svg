@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+  <rect x="10" y="10" width="80" height="30" fill="lightblue" />
+  <text x="20" y="30" font-size="12">Agent</text>
+  <rect x="110" y="10" width="80" height="30" fill="lightgreen" />
+  <text x="115" y="30" font-size="12">Orchestrator</text>
+  <rect x="60" y="60" width="80" height="30" fill="pink" />
+  <text x="70" y="80" font-size="12">Redis</text>
+</svg>
