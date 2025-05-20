@@ -1,4 +1,7 @@
 # Developer Guide
+Local setup, pre-commit hooks, VS Code settings.  
+Extended tips: ../legacy/guides/
+=======
 
 1. Clone the repository and create a Python virtual environment:
    ```bash
@@ -13,4 +16,3 @@
 
 For community guidelines and detailed contribution steps, consult the legacy docs.
 👉 More: legacy/guides/*
-
