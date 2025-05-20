@@ -1,8 +1,8 @@
-# TODO Review and Action Plan
+# Consolidated TODO Index
 
-This document lists all TODO comments discovered in the codebase and proposes next steps.
+This index lists all TODO comments found across the repository (May 2025) with recommended next steps for implementation.
 
-| File | Line | TODO Summary | Planned Action |
+| File | Line | TODO Summary | Next Step |
 | --- | --- | --- | --- |
 | docs/middleware.md | 20 | - Additional tests are needed to cover the new logging paths. *(TODO)* | Add coverage tests for logging |
 | docs/middleware.md | 21 | - The FastAPI service under `middleware/src/main.py` still contains several TODO | Complete TODOs in middleware/src/main.py |
