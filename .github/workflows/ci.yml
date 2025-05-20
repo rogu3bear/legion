@@ -112,6 +112,8 @@ jobs:
           else
             echo "⚠ Pytest not installed; skipping tests"
           fi
+      - name: Docs & link check
+        run: bash scripts/docs_build_check.sh
       - name: Upload CI Logs
         uses: actions/upload-artifact@v3
         if: always()
