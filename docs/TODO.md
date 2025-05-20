@@ -48,6 +48,8 @@ This index lists all TODO comments found across the repository (May 2025) with r
 | tests/test_websockets.py | 90 | Add test for the actual background task if feasible (might require more complex mocking) | Investigate async background task mocking |
 | docs/architecture.md | 1 | Empty placeholder file | Populate or remove to avoid confusion |
 | docs/ARCHITECTURE.md | 1 | Duplicate empty file | Remove or link to `Legion Architecture and Diagrams.md` |
+| docs/deploy.md | 3 | Update port ranges to 7801-7810 | Align docs with canonical port map |
+| docs/orchestrator.md | 3 | Review port numbers for consistency with 7801-7810 | Sync port docs with env configuration |
 
 ## Legacy Tests (quarantined)
 

@@ -1,3 +1,4 @@
-# Operations Notes
+# Operations & Deployment
+Docker-Compose stack, health-checks, port map (7801-7810).  
+See ../legacy/ops/ for full run-book.
 
-- Base image now python:3.10-slim to ensure build compatibility.
