@@ -1,11 +1,14 @@
 import os
 
 DEFAULT_PORTS = {
-    "orchestrator": 5555,
-    "web_ui": 8000,
-    "chroma": 27020,
-    "prometheus": 9090,
-    "redis": 6379,
-    "postgres": 5432,
-    "grafana": int(os.getenv("GRAFANA_PORT", 7806)),
+    "ui_backend": 7801,
+    "ui_frontend": 7802,
+    "orchestrator_rest": 7803,
+    "interface_api": 7804,
+    "middleware": 7805,
+    "metrics": 7806,
+    "researcher_api": 7807,
+    "zmq_pub": 7808,
+    "zmq_sub": 7809,
+    "redis": 7810,
 }

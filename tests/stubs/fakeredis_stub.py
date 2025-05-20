@@ -4,6 +4,7 @@ class StrictRedis:
         self._zsets = {}
         self._hashes = {}
         self.lists = {}
+        self._values = {}
 
     # sorted set operations
     def zadd(self, name, mapping):
@@ -37,6 +38,16 @@ class StrictRedis:
 
     def hdel(self, name, key):
         self._hashes.get(name, {}).pop(key, None)
+
+    # key-value operations
+    def set(self, key, value):
+        self._values[key] = value
+
+    def get(self, key):
+        return self._values.get(key)
+
+    def delete(self, key):
+        self._values.pop(key, None)
 
     # list operations
     def rpush(self, name, value):

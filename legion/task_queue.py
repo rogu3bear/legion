@@ -24,6 +24,7 @@ class Task:
     state: str = "queued"
     retries: int = 0
     max_retries: int = 3
+    available_at: float = 0.0
 
 
 class TaskQueue:
@@ -46,9 +47,12 @@ class TaskQueue:
 
     def enqueue(self, task: Task) -> None:
         logger = logging.getLogger(__name__)
+        if not task.available_at:
+            task.available_at = time.time()
         if self.client:
             self.client.set(f"task:{task.id}", json.dumps(task.__dict__))
-            self.client.zadd("task_queue", {task.id: task.priority})
+            score = task.priority * 1_000_000 + int(task.available_at)
+            self.client.zadd("task_queue", {task.id: score})
             self.client.set(f"task:{task.id}:retry_count", 0)
         else:
             self.store[task.id] = task
@@ -60,12 +64,15 @@ class TaskQueue:
     def dequeue(self, agent: str) -> Optional[Task]:
         if self.client:
             ids = self.client.zrange("task_queue", 0, -1)
+            now = time.time()
             for task_id in ids:
                 raw = self.client.get(f"task:{task_id}")
                 if not raw:
                     self.client.zrem("task_queue", task_id)
                     continue
                 data = json.loads(raw)
+                if data.get("available_at", 0) > now:
+                    continue
                 if data.get("agent") == agent and data.get("state") == "queued":
                     data["state"] = "in_progress"
                     self.client.set(f"task:{task_id}", json.dumps(data))
@@ -73,8 +80,11 @@ class TaskQueue:
                     return Task(**data)
             return None
         else:
+            now = time.time()
             queued = [
-                t for t in self.store.values() if t.agent == agent and t.state == "queued"
+                t
+                for t in self.store.values()
+                if t.agent == agent and t.state == "queued" and t.available_at <= now
             ]
             if not queued:
                 return None
@@ -116,9 +126,11 @@ class TaskQueue:
         delay = min(self.base_delay * 2 ** (task.retries - 1), 60)
         task.state = "queued"
         task.priority += 1
+        task.available_at = time.time() + delay
         if self.client:
             self.client.set(f"task:{task_id}", json.dumps(task.__dict__))
-            self.client.zadd("task_queue", {task_id: task.priority})
+            score = task.priority * 1_000_000 + int(task.available_at)
+            self.client.zadd("task_queue", {task_id: score})
             self.client.set(f"task:{task_id}:retry_count", task.retries)
         else:
             self.store[task_id] = task
