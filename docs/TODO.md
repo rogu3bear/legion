@@ -46,8 +46,8 @@ This index lists all TODO comments found across the repository (May 2025) with r
 | middleware/src/models.py | 25 | define response schema | Create Pydantic response model |
 | tests/discord/test_health_cog.py | 147 | Mock the interaction with the orchestrator when implemented | Use fixtures to simulate orchestrator replies |
 | tests/test_websockets.py | 90 | Add test for the actual background task if feasible (might require more complex mocking) | Investigate async background task mocking |
-| docs/architecture.md | 1 | Empty placeholder file | Populate or remove to avoid confusion |
-| docs/ARCHITECTURE.md | 1 | Duplicate empty file | Remove or link to `Legion Architecture and Diagrams.md` |
+| docs/architecture.md | 1 | RESOLVED: populated with detailed architecture doc |
+| docs/ARCHITECTURE.md | 1 | RESOLVED: removed duplicate |
 
 ## Legacy Tests (quarantined)
 
