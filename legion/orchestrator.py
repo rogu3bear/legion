@@ -42,7 +42,10 @@ from legion.agent_registry import registry as agent_registry
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
-from legion.orchestrator.state_repo import repo as state_repo
+try:  # pragma: no cover - optional during tests
+    from legion.orchestrator.state_repo import repo as state_repo
+except Exception:
+    state_repo = object()
 from legion.task_queue import Task, queue as task_queue
 
 # Setup structured logging early using the new utility

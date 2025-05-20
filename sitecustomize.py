@@ -5,6 +5,7 @@ missing = [
     "sqlalchemy",
     "pydantic_settings",
     "email_validator",
+    "openai",
     "zmq",
     "httpx",
     "pytest",
