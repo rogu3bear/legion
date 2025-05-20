@@ -1,16 +1,10 @@
 """Hallucination guard for agent responses.
 
-This module provides ``guard_response`` which performs a minimal
-confidence check on an agent's output.  The logic mirrors the
-"Hallucination Guard" section described in ``docs/middleware.md`` and
-emits a message to the ``agent-feed`` when a response falls below the
+This module exposes :func:`guard_response` which performs a minimal
+confidence check on an agent's output. The behaviour matches the
+"Hallucination Guard" logic described in ``docs/middleware.md`` and
+posts a notification to ``agent-feed`` when a response falls below the
 configured threshold.
-=======
-This module exposes :func:`guard_response` which performs a
-straightforward confidence check on an agent's output. The behaviour
-matches the "Hallucination Guard" logic described in
-``docs/middleware.md`` and posts a notification to ``agent-feed`` when a
-response falls below the configured threshold.
 """
 
 import logging

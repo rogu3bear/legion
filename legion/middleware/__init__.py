@@ -2,14 +2,9 @@
 """High level middleware pipeline for directive and hallucination checks.
 
 The functions in this module orchestrate the individual middleware
-components documented in ``docs/middleware.md``.  ``run_middleware_pipeline``
+components documented in ``docs/middleware.md``. ``run_middleware_pipeline``
 is intended to be called by the orchestrator before a request reaches the
 Therapist agent.
-=======
-This package glues together the individual middleware components described
-in ``docs/middleware.md``. The main entry point
-:func:`run_middleware_pipeline` should be called by the orchestrator before a
-request reaches the Therapist agent.
 """
 
 import logging
@@ -38,8 +33,6 @@ def run_middleware_pipeline(
     Returns
     -------
     dict
-        Final validation result containing ``final_valid`` and ``source`` keys.
-=======
         Dictionary with ``final_valid`` and ``source`` keys describing the
         overall decision. Additional details may be included by the Therapist
         agent.
