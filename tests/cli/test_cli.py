@@ -2,9 +2,9 @@ import json
 import sys
 from unittest.mock import MagicMock
 
-import pytest
-
 import legion.cli as cli
+import pytest
+from legion.orchestrator import AgentLoadError
 
 
 class FakeOrchestrator:
@@ -23,8 +23,6 @@ class FakeOrchestrator:
 
     def load_agent(self, key):
         if key not in self.config:
-            from legion.orchestrator import AgentLoadError
-
             raise AgentLoadError(f"Unknown agent key {key}")
         return object()
 
