@@ -1,7 +1,7 @@
 # Dockerfile for Legion Web Interface
 
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim as builder
+FROM ghcr.io/${GITHUB_REPOSITORY_OWNER}/legion-base:py310 as builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
