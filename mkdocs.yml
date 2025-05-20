@@ -1,0 +1,10 @@
+site_name: Legion
+theme: readthedocs
+nav:
+  - Overview: index.md
+  - Architecture:
+      - Diagram: docs/architecture/overview.svg
+  - API Reference:
+      - Endpoints: docs/api/endpoints.md
+  - Guides:
+      - Quick Start: docs/guides/quick_start.md
