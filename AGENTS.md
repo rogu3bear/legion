@@ -158,7 +158,7 @@ Refer to `docs/architecture.md` for the enforced layered model.
 - Place new tests under `tests/` following the existing directory layout.
 
 ### 5. Coding Standards
-- Python style is enforced via `ruff` and type checking via `mypy` (see `pyproject.toml`).
+- Python style is enforced via `flake8` and type checking via `mypy` (see `pyproject.toml`).
 - Naming conventions follow `snake_case` for modules/functions and `PascalCase` for classes.
 - Activate pre-commit hooks with `pre-commit install` to run linters automatically.
 

@@ -1,5 +1,7 @@
 # Legion Port Configuration
 
+> **TODO**: Ports have been consolidated to the 7801-7810 range; this document needs updating.
+
 ## Development Ports
 
 - **Exact Port Range**: 27000-28000

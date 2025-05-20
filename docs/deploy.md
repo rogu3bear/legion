@@ -1,5 +1,7 @@
 # Deployment Guide
 
+> **TODO**: Update port ranges here to match the `7801-7810` allocation used by the project.
+
 ## Port Strategy
 
 Legion uses a unified port management system to prevent conflicts and ensure consistent service access across environments.
@@ -76,7 +78,7 @@ Legion uses a unified port management system to prevent conflicts and ensure con
    ```
 
 2. **Common Issues**:
-   - Port 3000 conflicts (use override)
+   - Port 7806 conflicts (use override)
    - Range violations (must be 27000-28000)
    - Missing .env.ports (use gen_env_ports.py)
 

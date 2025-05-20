@@ -51,6 +51,13 @@ Current development focus is on completing the web interface backend according t
    docker-compose up -d
    ```
 
+## Testing
+Run the built-in handshake test locally with:
+```bash
+make test
+```
+This executes `scripts/selftest_handshake.py` and prints `[HANDSHAKE TEST] PASS` on success.
+
 ### Development Ports
 | Service | Env Var | Default |
 |---------|---------|---------|

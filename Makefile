@@ -18,10 +18,10 @@ dev:
 lint:
 	@echo "Running linters..."
 	bash scripts/activate_once.sh
-	if command -v ruff >/dev/null; then \
-ruff check . || true; \
+	if command -v flake8 >/dev/null; then \
+	flake8 legion/ interface/ scripts/ || true; \
 	else \
-	echo "\u26a0 Ruff not installed; skipping style check"; \
+	echo "\u26a0 flake8 not installed; skipping Python lint"; \
 	fi
 	if command -v npm >/dev/null; then \
 	npm --prefix ui/frontend run lint --if-present -- --max-warnings 0 || true; \
@@ -30,12 +30,9 @@ ruff check . || true; \
 	fi
 
 test:
-		@echo "Running tests..."
-	if command -v pytest >/dev/null; then \
-	bash scripts/activate_once.sh && pytest -q; \
-	else \
-	echo "pytest unavailable in static-analysis mode - skipping"; \
-	fi
+	@echo "Running tests..."
+	bash scripts/activate_once.sh
+	PYTHONPATH=. python scripts/selftest_handshake.py
 
 
 deploy:

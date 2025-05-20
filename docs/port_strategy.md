@@ -1,5 +1,7 @@
 # Legion Port Management Strategy
 
+> **TODO**: Update this document to reflect the current fixed port map `7801-7810`.
+
 This document outlines how network ports are managed across the Legion application, covering development, testing, and production environments.
 
 ## Core Mechanism
@@ -20,7 +22,7 @@ As of the last update, the following service keys are defined with their default
 *   `redis`: 6379
 *   `postgres`: 5432
 *   `prometheus`: 9090
-*   `grafana`: 3000
+*   `grafana`: 7806
 *   `dev_frontend`: 8000 (Matches Docker Compose `web` service host port variable)
 *   `chroma`: 27020 (Default port for ChromaDB)
 

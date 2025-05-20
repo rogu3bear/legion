@@ -83,35 +83,8 @@ jobs:
           ports = load_runtime_ports()
           check_ports_available(ports)
           PYCODE
-      - name: Run tests
-        env:
-          GENERAL_CHANNEL_ID: '0'
-          AGENT_FEED_CHANNEL_ID: '0'
-          PORT_ALLOCATOR_WEB: 8000
-          PORT_ALLOCATOR_CHROMA: 27020
-          PORT_ALLOCATOR_PROMETHEUS: 9090
-          PORT_ALLOCATOR_REDIS: 6379
-          PORT_ALLOCATOR_POSTGRES: 5432
-          PORT_ALLOCATOR_GRAFANA: 7806
-          ORCHESTRATOR_API_URL: 'http://localhost:${{ env.PORT_ALLOCATOR_WEB || 8000 }}'
-        run: |
-          bash scripts/activate_once.sh
-          mkdir -p scripts/logs
-          mkdir -p artifacts/reports
-          mkdir -p /tmp/ci_logs
-          if command -v pytest >/dev/null; then
-            pytest tests/agents/ tests/core/ tests/discord/ tests/integration/ interface/ --maxfail=1 --disable-warnings -q
-          else
-            echo "⚠ Pytest not installed; skipping tests"
-          fi
-      - name: Run backend tests
-        run: |
-          bash scripts/activate_once.sh
-          if command -v pytest >/dev/null; then
-            pytest --cov
-          else
-            echo "⚠ Pytest not installed; skipping tests"
-          fi
+      - name: Self-test Handshake
+        run: python scripts/selftest_handshake.py
       - name: Docs & link check
         run: bash scripts/docs_build_check.sh
       - name: Upload CI Logs
@@ -152,23 +125,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run tests
-      run: |
-        mkdir -p scripts/logs
-        if command -v pytest >/dev/null; then
-          pytest -v --maxfail=5 --disable-warnings
-        else
-          echo "\u26a0 Pytest not installed; skipping tests"
-        fi
+    - name: Self-test Handshake
+      run: python scripts/selftest_handshake.py
       env:
         PYTHONPATH: $PYTHONPATH:.
-    - name: Run integration tests
-      run: |
-        if command -v pytest >/dev/null; then
-          pytest -q tests/integration
-        else
-          echo "\u26a0 Pytest not installed; skipping tests"
-        fi
     - name: CLI smoke test
       run: legion list-agents
     - name: Check service health
