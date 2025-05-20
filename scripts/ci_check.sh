@@ -1,3 +1,8 @@
+
+set -e
+
+bash scripts/docs_check.sh
+=======
 #!/usr/bin/env bash
 set -e
 make lint || true
