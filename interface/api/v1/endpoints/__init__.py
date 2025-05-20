@@ -10,13 +10,14 @@ try:  # pragma: no cover - optional deps may be missing in tests
     from .echo import router as echo_router
     from .queue import router as queue_router
     from .metrics import router as metrics_router
+    from .agent import router as agent_router
     from .handshake import bp as handshake_bp
 except Exception:  # pragma: no cover - endpoints unavailable
     agents_router = auth_router = lmstudio_proxy_router = None
     login_router = memory_router = system_router = None
     tasks_router = task_registry_router = None
     echo_router = queue_router = metrics_router = None
-    handshake_bp = None
+    agent_router = handshake_bp = None
 
 __all__ = [
     "agents_router",
@@ -30,5 +31,6 @@ __all__ = [
     "echo_router",
     "queue_router",
     "metrics_router",
+    "agent_router",
     "handshake_bp",
 ]
