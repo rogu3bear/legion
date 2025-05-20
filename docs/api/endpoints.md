@@ -64,3 +64,13 @@ for path, methods in schema.get('paths', {}).items():
 | GET | / | No | Read Root | 200 |
 | GET | /api/feed | No | Get Feed | 200 |
 | GET | /health | No | Health Check | 200 |
+=======
+# API Endpoints
+
+| Method | Path | Auth | Response |
+| ------ | ---- | ---- | -------- |
+| GET | /api/v1/agents | Token | JSON list |
+| POST | /api/v1/tasks | Token | Task ID |
+| GET | /api/v1/metrics | None | Prometheus |
+
+*This list is incomplete. TODO: auto-generate from OpenAPI schema.*
