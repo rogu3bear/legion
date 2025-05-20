@@ -33,4 +33,4 @@ services:
   #   # command: uvicorn src.main:app --host 0.0.0.0 --port ${PORT_ALLOCATOR_CORE_SERVICES_MIDDLEWARE:-27010} --reload
 
 # Note: Ensure that any ports exposed here use the ${PORT_ALLOCATOR_*} variables
-# defined in your .env.ports file (or .env for fallbacks if .env.ports is not present). 
+# defined in your .env.ports file (or .env for fallbacks if .env.ports is not present).

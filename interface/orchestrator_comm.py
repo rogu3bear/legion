@@ -6,7 +6,6 @@ import typing
 from typing import Any, Dict, Optional
 
 import zmq
-
 from interface.core.config import settings
 
 logger = logging.getLogger(__name__)

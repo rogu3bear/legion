@@ -3,8 +3,6 @@
 import logging
 import time
 
-from .utils.network import fetch_with_retries
-
 import requests
 
 logger = logging.getLogger(__name__)
@@ -49,5 +47,3 @@ def health_check(url: str, timeout: float = 2.0) -> bool:
     except requests.exceptions.RequestException as e:
         logger.error("Health check error", extra={"url": url, "error": str(e)})
         return False
-
-

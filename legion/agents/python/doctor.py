@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """DoctorAgent implementation for diagnostics and remediation."""
 
 import json
@@ -12,21 +13,24 @@ except Exception:  # pragma: no cover - optional dependency
     redis = None
 
 import yaml
-
 from legion.agents.base import BaseAgent
 
 
 class DoctorAgent(BaseAgent):
     """Agent responsible for diagnosing issues and suggesting remedies."""
 
-    def __init__(self, name: str, config: Optional[dict] = None, llm_client=None) -> None:
+    def __init__(
+        self, name: str, config: Optional[dict] = None, llm_client=None
+    ) -> None:
         super().__init__(name, config or {}, llm_client)
         self.redis = None
 
     def setup(self, orchestrator) -> None:
         """Load configuration and register with the orchestrator."""
         self.orchestrator = orchestrator
-        cfg_path = os.path.join(os.path.dirname(__file__), "..", "..", "configs", "doctor.yaml")
+        cfg_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "configs", "doctor.yaml"
+        )
         try:
             with open(cfg_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
@@ -36,16 +40,22 @@ class DoctorAgent(BaseAgent):
         if redis is not None:
             try:
                 port = int(os.getenv("REDIS_PORT", 7810))
-                self.redis = redis.Redis(host="localhost", port=port, decode_responses=True)
+                self.redis = redis.Redis(
+                    host="localhost", port=port, decode_responses=True
+                )
             except Exception:  # pragma: no cover - redis unavailable
                 self.redis = None
         if orchestrator:
             try:
-                orchestrator.register_agent(self.name, "doctor", ["diagnose_issue", "suggest_remedy"])
+                orchestrator.register_agent(
+                    self.name, "doctor", ["diagnose_issue", "suggest_remedy"]
+                )
             except Exception:  # pragma: no cover - registration failure
                 pass
 
-    def _log_diagnosis(self, symptoms: Dict[str, str], diagnosis: Dict[str, str]) -> None:
+    def _log_diagnosis(
+        self, symptoms: Dict[str, str], diagnosis: Dict[str, str]
+    ) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "symptoms": symptoms,

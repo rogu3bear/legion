@@ -21,7 +21,8 @@ class HallucinationGuard:
         if confidence < self.threshold:
             response["warning"] = "low_confidence"
             logger.warning(
-                "Low confidence response", extra={"confidence": confidence, "threshold": self.threshold}
+                "Low confidence response",
+                extra={"confidence": confidence, "threshold": self.threshold},
             )
             post_agent_feed(f"Response confidence {confidence:.2f} below threshold")
         else:

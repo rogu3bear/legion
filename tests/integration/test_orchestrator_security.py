@@ -1,7 +1,6 @@
 """Security tests for Orchestrator: ensure dangerous commands are rejected."""
 
 import pytest
-
 from legion.orchestrator import Orchestrator
 
 

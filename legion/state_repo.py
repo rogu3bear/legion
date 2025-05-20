@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import hmac
 import json
+import secrets
 import time
 import uuid
-import hmac
-import secrets
 from typing import Any, Dict, Optional
 
 try:  # pragma: no cover - optional dependency
@@ -49,7 +49,9 @@ class StateRepo:
                 self.r = redis.StrictRedis(decode_responses=True)
 
     # -- Agent Registration Handshake --
-    def initiate_handshake(self, agent_id: str, role: str, caps: list[str]) -> Dict[str, str]:
+    def initiate_handshake(
+        self, agent_id: str, role: str, caps: list[str]
+    ) -> Dict[str, str]:
         """Begin registration handshake and return challenge token."""
         challenge = secrets.token_hex(16)
         token = str(uuid.uuid4())
@@ -64,7 +66,9 @@ class StateRepo:
         self.r.hset(f"handshake:{agent_id}", mapping=data)
         return {"challenge_token": challenge}
 
-    def complete_handshake(self, agent_id: str, signed_challenge: str, secret: str) -> str:
+    def complete_handshake(
+        self, agent_id: str, signed_challenge: str, secret: str
+    ) -> str:
         """Finalize handshake and persist agent record."""
         record = self.r.hgetall(f"handshake:{agent_id}")
         if not record:

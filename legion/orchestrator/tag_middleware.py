@@ -3,14 +3,19 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 CORE_TAG = "\ud83d\udd11[Core]"
 
-def tag_payload(tags: Optional[Iterable[str]] = None) -> Callable[[Callable[..., Dict[str, Any]]], Callable[..., Dict[str, Any]]]:
+
+def tag_payload(
+    tags: Optional[Iterable[str]] = None,
+) -> Callable[[Callable[..., Dict[str, Any]]], Callable[..., Dict[str, Any]]]:
     """Decorator to attach tags to a payload before calling the wrapped function."""
 
     provided_tags = list(tags) if tags else []
 
     def decorator(func: Callable[[Dict[str, Any]], Dict[str, Any]]):
         @wraps(func)
-        def wrapper(payload: Dict[str, Any], *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        def wrapper(
+            payload: Dict[str, Any], *args: Any, **kwargs: Any
+        ) -> Dict[str, Any]:
             combined: List[str] = [CORE_TAG]
             combined.extend(provided_tags)
             existing = payload.get("tags", [])

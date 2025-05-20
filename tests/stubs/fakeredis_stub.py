@@ -56,17 +56,18 @@ class StrictRedis:
     def pipeline(self):
         return Pipeline(self)
 
+
 class Pipeline:
     def __init__(self, redis):
         self.redis = redis
         self.commands = []
 
     def zrange(self, *args):
-        self.commands.append(('zrange', args))
+        self.commands.append(("zrange", args))
         return self
 
     def zremrangebyrank(self, *args):
-        self.commands.append(('zremrangebyrank', args))
+        self.commands.append(("zremrangebyrank", args))
         return self
 
     def execute(self):

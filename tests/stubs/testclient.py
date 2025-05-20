@@ -35,8 +35,12 @@ class TestClient:
             return {"type": "http.request", "body": body, "more_body": False}
 
         asyncio.get_event_loop().run_until_complete(self.app(scope, receive, send))
-        status = next(m["status"] for m in messages if m["type"] == "http.response.start")
-        body_bytes = b"".join(m.get("body", b"") for m in messages if m["type"] == "http.response.body")
+        status = next(
+            m["status"] for m in messages if m["type"] == "http.response.start"
+        )
+        body_bytes = b"".join(
+            m.get("body", b"") for m in messages if m["type"] == "http.response.body"
+        )
         return Response(status, body_bytes)
 
     def post(self, path, json=None):

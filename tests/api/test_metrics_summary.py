@@ -1,10 +1,11 @@
 import json
 import unittest
+
 from fastapi import FastAPI
 
 import interface.api.v1.endpoints.metrics as metrics_ep
-from tests.stubs.testclient import TestClient
 from tests.stubs.fakeredis_stub import StrictRedis
+from tests.stubs.testclient import TestClient
 
 
 class FakeRedis(StrictRedis):

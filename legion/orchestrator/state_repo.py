@@ -1,3 +1,3 @@
 """Placeholder state repo."""
-repo = object()
 
+repo = object()

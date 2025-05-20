@@ -4,7 +4,6 @@ import contextlib
 import datetime
 import errno
 import fcntl
-import importlib
 import inspect
 import json
 import logging
@@ -17,13 +16,13 @@ import traceback
 import uuid
 from datetime import UTC  # Import UTC timezone
 from pathlib import Path
-from typing import Any, Optional
-
-import yaml
-import zmq.asyncio
+from typing import Optional, Tuple
 
 import legion.ports as unified_port_manager
+import yaml
+import zmq.asyncio
 from integration.discord.cogs.ux_feed import render_feed_item
+from legion.agent_registry import registry as agent_registry
 from legion.agents.python import (
     ArchitectAgent,
     EchoAgent,
@@ -36,17 +35,18 @@ from legion.agents.python import (
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
-from legion.agent_registry import registry as agent_registry
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
+
 try:  # pragma: no cover - optional during tests
     from legion.orchestrator.state_repo import repo as state_repo
 except Exception:
     state_repo = object()
-from legion.task_queue import Task, queue as task_queue
+from legion.task_queue import Task
+from legion.task_queue import queue as task_queue
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
@@ -379,7 +379,9 @@ class Orchestrator:
         echo_agent = self.agents.get("echo_agent")
         if echo_agent:
             try:
-                asyncio.create_task(echo_agent.handle_echo(message))
+                task = asyncio.create_task(echo_agent.handle_echo(message))
+                self._background_tasks.add(task)
+                task.add_done_callback(self._background_tasks.discard)
             except Exception:  # pragma: no cover - echo failures are non-fatal
                 logger.error("Failed to log registry change via echo", exc_info=True)
         else:
@@ -451,12 +453,12 @@ class Orchestrator:
             # Schedule the shutdown coroutine to be run by the loop.
             # asyncio.create_task is generally preferred over ensure_future directly.
             # If self.shutdown() is async:
-            task = asyncio.create_task(
+            shutdown_task = asyncio.create_task(
                 self.shutdown(signal_name=signal.Signals(signum).name)
             )
             # Track the task if needed
-            # self._background_tasks.add(task)
-            # task.add_done_callback(self._background_tasks.discard)
+            self._background_tasks.add(shutdown_task)
+            shutdown_task.add_done_callback(self._background_tasks.discard)
             # If self.shutdown() were synchronous, it would be:
             # loop.call_soon_threadsafe(self.shutdown, signal.Signals(signum).name)
 
@@ -497,24 +499,23 @@ class Orchestrator:
         """Synchronous lock release wrapper for atexit."""
         # This method MUST be synchronous as atexit handlers are.
         if self._pid_file and self._lock_acquired:
-            try:
-                logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                logger.info(
+                    f"atexit: Releasing process lock for PID file {self._pid_file}"
+                )
             try:
                 if self._lock_fd is not None:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
                     os.close(self._lock_fd)
                     self._lock_fd = None
-                if os.path.exists(self._pid_file):
-                    os.remove(self._pid_file)
+                pid_file_path = Path(self._pid_file)
+                if pid_file_path.exists():
+                    pid_file_path.unlink()
                 self._lock_acquired = False
-                try:
+                with contextlib.suppress(Exception):
                     logger.info(
                         f"atexit: Process lock released and PID file {self._pid_file} removed."
                     )
-                except Exception:
-                    pass
             except Exception as e:
                 # Log error but don't crash atexit handler
                 logger.error(
@@ -585,8 +586,9 @@ class Orchestrator:
                     )  # This is blocking, ensure it's okay in async context or run in executor
                     os.close(self._lock_fd)  # Also blocking
                     self._lock_fd = None
-                if os.path.exists(self._pid_file):
-                    os.remove(self._pid_file)  # Blocking
+                pid_file_path = Path(self._pid_file)
+                if pid_file_path.exists():
+                    pid_file_path.unlink()  # Blocking
                 self._lock_acquired = False
                 logger.info(
                     f"Process lock released and PID file {self._pid_file} removed during async shutdown."
@@ -926,7 +928,7 @@ class Orchestrator:
     async def broadcast(self, prompt):
         """Sends a prompt to all registered agents."""
         responses = {}
-        for agent_name in self.agents.keys():  # Iterate over loaded agents
+        for agent_name in self.agents:  # Iterate over loaded agents (SIM118 fix)
             try:
                 logger.info(f"Broadcasting to agent: {agent_name}")
                 # Assuming ask method now handles its own errors and returns an error string if applicable
@@ -1920,159 +1922,402 @@ class Orchestrator:
         return new_task_id
 
     def get_task_details(self, task_id: uuid.UUID) -> Optional[dict]:
-        # TODO: Fetch task details from StateManager or task queue
-        logger.info(f"Placeholder: Fetching task details for {task_id}")
-        # task_data = self.state_manager.get_task(task_id)
-        # return task_data if task_data else None
-        return {
-            "id": str(task_id),
-            "status": "pending",
-            "title": "Dummy Task",
-        }  # Dummy response
+        """
+        Fetch detailed information about a specific task by ID.
 
-    def get_task_list(self, filters: dict) -> (list, int):
-        # TODO: Fetch task list from StateManager with filters
-        logger.info(f"Placeholder: Listing tasks with filters: {filters}")
-        # tasks, total = self.state_manager.list_tasks(**filters)
-        # return tasks, total
-        dummy_task = {
-            "id": str(uuid.uuid4()),
-            "status": "pending",
-            "title": "Dummy Task",
-        }
-        return [dummy_task], 1  # Dummy response
+        Args:
+            task_id: The UUID of the task to retrieve.
+
+        Returns:
+            Dict containing task details or None if the task is not found.
+        """
+        logger.info(f"Fetching task details for {task_id}")
+
+        # Use state_repo to get task state
+        try:
+            # First check the active task queue
+            task = self.queue.get_task_by_id(task_id)
+            if task:
+                return {
+                    "id": str(task_id),
+                    "status": "pending",
+                    "title": task.title,
+                    "created_at": task.created_at.isoformat()
+                    if hasattr(task, "created_at")
+                    else None,
+                    "agent_key": task.agent_key,
+                    "priority": task.priority,
+                    "payload": task.payload,
+                }
+
+            # Check state repo for completed or cancelled tasks
+            task_data = state_repo.get_task(str(task_id))
+            if task_data:
+                return task_data
+
+            # Not found in any location
+            return None
+
+        except Exception as e:
+            logger.error(f"Error retrieving task details: {e}")
+            return {"id": str(task_id), "status": "unknown", "error": str(e)}
+
+    def get_task_list(self, filters: dict) -> Tuple[list, int]:
+        """
+        Retrieve a filtered list of tasks.
+
+        Args:
+            filters: Dictionary of filter criteria (status, agent_key, etc.)
+
+        Returns:
+            Tuple of (list of task dicts, total count)
+        """
+        logger.info(f"Listing tasks with filters: {filters}")
+
+        tasks = []
+        total = 0
+
+        try:
+            # Get status filter
+            status = filters.get("status")
+
+            # Get active tasks from queue
+            if not status or status in ["pending", "active"]:
+                queue_tasks = self.queue.list_tasks()
+
+                # Apply any additional filters
+                agent_key = filters.get("agent_key")
+                if agent_key:
+                    queue_tasks = [t for t in queue_tasks if t.agent_key == agent_key]
+
+                # Convert to dict format
+                for task in queue_tasks:
+                    tasks.append(
+                        {
+                            "id": str(task.id),
+                            "status": "pending"
+                            if not getattr(task, "assigned_to", None)
+                            else "active",
+                            "title": task.title,
+                            "created_at": task.created_at.isoformat()
+                            if hasattr(task, "created_at")
+                            else None,
+                            "agent_key": task.agent_key,
+                            "priority": task.priority,
+                        }
+                    )
+
+            # Get completed/cancelled tasks from state repo
+            completed_filters = filters.copy()
+            if status:
+                completed_filters["status"] = status
+            else:
+                completed_filters["status"] = ["completed", "cancelled", "failed"]
+
+            # Get tasks from state repo
+            repo_tasks, repo_total = state_repo.list_tasks(**completed_filters)
+            tasks.extend(repo_tasks)
+
+            # Calculate total
+            total = len(tasks)
+
+            # Apply pagination
+            offset = int(filters.get("offset", 0))
+            limit = int(filters.get("limit", 100))
+            tasks = tasks[offset : offset + limit]
+
+            return tasks, total
+
+        except Exception as e:
+            logger.error(f"Error retrieving task list: {e}")
+            return [], 0
 
     def request_task_cancellation(self, task_id: uuid.UUID) -> bool:
-        # TODO: Send cancellation request (e.g., update status, signal worker)
-        logger.info(f"Placeholder: Requesting cancellation for task {task_id}")
-        # success = self.state_manager.update_task_status(task_id, "cancelled")
-        # return success
-        return True  # Dummy response
+        """
+        Request cancellation of a task by ID.
+
+        Args:
+            task_id: The UUID of the task to cancel.
+
+        Returns:
+            True if cancellation was successful, False otherwise.
+        """
+        logger.info(f"Requesting cancellation for task {task_id}")
+
+        try:
+            # First try to remove from queue if not yet picked up
+            removed = self.queue.remove_task(task_id)
+            if removed:
+                # Update task status in state repo
+                state_repo.update_task_status(str(task_id), "cancelled")
+                logger.info(
+                    f"Task {task_id} successfully removed from queue and marked as cancelled"
+                )
+                return True
+
+            # If not in queue, it might be in progress with an agent
+            # Get the assigned agent if any
+            task = state_repo.get_task(str(task_id))
+            if task and "assigned_to" in task:
+                agent_id = task["assigned_to"]
+                # Send cancellation signal to agent
+                if self._zmq_pub_socket:
+                    self._zmq_pub_socket.send_json(
+                        {
+                            "type": "task_cancellation",
+                            "task_id": str(task_id),
+                            "agent_id": agent_id,
+                        }
+                    )
+                # Update task status
+                state_repo.update_task_status(str(task_id), "cancellation_requested")
+                logger.info(
+                    f"Cancellation signal sent for task {task_id} to agent {agent_id}"
+                )
+                return True
+
+            # Task not found in queue or state repo
+            logger.warning(f"Task {task_id} not found for cancellation")
+            return False
+
+        except Exception as e:
+            logger.error(f"Error cancelling task {task_id}: {e}")
+            return False
 
     # --- Placeholder Agent Lifecycle Methods ---
     def start_agent(self, agent_name: str) -> tuple[bool, str]:
-        """Placeholder: Start the specified agent."""
-        if agent_name not in self.agents:
-            return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Starting agent '{agent_name}'...")
-        # TODO: Implement actual agent start logic (e.g., process creation, state update)
-        return True, f"Agent '{agent_name}' started successfully (Placeholder)."
-
-    def stop_agent(self, agent_name: str) -> tuple[bool, str]:
-        """Placeholder: Stop the specified agent."""
-        if agent_name not in self.agents:
-            return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Stopping agent '{agent_name}'...")
-        # TODO: Implement actual agent stop logic (e.g., signal process, state update)
-        return True, f"Agent '{agent_name}' stopped successfully (Placeholder)."
-
-    def restart_agent(self, agent_name: str) -> tuple[bool, str]:
-        """Placeholder: Restart the specified agent."""
-        if agent_name not in self.agents:
-            return False, f"Agent '{agent_name}' not found."
-        logger.info(f"Placeholder: Restarting agent '{agent_name}'...")
-        # TODO: Implement actual agent restart logic (stop then start)
-        stop_success, stop_detail = self.stop_agent(agent_name)
-        if not stop_success:
-            return False, f"Failed to stop agent during restart: {stop_detail}"
-        start_success, start_detail = self.start_agent(agent_name)
-        if not start_success:
-            return False, f"Failed to start agent during restart: {start_detail}"
-        return True, f"Agent '{agent_name}' restarted successfully (Placeholder)."
-
-    def register_agent(self, agent_id: str, role: str, capabilities: list[str]) -> str:
-        """Register an agent and assign any pending task."""
-        token = state_repo.register_agent(agent_id, role, capabilities)
-        logger.info(
-            "agent registration handshake",
-            extra={"props": {"agent_id": agent_id, "role": role}},
-        )
-        if hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
-            try:
-                self._zmq_pub_socket.send_json({"type": "agent_registered", "agent_id": agent_id})
-            except Exception as e:  # noqa: BLE001
-                logger.error(f"Failed to publish agent_registered event: {e}")
-        task = self.queue.dequeue(agent_id)
-        if task and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
-            try:
-                self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task.id, "agent_id": agent_id})
-            except Exception as e:  # noqa: BLE001
-                logger.error(f"Failed to publish task_assigned event: {e}")
-        if task:
-            logger.info(
-                "task assigned",
-                extra={"props": {"agent_id": agent_id, "task_id": task.id}},
-            )
-        return token
-
-    def load_agent(self, key: str) -> Any:
         """
-        Load or return a cached agent instance by its key.
+        Start the specified agent.
+
         Args:
-            key: The agent key from agents.yaml (e.g., "architect", "metrics").
+            agent_name: The name of the agent to start.
+
         Returns:
-            An instance of the requested agent.
-        Raises:
-            KeyError: If the key is not in the agent configs.
-            AgentLoadError: If import or instantiation fails.
+            Tuple of (success boolean, message string)
         """
-        # Check cache first
-        if key in self._agent_instances:
-            return self._agent_instances[key]
+        if agent_name not in self.agents:
+            return False, f"Agent '{agent_name}' not found."
 
-        # Validate the key exists in configs
-        if key not in self.config:
-            raise KeyError(f"Unknown agent key: {key}")
-
-        agent_config = self.config[key]
-        class_name = agent_config.get("class")
-
-        if not class_name:
-            raise AgentLoadError(
-                f"Missing class name in configuration for agent '{key}'"
-            )
+        logger.info(f"Starting agent '{agent_name}'...")
 
         try:
-            # Dynamically import the agent module
-            module_name = f"legion.agents.python.{key}"
-            module = importlib.import_module(module_name)
+            # Get agent config
+            agent_config = self.agents.get(agent_name, {})
 
-            # Get the agent class
-            agent_class = getattr(module, class_name)
+            # Check if already running
+            current_state = state_repo.get_agent_state(agent_name)
+            if current_state in ["running", "starting"]:
+                return True, f"Agent '{agent_name}' is already running or starting."
 
-            # Instantiate the agent
-            agent = agent_class(orchestrator=self, llm_client=self.llm_client)
+            # Update agent state
+            state_repo.set_agent_state(agent_name, "starting")
 
-            # Initialize agent if it has an initialize method
-            if hasattr(agent, "initialize") and callable(agent.initialize):
-                agent.initialize()
+            # Determine how to start based on agent type
+            agent_type = agent_config.get("type", "internal")
 
-            # Store in cache
-            self._agent_instances[key] = agent
+            if agent_type == "internal":
+                # Internal agents are loaded directly by the orchestrator
+                agent = self.load_agent(agent_name)
+                if hasattr(agent, "setup") and callable(agent.setup):
+                    agent.setup()
+                # Update state
+                state_repo.set_agent_state(agent_name, "running")
+                return True, f"Agent '{agent_name}' started successfully."
 
-            logger.info(f"Loaded agent: {key}")
-            return agent
+            elif agent_type == "process":
+                # Process agents run as separate processes
+                import shlex
+                import subprocess
 
-        except ImportError as e:
-            error_msg = f"Failed to import module for agent '{key}': {e!s}"
-            logger.error(error_msg)
-            raise AgentLoadError(error_msg) from e
-        except AttributeError as e:
-            error_msg = f"Failed to get class '{class_name}' for agent '{key}': {e!s}"
-            logger.error(error_msg)
-            raise AgentLoadError(error_msg) from e
+                # Get command from config
+                cmd = agent_config.get(
+                    "command", f"python -m legion.agents.cli {agent_name}"
+                )
+
+                # Start the process
+                process = subprocess.Popen(
+                    shlex.split(cmd),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    env=os.environ.copy(),
+                )
+
+                # Store process ID
+                state_repo.set_agent_process_id(agent_name, process.pid)
+
+                # Check if started successfully
+                if process.poll() is None:  # None means still running
+                    # Update state
+                    state_repo.set_agent_state(agent_name, "running")
+                    return (
+                        True,
+                        f"Agent '{agent_name}' started successfully with PID {process.pid}.",
+                    )
+                else:
+                    # Process terminated immediately
+                    stdout, stderr = process.communicate()
+                    error_msg = stderr.decode("utf-8") if stderr else "Unknown error"
+                    state_repo.set_agent_state(agent_name, "failed")
+                    return False, f"Agent '{agent_name}' failed to start: {error_msg}"
+
+            else:
+                return (
+                    False,
+                    f"Unknown agent type '{agent_type}' for agent '{agent_name}'.",
+                )
+
         except Exception as e:
-            error_msg = f"Failed to instantiate agent '{key}': {e!s}"
-            logger.error(error_msg)
-            raise AgentLoadError(error_msg) from e
+            logger.error(f"Error starting agent '{agent_name}': {e}")
+            state_repo.set_agent_state(agent_name, "failed")
+            return False, f"Error starting agent '{agent_name}': {e!s}"
 
-    def dispatch(self, agent_key: str, payload: dict) -> dict:
+    def stop_agent(self, agent_name: str) -> tuple[bool, str]:
         """
-        Dispatches a task to the specified agent.
+        Stop the specified agent.
 
         Args:
-            agent_key: The key (name) of the agent to dispatch to.
-            payload: The payload (task data) to send to the agent.
+            agent_name: The name of the agent to stop.
+
+        Returns:
+            Tuple of (success boolean, message string)
+        """
+        if agent_name not in self.agents:
+            return False, f"Agent '{agent_name}' not found."
+
+        logger.info(f"Stopping agent '{agent_name}'...")
+
+        try:
+            # Check current state
+            current_state = state_repo.get_agent_state(agent_name)
+            if current_state in ["stopped", "stopping"]:
+                return True, f"Agent '{agent_name}' is already stopped or stopping."
+
+            # Update agent state
+            state_repo.set_agent_state(agent_name, "stopping")
+
+            # Get agent config
+            agent_config = self.agents.get(agent_name, {})
+            agent_type = agent_config.get("type", "internal")
+
+            if agent_type == "internal":
+                # Internal agents are managed directly
+                if agent_name in self._agent_instances:
+                    agent = self._agent_instances[agent_name]
+                    # Call shutdown if available
+                    if hasattr(agent, "shutdown") and callable(agent.shutdown):
+                        agent.shutdown()
+                    # Remove from instances
+                    del self._agent_instances[agent_name]
+
+                # Update state
+                state_repo.set_agent_state(agent_name, "stopped")
+                return True, f"Agent '{agent_name}' stopped successfully."
+
+            elif agent_type == "process":
+                # Process agents are separate processes
+                # Get PID from state repo
+                pid = state_repo.get_agent_process_id(agent_name)
+
+                if not pid:
+                    state_repo.set_agent_state(agent_name, "stopped")
+                    return (
+                        True,
+                        f"Agent '{agent_name}' has no active process, marked as stopped.",
+                    )
+
+                # Try graceful shutdown first
+                try:
+                    import signal
+
+                    import psutil
+
+                    # Send SIGTERM to process
+                    process = psutil.Process(pid)
+                    process.send_signal(signal.SIGTERM)
+
+                    # Wait a moment to see if it terminates
+                    process.wait(timeout=5)
+
+                    # If we get here, process terminated successfully
+                    state_repo.set_agent_state(agent_name, "stopped")
+                    state_repo.set_agent_process_id(agent_name, None)
+                    return True, f"Agent '{agent_name}' stopped successfully."
+
+                except psutil.NoSuchProcess:
+                    # Process already gone
+                    state_repo.set_agent_state(agent_name, "stopped")
+                    state_repo.set_agent_process_id(agent_name, None)
+                    return True, f"Agent '{agent_name}' was not running (no process)."
+
+                except psutil.TimeoutExpired:
+                    # Process didn't terminate gracefully, try SIGKILL
+                    try:
+                        process.send_signal(signal.SIGKILL)
+                        process.wait(timeout=2)
+                        state_repo.set_agent_state(agent_name, "stopped")
+                        state_repo.set_agent_process_id(agent_name, None)
+                        return True, f"Agent '{agent_name}' forcibly terminated."
+                    except Exception as e:
+                        return (
+                            False,
+                            f"Failed to forcibly terminate agent '{agent_name}': {e!s}",
+                        )
+
+                except Exception as e:
+                    return False, f"Error stopping agent '{agent_name}' process: {e!s}"
+
+            else:
+                return (
+                    False,
+                    f"Unknown agent type '{agent_type}' for agent '{agent_name}'.",
+                )
+
+        except Exception as e:
+            logger.error(f"Error stopping agent '{agent_name}': {e}")
+            # Still mark as stopped in case of general error
+            state_repo.set_agent_state(agent_name, "unknown")
+            return False, f"Error stopping agent '{agent_name}': {e!s}"
+
+    def restart_agent(self, agent_name: str) -> tuple[bool, str]:
+        """
+        Restart the specified agent.
+
+        Args:
+            agent_name: The name of the agent to restart.
+
+        Returns:
+            Tuple of (success boolean, message string)
+        """
+        if agent_name not in self.agents:
+            return False, f"Agent '{agent_name}' not found."
+
+        logger.info(f"Restarting agent '{agent_name}'...")
+
+        # First stop the agent
+        stop_success, stop_detail = self.stop_agent(agent_name)
+        if not stop_success:
+            # If stopping fails, report the error and don't proceed with starting
+            return (
+                False,
+                f"Failed to stop agent '{agent_name}' for restart: {stop_detail}",
+            )
+
+        # Then start the agent
+        start_success, start_detail = self.start_agent(agent_name)
+        if not start_success:
+            return (
+                False,
+                f"Failed to start agent '{agent_name}' after stopping for restart: {start_detail}",
+            )
+
+        return True, f"Agent '{agent_name}' restarted successfully."
+
+    def dispatch_to_agent(self, agent_key: str, payload: dict):
+        """Internal helper to dispatch a task payload to a loaded agent instance.
+
+        Args:
+            agent_key: The key of the agent to dispatch to.
+            payload: The payload to send to the agent's handle_task method.
 
         Returns:
             A dictionary containing the agent's response.
@@ -2133,21 +2378,112 @@ class Orchestrator:
         return context
 
     # --- Therapist communication stubs ---------------------------------
-    def send_to_therapist(self, task_id: str, payload: dict) -> None:
-        """Queue a message for the Therapist agent."""
-        pass  # TODO: implement routing
+    def send_to_therapist(self, payload: dict) -> str:
+        """Validate and route a message to the Therapist agent."""
+        import uuid
 
-    def receive_from_therapist(self, message: dict) -> None:
-        """Handle Therapist → Orchestrator callbacks."""
-        pass  # TODO: integrate with dispatch pipeline
+        from legion.agents.python.doctor import (
+            TherapistAgent,  # Local import to avoid circular
+        )
 
-    def agent_comm_router(self, msg: dict) -> None:
-        """Central router deciding which agent receives a message."""
-        pass  # TODO: unify dispatch rules
+        # Validate schema
+        try:
+            TherapistAgent.validate(payload)
+        except Exception as e:
+            raise ValueError(f"Therapist validation failed: {e}") from e  # B904 fix
+        msg_id = uuid.uuid4().hex
+        # Log request (stub, see TODO)
+        if hasattr(state_repo, "log_therapist_req"):
+            state_repo.log_therapist_req(msg_id, payload)
+        else:
+            # TODO: Implement log_therapist_req in state_repo
+            pass
+        # Publish to therapist_in (stub, see TODO)
+        if hasattr(self, "bus") and hasattr(self.bus, "publish"):
+            self.bus.publish("therapist_in", {"id": msg_id, "payload": payload})
+        else:
+            # TODO: Implement bus.publish or integrate pub/sub
+            raise NotImplementedError("bus.publish not implemented")
+        return msg_id
 
-    def call_directive(self, directive_name: str, **kwargs) -> None:
-        """Invoke a registered directive on an agent."""
-        pass  # TODO: directive registry hookup
+    def receive_from_therapist(self, msg_id: str, timeout: int = 30) -> dict:
+        """Poll for a response from the Therapist agent with timeout."""
+        import time
+
+        deadline = time.monotonic() + timeout
+        # Subscribe to therapist_out (stub, see TODO)
+        if not (hasattr(self, "bus") and hasattr(self.bus, "subscribe")):
+            raise NotImplementedError("bus.subscribe not implemented")
+        sub = self.bus.subscribe("therapist_out")
+        while time.monotonic() < deadline:
+            msg = next(sub, None)  # Replace with actual polling logic
+            if msg and msg.get("id") == msg_id:
+                # Log response (stub, see TODO)
+                if hasattr(state_repo, "log_therapist_resp"):
+                    state_repo.log_therapist_resp(msg_id, msg)
+                else:
+                    # TODO: Implement log_therapist_resp in state_repo
+                    pass
+                return msg
+            time.sleep(0.1)
+        raise TimeoutError(f"No therapist response for id {msg_id} within {timeout}s")
+
+    def agent_comm_router(self, sender: str, target: str, body: dict):
+        """Route a message from one agent to another."""
+        # Validate target agent
+        agent_names = [a["name"] for a in self.get_agent_list()]
+        if target not in agent_names:
+            raise ValueError(f"Target agent '{target}' not registered")
+        # Publish to agent.{target}.in (stub, see TODO)
+        if hasattr(self, "bus") and hasattr(self.bus, "publish"):
+            self.bus.publish(f"agent.{target}.in", {"from": sender, **body})
+        else:
+            # TODO: Implement bus.publish or integrate pub/sub
+            raise NotImplementedError("bus.publish not implemented")
+        # Log agent message (stub, see TODO)
+        if hasattr(state_repo, "log_agent_msg"):
+            state_repo.log_agent_msg(sender, target, body)
+        else:
+            # TODO: Implement log_agent_msg in state_repo
+            pass
+
+    def call_directive(self, agent_id: str, directive: str, params: dict) -> dict:
+        """Queue a directive for an agent and wait for completion."""
+        import time
+        import uuid
+
+        task_id = uuid.uuid4().hex
+        task = {
+            "id": task_id,
+            "agent_id": agent_id,
+            "directive": directive,
+            "params": params,
+            "status": "queued",
+        }
+        # Enqueue task
+        if hasattr(self, "queue") and hasattr(self.queue, "enqueue"):
+            self.queue.enqueue(task)
+        else:
+            raise NotImplementedError("queue.enqueue not implemented")
+        # Add to state
+        if hasattr(state_repo, "add_task"):
+            state_repo.add_task(task)
+        else:
+            # TODO: Implement add_task in state_repo
+            pass
+        # Poll for completion
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            if hasattr(state_repo, "task_status"):
+                status = state_repo.task_status(task_id)
+                if status in {"success", "failed"}:
+                    # Return full task record if available
+                    if hasattr(state_repo, "get_task"):
+                        return state_repo.get_task(task_id)
+                    else:
+                        return {**task, "status": status}
+            time.sleep(0.2)
+        raise TimeoutError(f"Directive {directive} for agent {agent_id} timed out")
 
 
 # Allow direct execution to start the orchestrator loop

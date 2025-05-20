@@ -1,5 +1,5 @@
-import sys # sys must be imported first for path modifications
-from pathlib import Path # pathlib for path manipulations
+import sys  # sys must be imported first for path modifications
+from pathlib import Path  # pathlib for path manipulations
 
 # Ensure the project root directory is in the Python path very early.
 # This must be done before any other imports that might rely on this path.
@@ -10,8 +10,8 @@ if str(PROJECT_ROOT) not in sys.path:
 # Standard library imports
 import asyncio
 import json
-# import os # No longer needed for os.path
 
+# import os # No longer needed for os.path
 # Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -20,9 +20,10 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+from legion import Orchestrator
+
 # Project-specific imports
 from legion.core.logging_config import setup_logging
-from legion import Orchestrator
 
 logger = setup_logging(__name__)
 
@@ -35,15 +36,15 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 from interface.api.v1.endpoints import (  # noqa: E402
     agents_router,
     auth_router,
+    echo_router,
+    lmstudio_proxy_router,
     login_router,
     memory_router,
-    echo_router,
+    metrics_router,
+    queue_router,
     system_router,
     task_registry_router,
     tasks_router,
-    lmstudio_proxy_router,
-    queue_router,
-    metrics_router,
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
@@ -51,7 +52,9 @@ app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
 app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
-app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
+app.include_router(
+    task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"]
+)
 app.include_router(queue_router, prefix="/api/v1", tags=["queue"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
@@ -115,7 +118,6 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(2)
     except WebSocketDisconnect:
         pass
-
 
 
 @app.get("/health")

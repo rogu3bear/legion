@@ -7,7 +7,6 @@ import sys
 import types
 
 import pytest
-
 from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
 from middleware.src.models import ChromaRecord
 

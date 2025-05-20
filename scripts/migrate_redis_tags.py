@@ -17,6 +17,7 @@ class FakeRedis:
 
     def keys(self, pattern: str):
         import fnmatch
+
         return [k for k in self.store if fnmatch.fnmatch(k, pattern)]
 
     def get(self, key: str) -> Any:

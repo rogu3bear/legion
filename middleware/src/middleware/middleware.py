@@ -1,12 +1,10 @@
 """Middleware for request processing, embedding validation, and directive compliance."""
 
 import logging
-
-from legion.utils.agent_feed import post_agent_feed
-
 from typing import Any, Dict, Optional, Tuple
 
 from legion.core.utils.chroma_client import AsyncChromaClient as ChromaClient
+from legion.utils.agent_feed import post_agent_feed
 
 from .directive_compliance import DirectiveCompliance
 
@@ -96,7 +94,10 @@ class RequestMiddleware:
                 embedding_details["reason"] = (
                     f"Similarity {top_similarity:.2f} below therapist threshold {THERAPIST_AGENT_THRESHOLD}, needs review"
                 )
-                logger.info("Similarity below therapist threshold", extra={"similarity": top_similarity})
+                logger.info(
+                    "Similarity below therapist threshold",
+                    extra={"similarity": top_similarity},
+                )
             elif top_similarity < ACCEPTABLE_SIMILARITY:
                 # Escalate to therapist for similarity between THERAPIST_AGENT_THRESHOLD and ACCEPTABLE_SIMILARITY
                 embedding_derived_status = "escalate_therapist_embedding"
@@ -104,7 +105,9 @@ class RequestMiddleware:
                     f"Similarity {top_similarity:.2f} below acceptable threshold {ACCEPTABLE_SIMILARITY}, escalating to therapist"
                 )
                 embedding_details["escalation_trigger"] = "low_semantic_similarity"
-                logger.info("Escalating to therapist", extra={"similarity": top_similarity})
+                logger.info(
+                    "Escalating to therapist", extra={"similarity": top_similarity}
+                )
             else:
                 # Approved for similarity at or above ACCEPTABLE_SIMILARITY
                 embedding_derived_status = "approved_embedding"
@@ -177,7 +180,9 @@ class RequestMiddleware:
             final_details.update(directive_details)
             final_details["source"] = "directive_compliance"
 
-        logger.info("Request finalised", extra={"status": final_status, **final_details})
+        logger.info(
+            "Request finalised", extra={"status": final_status, **final_details}
+        )
         if final_status != "approved":
             post_agent_feed(f"Request result: {final_status}")
 

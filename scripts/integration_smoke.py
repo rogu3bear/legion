@@ -8,21 +8,27 @@ import logging
 try:
     from legion.orchestrator.main import start_app  # type: ignore
 except Exception:  # pragma: no cover - orchestrator missing
+
     def start_app():  # type: ignore
         logging.info("orchestrator stub running")
+
 
 try:
     import zmq
 except Exception:  # pragma: no cover - optional dependency
+
     class _FakeCtx:
         def socket(self, *_args, **_kwargs):
             class _Sock:
                 def bind(self, *_a, **_k):
                     pass
+
                 def send_json(self, *_a, **_k):
                     pass
+
                 def close(self):
                     pass
+
             return _Sock()
 
         def term(self):
@@ -33,6 +39,7 @@ except Exception:  # pragma: no cover - optional dependency
             @staticmethod
             def instance():
                 return _FakeCtx()
+
         PUB = 0
 
 
@@ -48,4 +55,3 @@ def main() -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

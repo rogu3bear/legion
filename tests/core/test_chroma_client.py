@@ -1,6 +1,5 @@
 import openai
 import pytest
-from unittest.mock import MagicMock, patch
 from legion.core.utils.chroma_client import ChromaClient
 
 

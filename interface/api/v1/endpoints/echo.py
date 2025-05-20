@@ -1,10 +1,10 @@
 import logging
-import uuid
 from typing import Dict
 
 from fastapi import APIRouter, HTTPException
-from interface.api.v1.endpoints.system import _call_orchestrator
 from pydantic import BaseModel
+
+from interface.api.v1.endpoints.system import _call_orchestrator
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

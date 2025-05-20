@@ -1,9 +1,8 @@
 """Agent database model."""
 
+from interface.db.base_class import Base
 from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
-
-from interface.db.base_class import Base
 
 
 class Agent(Base):

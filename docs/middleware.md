@@ -20,4 +20,3 @@ setup. Significant events are also forwarded to the Echo agent using the helper
 - Additional tests are needed to cover the new logging paths. *(TODO)*
 - The FastAPI service under `middleware/src/main.py` still contains several TODO
   markers for context routing and authentication.
-

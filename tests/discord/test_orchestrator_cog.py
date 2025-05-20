@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import discord
 import pytest
-
 from integration.discord.cogs.orchestrator import OrchestratorCog
 from legion.orchestrator import Orchestrator
 

@@ -45,7 +45,10 @@ def create_task(task: Task) -> Task:
 def update_task(task_id: str = Path(...), payload: TaskUpdate | None = None) -> Task:
     """Update fields of an existing task."""
     task = state_repository.update_task(
-        task_id, status=payload.status if payload else None, tags=payload.tags if payload else None, owner=payload.owner if payload else None
+        task_id,
+        status=payload.status if payload else None,
+        tags=payload.tags if payload else None,
+        owner=payload.owner if payload else None,
     )
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

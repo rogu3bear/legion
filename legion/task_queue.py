@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from dataclasses import dataclass
 from typing import Dict, Optional
-import time
-
-import logging
 
 try:
     import redis  # type: ignore
@@ -58,7 +57,13 @@ class TaskQueue:
             self.store[task.id] = task
         logger.info(
             "task enqueued",
-            extra={"props": {"task_id": task.id, "agent": task.agent, "priority": task.priority}},
+            extra={
+                "props": {
+                    "task_id": task.id,
+                    "agent": task.agent,
+                    "priority": task.priority,
+                }
+            },
         )
 
     def dequeue(self, agent: str) -> Optional[Task]:
@@ -136,7 +141,9 @@ class TaskQueue:
             self.store[task_id] = task
         logger.info(
             "task retry",
-            extra={"props": {"task_id": task_id, "attempt": task.retries, "delay": delay}},
+            extra={
+                "props": {"task_id": task_id, "attempt": task.retries, "delay": delay}
+            },
         )
 
     def update_state(self, task_id: str, state: str) -> None:
@@ -163,13 +170,17 @@ class TaskQueue:
         """Handle task failure with retry and logging."""
         logger = logging.getLogger(__name__)
         if self.client:
-            self.client.rpush(f"task:{task_id}:error_log", json.dumps({"error": error, "ts": time.time()}))
+            self.client.rpush(
+                f"task:{task_id}:error_log",
+                json.dumps({"error": error, "ts": time.time()}),
+            )
         if self.get(task_id):
             self.retry_task(task_id)
-            logger.error("task error", extra={"props": {"task_id": task_id, "error": error}})
+            logger.error(
+                "task error", extra={"props": {"task_id": task_id, "error": error}}
+            )
         else:
             logger.error("unknown task", extra={"props": {"task_id": task_id}})
 
 
 queue = TaskQueue()
-

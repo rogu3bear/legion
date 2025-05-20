@@ -1,8 +1,8 @@
 """Tests for middleware main application"""
 
-import pytest
 from fastapi.testclient import TestClient
 
+import pytest
 from middleware.src.main import app, chroma, settings
 
 

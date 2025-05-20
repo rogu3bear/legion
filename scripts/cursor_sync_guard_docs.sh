@@ -73,4 +73,3 @@ $SMOKE_OUT
 $(cat "$DOC_OVERVIEW")
 \`\`\`"
 fi
-

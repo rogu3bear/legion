@@ -9,4 +9,5 @@ class context:
         def verify(self, password, hashed):
             return True
 
+
 CryptContext = context.CryptContext

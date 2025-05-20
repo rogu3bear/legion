@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 from discord.ext import commands
-
 from legion.discord.commands import LegionCommandCog
 
 

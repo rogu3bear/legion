@@ -2,9 +2,9 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 import requests
 
+import pytest
 from legion.core.utils.network import fetch_with_retries
 
 

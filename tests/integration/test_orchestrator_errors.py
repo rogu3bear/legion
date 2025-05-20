@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 import zmq.asyncio
-
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.orchestrator import Orchestrator
 

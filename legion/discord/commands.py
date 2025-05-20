@@ -11,7 +11,6 @@ import discord
 from discord import Message, Thread, User
 from discord.abc import GuildChannel, Messageable, PrivateChannel
 from discord.ext import commands
-
 from legion.orchestrator import Orchestrator
 
 if TYPE_CHECKING:

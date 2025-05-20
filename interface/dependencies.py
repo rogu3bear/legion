@@ -5,15 +5,15 @@ from typing import Callable, Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 
 from interface.core import security
 from interface.core.config import settings
 from interface.crud import crud_user
 from interface.db.session import SessionLocal
 from interface.models.user import User
+from jose import JWTError
+from sqlalchemy.orm import Session
 
 
 # Define Roles

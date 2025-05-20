@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import yaml
-
 from legion.agents.python import EchoAgent  # Ensure EchoAgent is importable
 from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.core.state import StateManager

@@ -12,11 +12,9 @@ Example payload::
 
 from __future__ import annotations
 
-import json
 from typing import Optional
 
 import zmq
-
 from legion.ports import LEGION_PORT_MAP
 
 

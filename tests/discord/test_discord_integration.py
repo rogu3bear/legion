@@ -2,10 +2,10 @@ import os
 import tempfile
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import discord
-import pytest
 import pytest_asyncio
 
+import discord
+import pytest
 from integration.discord.bot import bot as legion_bot
 from legion.orchestrator import Orchestrator
 

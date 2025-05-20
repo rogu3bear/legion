@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import openai
-
 from legion.core.di_container import ILLMClient, container
 from legion.core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder

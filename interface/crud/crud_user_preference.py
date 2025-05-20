@@ -2,9 +2,8 @@
 
 from typing import Optional, cast
 
-from sqlalchemy.orm import Session
-
 from interface import models, schemas
+from sqlalchemy.orm import Session
 
 
 def get_user_preference(db: Session, user_id: int) -> Optional[models.UserPreference]:

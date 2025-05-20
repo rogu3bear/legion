@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock
 
 import discord
 import pytest
-
 from integration.discord.cogs.ux_feed import (
     MessageType,
     render_error,

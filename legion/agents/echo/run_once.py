@@ -11,6 +11,7 @@ try:  # pragma: no cover - handle missing pyzmq in minimal env
     import zmq.asyncio as zmq_asyncio
 except Exception:  # pragma: no cover - stub fallback
     import types
+
     zmq = types.SimpleNamespace(SUB=0)
     zmq_asyncio = None
 

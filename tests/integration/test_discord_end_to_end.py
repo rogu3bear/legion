@@ -2,7 +2,6 @@ from unittest.mock import MagicMock
 
 import discord
 import pytest
-
 from legion.discord.commands import LegionCommandCog
 from legion.orchestrator import Orchestrator
 

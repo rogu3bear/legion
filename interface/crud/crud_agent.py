@@ -3,9 +3,6 @@
 import logging
 from typing import Any, Dict, List, Optional, cast
 
-from sqlalchemy import select  # Added for consistency
-from sqlalchemy.orm import Session
-
 from interface.models.agent import Agent  # Updated path
 
 # Assuming communication layer setup
@@ -18,6 +15,8 @@ from interface.schemas.agent import (
     AgentStatusInfo,
     AgentUpdate,
 )
+from sqlalchemy import select  # Added for consistency
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

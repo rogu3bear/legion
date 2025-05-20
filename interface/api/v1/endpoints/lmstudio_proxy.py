@@ -3,9 +3,10 @@
 import logging
 import os
 
-import httpx
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
+
+import httpx
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

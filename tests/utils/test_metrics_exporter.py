@@ -2,10 +2,9 @@ import multiprocessing
 import time
 from unittest.mock import patch
 
-from prometheus_client import generate_latest
-
 from legion.ports import get_port
 from metrics.exporter import dispatch_counter, dispatch_latency, start_metrics_server
+from prometheus_client import generate_latest
 
 
 def test_metrics_definitions():

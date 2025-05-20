@@ -1,9 +1,8 @@
 """SQLAlchemy model for User Preferences."""
 
+from interface.db.base import Base  # Assuming Base is correctly importable
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
-from interface.db.base import Base  # Assuming Base is correctly importable
 
 
 class UserPreference(Base):

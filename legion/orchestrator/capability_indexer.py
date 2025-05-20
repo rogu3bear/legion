@@ -12,4 +12,3 @@ def get_capabilities() -> Dict[str, List[str]]:
     for agent_name, contract in AGENT_CONTRACTS.items():
         capabilities[agent_name] = sorted(contract.__abstractmethods__)
     return capabilities
-

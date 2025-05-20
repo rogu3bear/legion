@@ -1,6 +1,6 @@
-import pytest
 from fastapi.testclient import TestClient
 
+import pytest
 from interface.core.config import settings
 
 

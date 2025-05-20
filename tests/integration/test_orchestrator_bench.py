@@ -4,7 +4,6 @@ import time
 from unittest.mock import AsyncMock
 
 import pytest
-
 from legion.agents.python import EchoAgent
 from legion.core.di_container import ILLMClient, container
 from legion.orchestrator import Orchestrator

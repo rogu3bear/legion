@@ -2,9 +2,8 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
-
 from interface.db.session import Base
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
 
 class User(Base):

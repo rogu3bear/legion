@@ -2,7 +2,6 @@ import os
 import sys
 
 import pytest
-
 from legion.orchestrator import Orchestrator
 
 

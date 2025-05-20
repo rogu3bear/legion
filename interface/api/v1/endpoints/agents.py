@@ -4,25 +4,25 @@ import logging
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 from interface import dependencies
 from interface.api.v1.endpoints.system import _call_orchestrator  # Import helper
 from interface.crud import crud_agent
 from interface.models.agent import Agent as AgentModel
 from interface.models.user import User
+from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.agent import (
     AgentActionResponse,
     AgentConfigInfo,
     AgentConfigUpdate,
     AgentDispatchPayload,
     AgentDispatchResponse,
-    AgentStatusInfo,
     AgentRegisterRequest,
     AgentRegisterResponse,
+    AgentStatusInfo,
 )
-from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -545,7 +545,9 @@ def list_agent_capabilities(
     return get_capabilities()
 
 
-@router.post("/register", response_model=AgentRegisterResponse, summary="Register Agent")
+@router.post(
+    "/register", response_model=AgentRegisterResponse, summary="Register Agent"
+)
 def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
     """Register an agent and obtain an auth token."""
     command = {
@@ -556,4 +558,3 @@ def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
     if not response or response.get("status") != "success":
         raise HTTPException(status_code=502, detail="Orchestrator registration failed")
     return AgentRegisterResponse(token=response.get("token", ""))
-

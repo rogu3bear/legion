@@ -1,0 +1,442 @@
+file,header,line,critical
+docs/API_REFERENCE.md,"# API Reference",1,no
+docs/ASCII_DIAGRAMS.md,"# ASCII Diagrams",1,yes
+docs/ASCII_DIAGRAMS.md,"## Dispatch Overview",5,no
+docs/ASCII_DIAGRAMS.md,"## Agent Processing Steps",11,no
+docs/DEPLOYMENT.md,"# Legion: Deployment & Troubleshooting",1,no
+docs/DEPLOYMENT.md,"## Environment Variables (Strictly Required)",3,yes
+docs/DEPLOYMENT.md,"## Execution (Makefile is Law)",13,no
+docs/DEPLOYMENT.md,"## CI/CD Pipeline (GitHub Flow Recommended)",23,yes
+docs/DEPLOYMENT.md,"## Logs & Debugging",36,no
+docs/DEPLOYMENT.md,"## Troubleshooting (Common Failures)",42,no
+docs/DEPLOYMENT.md,"## Onboarding",50,no
+docs/DEPLOYMENT.md,"---",56,no
+docs/FAQ.md,"# FAQ",1,no
+docs/FAQ.md,"## Architectural Guidelines",3,no
+docs/FAQ.md,"### Why can't I instantiate agents directly?",5,no
+docs/HANDSHAKE.md,"# Agent Registration Handshake",1,yes
+docs/Legion Architecture and Diagrams.md,"# Legion Comprehensive Documentation",1,no
+docs/Legion Architecture and Diagrams.md,"---",5,no
+docs/Legion Architecture and Diagrams.md,"## Table of Contents",7,no
+docs/Legion Architecture and Diagrams.md,"---",19,no
+docs/Legion Architecture and Diagrams.md,"## System Architecture",21,no
+docs/Legion Architecture and Diagrams.md,"### System Overview",23,no
+docs/Legion Architecture and Diagrams.md,"### Core Layers",27,no
+docs/Legion Architecture and Diagrams.md,"#### 1. Configuration Layer",29,no
+docs/Legion Architecture and Diagrams.md,"#### 2. Core Layer",38,no
+docs/Legion Architecture and Diagrams.md,"#### 3. Agent Layer",48,no
+docs/Legion Architecture and Diagrams.md,"#### 4. Memory Layer",57,no
+docs/Legion Architecture and Diagrams.md,"#### 5. Integration Layer",66,no
+docs/Legion Architecture and Diagrams.md,"#### 6. Skills Layer",75,no
+docs/Legion Architecture and Diagrams.md,"### Service Interfaces",84,no
+docs/Legion Architecture and Diagrams.md,"#### 1. Agent Service",86,no
+docs/Legion Architecture and Diagrams.md,"#### 2. Memory Service",95,no
+docs/Legion Architecture and Diagrams.md,"#### 3. LLM Service",104,no
+docs/Legion Architecture and Diagrams.md,"### Dependency Injection",112,no
+docs/Legion Architecture and Diagrams.md,"### Error Handling",125,no
+docs/Legion Architecture and Diagrams.md,"### Testing Strategy",132,no
+docs/Legion Architecture and Diagrams.md,"### Deployment",154,no
+docs/Legion Architecture and Diagrams.md,"### Future Improvements",173,no
+docs/Legion Architecture and Diagrams.md,"### Modules",195,no
+docs/Legion Architecture and Diagrams.md,"### Unified Agent Message Handling",203,no
+docs/Legion Architecture and Diagrams.md,"---",215,no
+docs/Legion Architecture and Diagrams.md,"## System Diagrams",217,no
+docs/Legion Architecture and Diagrams.md,"### High‑Level Architecture",221,no
+docs/Legion Architecture and Diagrams.md,"### Primary Message Flow",250,no
+docs/Legion Architecture and Diagrams.md,"### Orchestrator End-to-End Data Flow",281,no
+docs/Legion Architecture and Diagrams.md,"### Layer Interaction Map",311,no
+docs/Legion Architecture and Diagrams.md,"### Agent Lifecycle (State Machine)",346,no
+docs/Legion Architecture and Diagrams.md,"### Deployment Pipeline",364,no
+docs/Legion Architecture and Diagrams.md,"### Security Layers",386,yes
+docs/Legion Architecture and Diagrams.md,"### Composite Integration",403,no
+docs/Legion Architecture and Diagrams.md,"### Function-to-Diagram Index",449,no
+docs/Legion Architecture and Diagrams.md,"---",470,no
+docs/Legion Architecture and Diagrams.md,"### How to Preview",472,no
+docs/README.md,"# Legion: Project Overview",1,no
+docs/README.md,"## Mandate",3,no
+docs/README.md,"## Structure & Layers",12,no
+docs/README.md,"## Environment Setup",15,yes
+docs/README.md,"# Required:",19,no
+docs/README.md,"# Example Channel IDs (adjust for your server):",21,no
+docs/README.md,"# ... other agent channel IDs as needed ...",24,no
+docs/README.md,"## Getting Started / Local Run",32,no
+docs/README.md,"# Grant execution permissions & initialize memory (DB/logs)",36,no
+docs/README.md,"# Start the Discord bot (uses orchestrator)",40,no
+docs/README.md,"## Contribution Workflow (GitHub Flow)",46,no
+docs/README.md,"## Key Features & Concepts",62,no
+docs/README.md,"## Agent Roles and Capabilities",68,no
+docs/README.md,"## UI Tagging and Task Ownership",77,no
+docs/README.md,"## Port Mapping and Configuration",85,yes
+docs/README.md,"## Repository Topics",94,no
+docs/README.md,"## Recent Updates",97,no
+docs/REFERENCE.md,"# Legion: Comprehensive Reference Guide",1,no
+docs/REFERENCE.md,"## Table of Contents",3,no
+docs/REFERENCE.md,"## Introduction",20,no
+docs/REFERENCE.md,"### Key Features",24,no
+docs/REFERENCE.md,"### Core Principles",32,yes
+docs/REFERENCE.md,"## System Architecture",38,no
+docs/REFERENCE.md,"### Data Flow",51,no
+docs/REFERENCE.md,"## Core Components",58,no
+docs/REFERENCE.md,"### Orchestrator",60,no
+docs/REFERENCE.md,"### Dependency Injection",68,no
+docs/REFERENCE.md,"### Logging & Telemetry",76,no
+docs/REFERENCE.md,"## Web Interface",82,no
+docs/REFERENCE.md,"### Backend Components",86,no
+docs/REFERENCE.md,"### API Endpoints",93,no
+docs/REFERENCE.md,"#### Authentication (`/api/v1/auth`)",95,no
+docs/REFERENCE.md,"#### Agents (`/api/v1/agents`)",101,no
+docs/REFERENCE.md,"#### System (`/api/v1/system`)",111,no
+docs/REFERENCE.md,"#### Memory (`/api/v1/memory`)",119,no
+docs/REFERENCE.md,"#### Tasks (`/api/v1/tasks`)",125,no
+docs/REFERENCE.md,"### WebSocket Endpoints",131,no
+docs/REFERENCE.md,"### Database Schema",136,no
+docs/REFERENCE.md,"#### Users Table",138,no
+docs/REFERENCE.md,"#### User Preferences Table",152,no
+docs/REFERENCE.md,"#### Audit Log Table",162,no
+docs/REFERENCE.md,"## Agent System",176,no
+docs/REFERENCE.md,"### BaseAgent",178,no
+docs/REFERENCE.md,"### Agent Types",187,no
+docs/REFERENCE.md,"### Agent Development",192,no
+docs/REFERENCE.md,"## Memory System",199,no
+docs/REFERENCE.md,"### Dual Storage",201,no
+docs/REFERENCE.md,"### Memory Operations",207,no
+docs/REFERENCE.md,"## Discord Integration",213,no
+docs/REFERENCE.md,"### Bot Core",215,no
+docs/REFERENCE.md,"### Event Handlers",222,no
+docs/REFERENCE.md,"### Commands",226,no
+docs/REFERENCE.md,"## Security",231,yes
+docs/REFERENCE.md,"### Authentication & Authorization",233,no
+docs/REFERENCE.md,"### Data Protection",239,no
+docs/REFERENCE.md,"### API Security",245,yes
+docs/REFERENCE.md,"### Session Management",250,no
+docs/REFERENCE.md,"### Dependency Management",254,no
+docs/REFERENCE.md,"### Logging & Auditing",258,no
+docs/REFERENCE.md,"## Deployment",262,no
+docs/REFERENCE.md,"### Environment Setup",264,yes
+docs/REFERENCE.md,"### Memory System Setup",269,no
+docs/REFERENCE.md,"# Grant execution permissions",271,no
+docs/REFERENCE.md,"# Initialize memory system",274,no
+docs/REFERENCE.md,"### Agent Deployment",278,no
+docs/REFERENCE.md,"### Web Interface Deployment",283,no
+docs/REFERENCE.md,"### CI/CD Pipeline",290,yes
+docs/REFERENCE.md,"## Development Standards",296,no
+docs/REFERENCE.md,"### Code Style",298,no
+docs/REFERENCE.md,"### Project Structure",305,no
+docs/REFERENCE.md,"### Dependency Management",314,no
+docs/REFERENCE.md,"### Version Control",319,no
+docs/REFERENCE.md,"## Testing Strategy",324,no
+docs/REFERENCE.md,"### Unit Tests",326,no
+docs/REFERENCE.md,"### Integration Tests",331,no
+docs/REFERENCE.md,"### Contract Tests",336,no
+docs/REFERENCE.md,"### Performance Tests",341,no
+docs/REFERENCE.md,"### Security Tests",346,yes
+docs/REFERENCE.md,"## Troubleshooting",351,no
+docs/REFERENCE.md,"### Memory System",353,no
+docs/REFERENCE.md,"### Agent Issues",357,no
+docs/REFERENCE.md,"### Web Interface",361,no
+docs/REFERENCE.md,"### General",369,no
+docs/REFERENCE.md,"## API Reference",375,no
+docs/REFERENCE.md,"### Authentication API",377,no
+docs/REFERENCE.md,"#### Login",379,no
+docs/REFERENCE.md,"#### Get Current User",397,no
+docs/REFERENCE.md,"### Agents API",413,no
+docs/REFERENCE.md,"#### List Agents",415,no
+docs/REFERENCE.md,"#### Get Agent Status",432,no
+docs/REFERENCE.md,"#### Dispatch Message to Agent",450,no
+docs/REFERENCE.md,"### System API",469,no
+docs/REFERENCE.md,"#### Get System Status",471,no
+docs/REFERENCE.md,"#### Get System Metrics",487,no
+docs/REFERENCE.md,"### Memory API",511,no
+docs/REFERENCE.md,"#### Search Memory",513,no
+docs/REFERENCE.md,"#### List Documents",534,no
+docs/REFERENCE.md,"### Tasks API",558,no
+docs/REFERENCE.md,"#### Create Task",560,no
+docs/REFERENCE.md,"#### List Tasks",583,no
+docs/REFERENCE.md,"## WebSocket Reference",610,no
+docs/REFERENCE.md,"### Events WebSocket",612,no
+docs/REFERENCE.md,"#### Connection",614,no
+docs/REFERENCE.md,"#### Message Format",618,no
+docs/REFERENCE.md,"#### Event Types",629,no
+docs/REFERENCE.md,"### Agent Feed WebSocket",635,no
+docs/REFERENCE.md,"#### Connection",637,no
+docs/REFERENCE.md,"#### Message Format",641,no
+docs/REFERENCE.md,"#### Event Types",652,no
+docs/REFERENCE.md,"## ZeroMQ IPC Reference",659,no
+docs/REFERENCE.md,"### REQ/REP Pattern",661,no
+docs/REFERENCE.md,"#### Request Format",663,no
+docs/REFERENCE.md,"#### Response Format",672,no
+docs/REFERENCE.md,"### Common Actions",681,no
+docs/REFERENCE.md,"#### Status",683,no
+docs/REFERENCE.md,"#### List Agents",703,no
+docs/REFERENCE.md,"#### Create Task",727,no
+docs/REFERENCE.md,"#### Get Task Status",750,no
+docs/REFERENCE.md,"#### Cancel Task",777,no
+docs/REFERENCE.md,"### Error Handling",794,no
+docs/REFERENCE.md,"#### Error Response Format",796,no
+docs/REFERENCE.md,"#### Common Error Codes",809,no
+docs/TODO.md,"# Consolidated TODO Index",1,no
+docs/TODO.md,"## Legacy Tests (quarantined)",52,no
+docs/TODO.md,"## 2025-05-19 Cleanup",63,no
+docs/agents/architect.md,"# Architect Agent",1,no
+docs/agents/architect.md,"## Purpose & Responsibilities",3,no
+docs/agents/architect.md,"## Handshake Payload",6,yes
+docs/agents/architect.md,"## Queue Interaction",14,no
+docs/agents/architect.md,"## Failure Modes",17,no
+docs/agents/architect.md,"## Configuration Keys",20,no
+docs/agents/echo.md,"# Echo Agent",1,no
+docs/agents/echo.md,"## Purpose & Responsibilities",3,no
+docs/agents/echo.md,"## Handshake",7,yes
+docs/agents/echo.md,"## Queue Interaction",20,no
+docs/agents/echo.md,"## Failure Modes",24,no
+docs/agents/echo.md,"## Configuration Keys",28,no
+docs/agents/healthcheck.md,"# Healthcheck Agent",1,no
+docs/agents/healthcheck.md,"## Purpose & Responsibilities",3,no
+docs/agents/healthcheck.md,"## Handshake Payload",6,yes
+docs/agents/healthcheck.md,"## Queue Interaction",14,no
+docs/agents/healthcheck.md,"## Failure Modes",17,no
+docs/agents/healthcheck.md,"## Configuration Keys",20,no
+docs/agents/metrics.md,"# Metrics Agent",1,no
+docs/agents/metrics.md,"## Purpose & Responsibilities",3,no
+docs/agents/metrics.md,"## Handshake Payload",6,yes
+docs/agents/metrics.md,"## Queue Interaction",14,no
+docs/agents/metrics.md,"## Failure Modes",17,no
+docs/agents/metrics.md,"## Configuration Keys",20,no
+docs/agents/ping.md,"# Ping Agent",1,no
+docs/agents/ping.md,"## Purpose & Responsibilities",3,no
+docs/agents/ping.md,"## Handshake Payload",6,yes
+docs/agents/ping.md,"## Queue Interaction",14,no
+docs/agents/ping.md,"## Failure Modes",17,no
+docs/agents/ping.md,"## Configuration Keys",20,no
+docs/agents/therapist.md,"# Therapist Agent",1,no
+docs/agents/therapist.md,"## Purpose & Responsibilities",3,no
+docs/agents/therapist.md,"## Handshake Payload",6,yes
+docs/agents/therapist.md,"## Queue Interaction",14,no
+docs/agents/therapist.md,"## Failure Modes",17,no
+docs/agents/therapist.md,"## Configuration Keys",20,no
+docs/agents/ux_designer.md,"# UX Designer Agent",1,no
+docs/agents/ux_designer.md,"## Purpose & Responsibilities",3,no
+docs/agents/ux_designer.md,"## Handshake Payload",6,yes
+docs/agents/ux_designer.md,"## Queue Interaction",14,no
+docs/agents/ux_designer.md,"## Failure Modes",17,no
+docs/agents/ux_designer.md,"## Configuration Keys",20,no
+docs/api/endpoints.md,"# API Endpoints Cheat-Sheet",1,no
+docs/api/endpoints.md,"=======",68,no
+docs/api/endpoints.md,"# API Endpoints",69,no
+docs/architecture/overview.md,"# Architecture Overview",1,no
+docs/cli_usage.md,"# Command-Line Interface Usage",1,no
+docs/cli_usage.md,"## Commands",5,no
+docs/cli_usage.md,"### list-agents",7,no
+docs/cli_usage.md,"### run-agent",17,no
+docs/cli_usage.md,"### show-config",36,no
+docs/cli_usage.md,"### ports",46,yes
+docs/cli_usage.md,"### version",56,no
+docs/cli_usage.md,"## Exit Codes",66,no
+docs/deploy.md,"# Deployment Guide",1,no
+docs/deploy.md,"## Port Strategy",3,yes
+docs/deploy.md,"### Port Ranges",7,yes
+docs/deploy.md,"### Port Management",13,yes
+docs/deploy.md,"# ... other defaults",21,no
+docs/deploy.md,"### Development Setup",36,no
+docs/deploy.md,"# Generate .env.ports from defaults",40,yes
+docs/deploy.md,"# Start services",43,no
+docs/deploy.md,"### Production Deployment",51,no
+docs/deploy.md,"# Production ports (31000-32000 range)",60,yes
+docs/deploy.md,"### Troubleshooting",70,no
+docs/deploy.md,"# Check for conflicts",74,no
+docs/deploy.md,"### Security Notes",83,yes
+docs/deploy.md,"## Port Management",95,yes
+docs/deploy.md,"# Example: Content of .env.ports or .env.development",102,yes
+docs/deploy.md,"# ... other port allocations",105,yes
+docs/deploy.md,"## Agent Configuration Placeholders",111,no
+docs/deploy.md,"### Prometheus Port Example",115,yes
+docs/deploy.md,"## Development Overrides with Docker Compose",130,no
+docs/deploy.md,"# In docker-compose.yml",141,no
+docs/deploy.md,"# In .env.ports",151,yes
+docs/deploy.md,"# In docker-compose.override.dev.yml",158,no
+docs/deploy.md,"# No need to redefine ports here if already handled by .env.ports and main compose file.",164,yes
+docs/deploy.md,"# Example: run UI on custom host port",170,yes
+docs/deploy.md,"### Local-Only Services",177,no
+docs/deploy.md,"# Example of how LMStudio port is skipped",186,yes
+docs/development.md,"# Development Guide",1,no
+docs/development.md,"## Environment Setup",3,yes
+docs/development.md,"### Virtual Environment",5,yes
+docs/development.md,"# First-time setup",10,no
+docs/development.md,"# For subsequent activations",13,no
+docs/development.md,"#### Preventing Duplicate Virtual Environment Activations",17,yes
+docs/development.md,"#### Fixing Duplicate Prompt Issues",31,no
+docs/development.md,"# Option 1: Complete environment reset (recommended)",36,yes
+docs/development.md,"# Then activate cleanly",38,no
+docs/development.md,"# Option 2: Use the auto-cleanup in activate_once.sh",41,no
+docs/development.md,"# Our script detects and fixes double prompts",42,no
+docs/development.md,"### Sanity Checks",48,no
+docs/development.md,"# Deactivate any active environments",53,yes
+docs/development.md,"# Use our safe activation script",56,no
+docs/development.md,"# Verify the environment",59,yes
+docs/development.md,"## Development Workflow",65,no
+docs/development.md,"### Validation",67,no
+docs/development.md,"# Type checking",72,no
+docs/development.md,"# Style checking",75,no
+docs/development.md,"# Tests",78,no
+docs/development.md,"### Documentation",84,no
+docs/development.md,"## Troubleshooting",88,no
+docs/development.md,"### Virtual Environment Issues",90,yes
+docs/development.md,"#### Complete Environment Reset",94,yes
+docs/development.md,"#### Manual Reset",107,no
+docs/discord_integration.md,"# Discord Integration",1,no
+docs/discord_integration.md,"## Overview",3,no
+docs/discord_integration.md,"## Architecture",7,no
+docs/discord_integration.md,"### Components",9,no
+docs/discord_integration.md,"## Command Reference",31,no
+docs/discord_integration.md,"### Agent Management",33,no
+docs/discord_integration.md,"#### Configuration",35,no
+docs/discord_integration.md,"#### Interaction",41,no
+docs/discord_integration.md,"#### Assessment",47,no
+docs/discord_integration.md,"### System Control",53,no
+docs/discord_integration.md,"#### Configuration Reload",55,no
+docs/discord_integration.md,"#### Broadcast",61,no
+docs/discord_integration.md,"#### Status",67,no
+docs/discord_integration.md,"### Health Monitoring",73,no
+docs/discord_integration.md,"#### Health Check",75,no
+docs/discord_integration.md,"#### Latency",81,no
+docs/discord_integration.md,"#### Uptime",87,no
+docs/discord_integration.md,"### User Experience",93,no
+docs/discord_integration.md,"#### Feed Subscription",95,no
+docs/discord_integration.md,"## Message Flow",102,no
+docs/discord_integration.md,"### Incoming Messages",104,no
+docs/discord_integration.md,"### Command Processing",111,no
+docs/discord_integration.md,"### Error Handling",118,no
+docs/discord_integration.md,"## Thread Management",125,no
+docs/discord_integration.md,"### Thread Creation",127,no
+docs/discord_integration.md,"### Thread History",132,no
+docs/discord_integration.md,"## Security",137,yes
+docs/discord_integration.md,"### Authentication",139,no
+docs/discord_integration.md,"### Rate Limiting",144,no
+docs/discord_integration.md,"## Best Practices",149,no
+docs/discord_integration.md,"### Message Formatting",151,no
+docs/discord_integration.md,"### Error Handling",157,no
+docs/discord_integration.md,"### Performance",163,no
+docs/discord_integration.md,"## Troubleshooting",169,no
+docs/discord_integration.md,"### Common Issues",171,no
+docs/discord_integration.md,"## Development",188,no
+docs/discord_integration.md,"### Adding New Commands",190,no
+docs/discord_integration.md,"### Extending Functionality",198,no
+docs/discord_integration.md,"## Configuration",206,no
+docs/discord_integration.md,"### Environment Variables",208,yes
+docs/discord_integration.md,"### Bot Settings",214,no
+docs/discord_integration.md,"## Monitoring",223,no
+docs/discord_integration.md,"### Metrics",225,no
+docs/discord_integration.md,"### Alerts",231,no
+docs/discord_integration.md,"## Future Enhancements",237,no
+docs/dispatch_flow_ascii.md,"# Legion Dispatch Flow (ASCII)",1,yes
+docs/dispatch_flow_ascii.md,"## Message Pipeline",3,no
+docs/dispatch_flow_ascii.md,"## Agent Processing Steps",29,no
+docs/function_index.md,"# Function Index",1,no
+docs/function_index.md,"## Missing Docstrings / Unclear Purpose",58,no
+docs/function_index.md,"## Functional Areas Overview",65,no
+docs/function_index.md,"### Grouping & Naming Suggestions",74,no
+docs/guides/contributing.md,"# Contributing",1,no
+docs/guides/docker_dev.md,"# Docker Development",1,no
+docs/guides/local_dev.md,"# Local Development",1,no
+docs/guides/quick_start.md,"# Quick Start",1,no
+docs/index.md,"# Legion Documentation",1,no
+docs/middleware.md,"# Middleware Overview",1,no
+docs/middleware.md,"## Modules",8,no
+docs/middleware.md,"## Logging",14,no
+docs/middleware.md,"## Current Issues",19,no
+docs/middleware_interaction_logic.md,"# Middleware Interaction Logic",1,no
+docs/middleware_interaction_logic.md,"## 1. Core Principles",5,yes
+docs/middleware_interaction_logic.md,"## 2. Thresholds & Statuses",11,no
+docs/middleware_interaction_logic.md,"### 2.1. Embedding Validation Statuses & Thresholds:",13,no
+docs/middleware_interaction_logic.md,"### 2.2. Directive Compliance Statuses:",32,no
+docs/middleware_interaction_logic.md,"## 3. Combined Logic Flow & Precedence",38,no
+docs/middleware_interaction_logic.md,"## 4. Logging and Metrics",109,no
+docs/middleware_requirements.md,"# Middleware Requirements Document",1,no
+docs/middleware_requirements.md,"## 1. Overview",3,no
+docs/middleware_requirements.md,"## 2. Embedding Validation",6,no
+docs/middleware_requirements.md,"### 2.1 Purpose",7,no
+docs/middleware_requirements.md,"### 2.2 Functional Requirements",9,no
+docs/middleware_requirements.md,"### 2.3 Thresholds",14,no
+docs/middleware_requirements.md,"### 2.4 Error Handling",18,no
+docs/middleware_requirements.md,"## 3. Context Indexing",22,no
+docs/middleware_requirements.md,"### 3.1 Purpose",23,no
+docs/middleware_requirements.md,"### 3.2 Functional Requirements",25,no
+docs/middleware_requirements.md,"### 3.3 API Endpoints",29,no
+docs/middleware_requirements.md,"## 4. Directive Compliance",34,no
+docs/middleware_requirements.md,"### 4.1 Purpose",35,no
+docs/middleware_requirements.md,"### 4.2 Functional Requirements",37,no
+docs/middleware_requirements.md,"### 4.3 Logging",41,no
+docs/middleware_requirements.md,"## 5. Interaction Protocol (Middleware ⇄ Chroma)",45,no
+docs/middleware_requirements.md,"### 5.1 API Patterns",46,no
+docs/middleware_requirements.md,"### 5.2 Error Handling",51,no
+docs/middleware_requirements.md,"## 6. Security & Performance",55,yes
+docs/middleware_requirements.md,"## 7. Acceptance Criteria",60,no
+docs/monitoring.md,"# Monitoring & Metrics",1,no
+docs/monitoring.md,"## Starting the metrics server",5,no
+docs/monitoring.md,"# Start on port 8000 (default)",12,yes
+docs/monitoring.md,"# Then start the orchestrator normally",15,no
+docs/monitoring.md,"## Available Metrics",20,no
+docs/monitoring.md,"## Grafana Dashboard Snippet",27,no
+docs/monitoring.md,"## Port Management for Legion Services",53,yes
+docs/monitoring.md,"## Launching Services",67,no
+docs/monitoring.md,"# Get the current Prometheus port (e.g., from legion.ports.get_port('prometheus') or .env.ports)",74,yes
+docs/monitoring.md,"# For example, if it resolves to 9090:",75,no
+docs/monitoring.md,"### Current Port Map",79,yes
+docs/ops/ci_cd.md,"# CI/CD Pipeline",1,yes
+docs/ops/env_vars.md,"# Environment Variables",1,yes
+docs/ops/ports.md,"# Service Ports",1,yes
+docs/orchestrator.md,"# Orchestrator Configuration and Port Management",1,yes
+docs/orchestrator.md,"## Dynamic Port Allocation",3,yes
+docs/orchestrator.md,"### `.env.ports` File Contract",8,yes
+docs/orchestrator.md,"### Fallback to Defaults",19,no
+docs/orchestrator.md,"### Accessing Ports",23,yes
+docs/port_configuration.md,"# Legion Port Configuration",1,yes
+docs/port_configuration.md,"## Development Ports",3,yes
+docs/port_configuration.md,"## Production Ports",14,yes
+docs/port_configuration.md,"## Deployment Targets & Tools",19,no
+docs/port_configuration.md,"## Startup Script Strategy",24,no
+docs/port_configuration.md,"## Configuration Files by Environment",36,yes
+docs/port_configuration.md,"## Local-Only Services",43,no
+docs/port_configuration.md,"## Port Allocation by Service Type",48,yes
+docs/port_strategy.md,"# Legion Port Management Strategy",1,yes
+docs/port_strategy.md,"## Core Mechanism",5,no
+docs/port_strategy.md,"## Service Keys in `DEFAULT_PORTS`",14,yes
+docs/port_strategy.md,"## Environment-Specific Configurations",27,yes
+docs/port_strategy.md,"## Key Scripts",33,no
+docs/port_strategy.md,"## ChromaDB Port Configuration",38,yes
+docs/port_strategy.md,"## Viewing Resolved Ports",44,yes
+docs/therapist_integration_plan.md,"# Therapist Agent Integration Plan",1,no
+docs/therapist_integration_plan.md,"## 1. Purpose of Therapist Agent Integration",5,no
+docs/therapist_integration_plan.md,"## 2. Conditions Triggering Therapist Intervention",11,no
+docs/therapist_integration_plan.md,"## 3. Data Payload from Middleware to Therapist Agent",30,no
+docs/therapist_integration_plan.md,"## 4. Expected Actions & Responses from Therapist Agent",74,no
+docs/therapist_integration_plan.md,"## 5. Integration Points in Middleware",108,no
+docs/therapist_integration_plan.md,"## 6. Future Considerations",116,no
+docs/web_interface_guide.md,"# Legion Web Interface Guide",1,no
+docs/web_interface_guide.md,"## 1. Overview",5,no
+docs/web_interface_guide.md,"## 2. Access & Authentication",14,no
+docs/web_interface_guide.md,"### Endpoints",16,no
+docs/web_interface_guide.md,"### Authentication",21,no
+docs/web_interface_guide.md,"## 3. Dashboard",27,no
+docs/web_interface_guide.md,"### Navigation Cards",36,no
+docs/web_interface_guide.md,"## 4. Agent Management",43,no
+docs/web_interface_guide.md,"### Agent List View",45,no
+docs/web_interface_guide.md,"### Agent Details",51,no
+docs/web_interface_guide.md,"### Agent Controls (Admin/AgentOperator)",58,no
+docs/web_interface_guide.md,"## 5. Task Management",65,no
+docs/web_interface_guide.md,"### Task Creation",67,no
+docs/web_interface_guide.md,"### Task List",73,no
+docs/web_interface_guide.md,"### Task Details",79,no
+docs/web_interface_guide.md,"### Task Controls",86,no
+docs/web_interface_guide.md,"## 6. Memory System",91,no
+docs/web_interface_guide.md,"### Search",93,no
+docs/web_interface_guide.md,"### Document Management",99,no
+docs/web_interface_guide.md,"## 7. Real-Time Updates",105,no
+docs/web_interface_guide.md,"### WebSocket Endpoints",107,no
+docs/web_interface_guide.md,"### Event Types",112,no
+docs/web_interface_guide.md,"## 8. System Settings",119,no
+docs/web_interface_guide.md,"### Configuration",121,no
+docs/web_interface_guide.md,"### User Management (Admin)",127,no
+docs/web_interface_guide.md,"## 9. Troubleshooting",133,no
+docs/web_interface_guide.md,"### Common Issues",135,no
+docs/web_interface_guide.md,"### Support Resources",151,yes
+docs/web_interface_guide.md,"## 10. Best Practices",157,no

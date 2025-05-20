@@ -172,5 +172,3 @@ Refer to `docs/architecture.md` for the enforced layered model.
 - Update documentation alongside code changes when behavior or APIs change.
 - Validate changes locally (`make lint && make test`) before submitting a pull request.
 - Avoid editing generated artifacts under `artifacts/` or runtime logs under `memory/logs/`.
-
-

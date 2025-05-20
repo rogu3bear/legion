@@ -1,8 +1,10 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, abort, jsonify, request
+
 from legion.registration import service
 from legion.task_queue import queue
 
 bp = Blueprint("handshake", __name__)
+
 
 @bp.post("/agent/register")
 def register_agent():
@@ -14,9 +16,11 @@ def register_agent():
         return jsonify(result), 400
     return jsonify(result)
 
+
 @bp.get("/queue/summary")
 def queue_summary():
     return jsonify(queue.summary())
+
 
 @bp.get("/queue/task/<task_id>")
 def queue_task_detail(task_id):

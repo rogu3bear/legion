@@ -1,5 +1,7 @@
 import unittest
+
 import legion.queue.priority as pq
+
 
 class PriorityInterfaceTests(unittest.TestCase):
     def test_interface(self):
@@ -7,6 +9,6 @@ class PriorityInterfaceTests(unittest.TestCase):
         self.assertTrue(hasattr(pq, "dequeue"))
         self.assertTrue(hasattr(pq, "retry"))
 
+
 if __name__ == "__main__":
     unittest.main()
-

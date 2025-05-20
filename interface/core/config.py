@@ -2,9 +2,8 @@
 
 import os
 
-from pydantic_settings import BaseSettings
-
 from legion.ports import get_port
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

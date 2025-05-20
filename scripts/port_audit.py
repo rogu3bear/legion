@@ -16,7 +16,7 @@ def main() -> None:
         for fname in files:
             path = os.path.join(root, fname)
             try:
-                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(path, encoding="utf-8", errors="ignore") as f:
                     for lineno, line in enumerate(f, 1):
                         for match in PORT_PATTERN.finditer(line):
                             port = match.group(1)
@@ -33,4 +33,3 @@ def main() -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path
 
-from legion.task_queue import queue
 from legion.orchestrator import state_repo
+from legion.task_queue import queue
 
 router = APIRouter()
 

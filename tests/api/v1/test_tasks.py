@@ -1,9 +1,9 @@
 import uuid
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
+import pytest
 from interface.core.config import settings
 from interface.schemas.task import Task, TaskCreatedResponse, TaskList
 

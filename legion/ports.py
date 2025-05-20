@@ -9,10 +9,12 @@ from typing import Dict, Optional
 try:  # pragma: no cover - handle stripped dependencies in offline mode
     from dotenv import dotenv_values
 except Exception:  # pragma: no cover
+
     def dotenv_values(*_args, **_kwargs):
         return {}
+
+
 from legion.default_ports import DEFAULT_PORTS  # Import from the new file
-from legion.utils.port_conflict_checker import check_ports_available  # re-export for orchestrator
 
 RUNTIME_PORTS: Dict[str, int] = {}
 

@@ -1,5 +1,4 @@
 import pytest
-
 from legion.orchestrator import Orchestrator
 
 
