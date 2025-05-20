@@ -18,7 +18,9 @@ def test_create_and_get_task():
 
 
 def test_filter_tasks():
-    client.post("/api/v1/registry/tasks/", json={"id": "task2", "tags": ["t"], "owner": "bob"})
+    client.post(
+        "/api/v1/registry/tasks/", json={"id": "task2", "tags": ["t"], "owner": "bob"}
+    )
     resp = client.get("/api/v1/registry/tasks", params={"owner": "bob"})
     assert resp.status_code == 200
     body = resp.json()
@@ -26,7 +28,9 @@ def test_filter_tasks():
 
 
 def test_delete_task():
-    client.post("/api/v1/registry/tasks/", json={"id": "task3", "tags": [], "owner": "c"})
+    client.post(
+        "/api/v1/registry/tasks/", json={"id": "task3", "tags": [], "owner": "c"}
+    )
     del_resp = client.delete("/api/v1/registry/tasks/task3")
     assert del_resp.status_code == 204
     get_resp = client.get("/api/v1/registry/tasks/task3")

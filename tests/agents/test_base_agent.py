@@ -1,9 +1,9 @@
 import asyncio
 import datetime
 import os
+import unittest
 
 import pytest
-
 from integration.discord.bot import fetch_thread_history
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
@@ -412,3 +412,8 @@ def test_base_agent_handle_message_error_branches(monkeypatch):
 
     context = {"content": "hi", "author": "user", "timestamp": None}
     asyncio.get_event_loop().run_until_complete(agent.handle_message(context))
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

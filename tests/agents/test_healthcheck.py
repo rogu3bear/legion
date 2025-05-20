@@ -1,9 +1,9 @@
 import asyncio
 import time
+import unittest
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from legion.agents.python.healthcheck import HealthcheckAgent
 
 
@@ -213,3 +213,8 @@ async def test_error_handling(health_agent):
     assert not health_agent.health_task.done()
 
     await health_agent.stop()
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

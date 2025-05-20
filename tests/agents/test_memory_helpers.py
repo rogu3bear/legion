@@ -1,7 +1,7 @@
 import datetime
+import unittest
 
 import pytest
-
 from legion.agents.base import BaseAgent
 from memory.legion_memory import LegionAgentMemory
 
@@ -86,3 +86,8 @@ def test_mem_store_dedup_and_enrichment(monkeypatch, agent):
     emb_map = {snip["text"]: snip["embedding"] for snip in called["snippets"]}
     assert emb_map["dup"] == common_embedding
     assert emb_map["unique"] == [0.0, 1.0]
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

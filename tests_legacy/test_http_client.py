@@ -1,10 +1,10 @@
 """Tests for HTTPClient wrapper"""
 
-import os
+import unittest
 
-import pytest
 import requests
 
+import pytest
 from legion.utils.http_client import HTTPClient
 
 
@@ -53,3 +53,8 @@ def test_http_get(dummy_session):
     client = HTTPClient()
     resp = client.get("/path")
     assert resp == {"ok": True}
+
+
+@unittest.skip("legacy failure - deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

@@ -1,8 +1,9 @@
 # tests/test_websockets.py
 import asyncio  # Added for sleep
 
-import pytest
 from fastapi.testclient import TestClient
+
+import pytest
 
 # Assuming your main FastAPI app instance is accessible for testing
 # If not, you might need a fixture to create it.

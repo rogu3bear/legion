@@ -19,4 +19,3 @@ def test_update_task_status():
     assert update_task_status(task_id, TaskState.ACTIVE)
     task = get_task(task_id)
     assert task.status == TaskState.ACTIVE
-

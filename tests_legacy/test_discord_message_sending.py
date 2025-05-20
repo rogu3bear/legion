@@ -1,3 +1,4 @@
+import unittest
 from unittest.mock import AsyncMock, MagicMock
 
 from integration.discord.bot import LegionBot
@@ -16,3 +17,8 @@ async def test_send_agent_message():
 
     # Verify channel.send was called with the right argument
     channel.send.assert_called_once_with("Test message")
+
+
+@unittest.skip("legacy failure - deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass

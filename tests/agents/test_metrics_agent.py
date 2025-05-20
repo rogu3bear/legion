@@ -18,5 +18,10 @@ class MetricsAgentTests(unittest.TestCase):
         fake.incrby.assert_called_with("metrics_task_queue_length_total", 3)
 
 
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass
+
+
 if __name__ == "__main__":
     unittest.main()

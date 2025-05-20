@@ -1,6 +1,6 @@
 import unittest
 
-unittest.skip("legacy failure – deferred")(object)
+# @unittest.skip("legacy failure – deferred")(object)
 """Tests for Legion Web Interface API endpoints."""
 
 import uuid
@@ -30,6 +30,11 @@ from interface.models.user import (
     User as UserModel,
 )  # Rename to avoid confusion with schema
 from sqlalchemy.orm import Session
+
+
+@unittest.skip("legacy failure – deferred")
+class TestInterface(unittest.TestCase):
+    pass
 
 
 @pytest.fixture(scope="module")

@@ -1,0 +1,1 @@
+[Agent Feed Stub] Posting to agent-feed: Hallucination detected: 0.50

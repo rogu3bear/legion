@@ -18,4 +18,3 @@ def test_get_agent_tasks_empty():
     state_repo.register_agent(agent_id, "role", [])
     tasks = state_repo.get_agent_tasks(agent_id)
     assert tasks == []
-

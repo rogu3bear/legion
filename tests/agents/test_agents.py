@@ -1,9 +1,9 @@
 import json
 import logging
 import time
+import unittest
 
 import pytest
-
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
@@ -212,3 +212,8 @@ async def test_base_agent_empty_input():
     assert "error" not in response.lower(), (
         "Response should not contain error for empty input"
     )
+
+
+@unittest.skip("legacy failure – deferred")
+class LegacyPlaceHolder(unittest.TestCase):
+    pass
