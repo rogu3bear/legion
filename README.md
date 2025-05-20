@@ -40,9 +40,13 @@ Current development focus is on completing the web interface backend according t
 4. Lint and Test
    ```bash
    make lint
-   make test
+ make test
+  ```
+5. Run integration smoke test
+   ```bash
+   python scripts/integration_smoke.py
    ```
-5. Docker Deployment (Alternative)
+6. Docker Deployment (Alternative)
    ```bash
    docker-compose up -d
    ```

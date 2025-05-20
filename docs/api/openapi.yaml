@@ -1,0 +1,1 @@
+# TODO: generate schema using `uvicorn --factory interface.main:app --port 8000 --app-dir . --host 127.0.0.1 --reload --log-level warning` and dump with `--dump-openapi`.

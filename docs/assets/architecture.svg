@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120">
+  <rect x="10" y="10" width="80" height="30" fill="lightblue" />
+  <text x="20" y="30" font-size="12">Agent</text>
+  <rect x="110" y="10" width="80" height="30" fill="lightgreen" />
+  <text x="115" y="30" font-size="12">Orchestrator</text>
+  <rect x="210" y="10" width="80" height="30" fill="khaki" />
+  <text x="215" y="30" font-size="12">Metrics</text>
+  <rect x="60" y="60" width="80" height="30" fill="pink" />
+  <text x="70" y="80" font-size="12">Redis</text>
+  <rect x="160" y="60" width="80" height="30" fill="orange" />
+  <text x="165" y="80" font-size="12">Discord</text>
+</svg>

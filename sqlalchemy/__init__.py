@@ -18,6 +18,10 @@ class Boolean:
     def __init__(self, *args, **kwargs):
         pass
 
+class ForeignKey:
+    def __init__(self, *args, **kwargs):
+        pass
+
 class Float:
     def __init__(self, *args, **kwargs):
         pass
@@ -25,6 +29,9 @@ class Float:
 class JSON:
     def __init__(self, *args, **kwargs):
         pass
+
+def select(*args, **kwargs):
+    return None
 
 def create_engine(*args, **kwargs):
     return None
