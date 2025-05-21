@@ -29,6 +29,14 @@ Refer to [Legion Architecture](architecture.md) for the definitive 8-layer model
     pip install -r requirements.txt
     ```
 
+## Tooling: Offline Install
+To install dev tools (pipdeptree, safety, pytest) offline, run:
+```bash
+./scripts/setup_offline_tools.sh
+```
+- The script is idempotent and uses a local wheel cache if present (./wheels or ./artifacts/wheels).
+- Falls back to online install if no wheels are found.
+
 ## Getting Started / Local Run
 Execute from the project root:
 
