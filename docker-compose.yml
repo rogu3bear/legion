@@ -20,15 +20,17 @@ services:
       - ./alembic:/app/alembic
       - ./memory/db:/app/memory/db # Mount DB volume
       - ./.env:/app/.env # Mount .env file
+    # Use PORT_ALLOCATOR_DEV_FRONTEND for dev frontend port (default 8000)
     ports:
-      - "${PORT_ALLOCATOR_DEV_FRONTEND}:8000"
+      - "${PORT_ALLOCATOR_DEV_FRONTEND:-8000}:8000"
     healthcheck:
-      test: "curl -f http://web:7803/health || exit 1"
+      # Use PORT_ALLOCATOR_WEB_UI for healthcheck port (default 7803)
+      test: "curl -f http://web:${PORT_ALLOCATOR_WEB_UI:-7803}/health || exit 1"
     environment:
       - PYTHONUNBUFFERED=1
       - PORT_ALLOCATOR_DEV_FRONTEND=8000
-      # Ensure ZMQ communication works if orchestrator is outside docker
-      # - ORCHESTRATOR_ADDRESS=tcp://host.docker.internal:5555 # Example for Docker Desktop
+      # Use PORT_ALLOCATOR_ORCHESTRATOR for orchestrator address (default 5555)
+      # - ORCHESTRATOR_ADDRESS=tcp://host.docker.internal:${PORT_ALLOCATOR_ORCHESTRATOR:-5555} # Example for Docker Desktop
       # Add other necessary env vars
     depends_on:
       - chroma
@@ -37,8 +39,9 @@ services:
 
   chroma:
     image: 'chromadb/chroma:latest'
+    # Use PORT_ALLOCATOR_CHROMA for Chroma port (default 20032)
     ports:
-      - "${CHROMA_PORT:-20032}:8000"
+      - "${PORT_ALLOCATOR_CHROMA:-20032}:8000"
     environment:
       - CHROMA_PORT=20032
 

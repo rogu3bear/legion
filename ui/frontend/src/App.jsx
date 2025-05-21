@@ -4,6 +4,9 @@ import AgentCard from './components/AgentCard.jsx'
 import DirectiveEditor from './components/DirectiveEditor.jsx'
 import PortMapDisplay from './components/PortMapDisplay.jsx'
 
+// Use PORT_ALLOCATOR_PORTMAP_API for port (default 5001)
+const PORTMAP_API_PORT = import.meta.env.VITE_PORTMAP_API_PORT || '5001';
+
 function App() {
   const [agents, setAgents] = useState([])
   const [selectedAgent, setSelectedAgent] = useState(null)
@@ -11,13 +14,13 @@ function App() {
   const [directive, setDirective] = useState('')
 
   useEffect(() => {
-    fetch("http://localhost:5001/agents")
+    fetch(`http://localhost:${PORTMAP_API_PORT}/agents`)
       .then(res => res.json())
       .then(data => setAgents(data.agents))
   }, [])
 
   const loadAgent = (agent) => {
-    fetch(`http://localhost:5001/agents/${agent}`)
+    fetch(`http://localhost:${PORTMAP_API_PORT}/agents/${agent}`)
       .then(res => res.json())
       .then(data => {
         setSelectedAgent(agent)
@@ -26,7 +29,7 @@ function App() {
   }
 
   const sendDirective = () => {
-    fetch('http://localhost:5001/echo', {
+    fetch(`http://localhost:${PORTMAP_API_PORT}/echo`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: directive })
