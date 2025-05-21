@@ -51,6 +51,14 @@ Current development focus is on completing the web interface backend according t
    docker-compose up -d
    ```
 
+## Tooling: Offline Install
+To install dev tools (pipdeptree, safety, pytest) offline, run:
+```bash
+./scripts/setup_offline_tools.sh
+```
+- The script is idempotent and uses a local wheel cache if present (./wheels or ./artifacts/wheels).
+- Falls back to online install if no wheels are found.
+
 ## Testing
 Run the built-in handshake test locally with:
 ```bash
