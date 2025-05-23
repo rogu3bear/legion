@@ -46,3 +46,4 @@ This document lists all TODO comments discovered in the codebase and proposes ne
 | middleware/src/models.py | 25 | define response schema | Create Pydantic response model |
 | tests/discord/test_health_cog.py | 147 | Mock the interaction with the orchestrator when implemented | Use fixtures to simulate orchestrator replies |
 | tests/test_websockets.py | 90 | Add test for the actual background task if feasible (might require more complex mocking) | Investigate async background task mocking |
+| legion/orchestrator/directives.py | 7 | Persist thread history across restarts | Store known threads in state_repo |
