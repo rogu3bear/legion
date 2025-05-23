@@ -47,6 +47,7 @@ try:  # pragma: no cover - optional during tests
 except Exception:
     state_repo = object()
 from legion.task_queue import Task, queue as task_queue
+from legion.orchestrator.intro_prompt import build_intro
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
@@ -2145,9 +2146,38 @@ class Orchestrator:
         """Central router deciding which agent receives a message."""
         pass  # TODO: unify dispatch rules
 
-    def call_directive(self, directive_name: str, **kwargs) -> None:
-        """Invoke a registered directive on an agent."""
-        pass  # TODO: directive registry hookup
+    async def call_directive(
+        self, directive_name: str, *, new_thread: bool = False, **kwargs
+    ) -> None:
+        """Invoke a directive on an agent and monitor task status."""
+
+        if "." not in directive_name:
+            raise ValueError("directive_name must be in 'agent.directive' form")
+
+        agent_name, directive = directive_name.split(".", 1)
+
+        if new_thread:
+            intro_task = Task(
+                id=str(uuid.uuid4()),
+                agent=agent_name,
+                payload={"content": build_intro(agent_name), "intro": True},
+            )
+            task_queue.enqueue(intro_task)
+            if hasattr(state_repo, "task_status"):
+                state_repo.task_status(intro_task.id)
+
+        task = Task(
+            id=str(uuid.uuid4()),
+            agent=agent_name,
+            payload={"directive": directive, **kwargs},
+        )
+        task_queue.enqueue(task)
+
+        if hasattr(state_repo, "task_status"):
+            status = state_repo.task_status(task.id)
+            while status not in {"success", "failed"}:
+                await asyncio.sleep(0.1)
+                status = state_repo.task_status(task.id)
 
 
 # Allow direct execution to start the orchestrator loop
