@@ -37,6 +37,7 @@ from legion.core.di_container import ILLMClient, IStateManager, container
 from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
 from legion.agent_registry import registry as agent_registry
+from legion.agents.therapist import validate as therapist_validate
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
@@ -1165,6 +1166,19 @@ class Orchestrator:
                     )
                     # Return a specific message or raise an exception if blocking should be an error
                     return "[Message blocked by incoming middleware]"
+
+                try:
+                    approved, reason = therapist_validate(processed_payload)
+                    if not approved:
+                        logger.warning(
+                            f"Therapist rejected message ID {message_id} for agent {agent_name}: {reason}"
+                        )
+                        return f"[Blocked by therapist: {reason}]"
+                except Exception as e:  # noqa: BLE001
+                    logger.error(
+                        f"Therapist validation error for message ID {message_id} to agent {agent_name}: {e}"
+                    )
+                    return "[Therapist validation error]"
             except Exception as e:
                 logger.error(
                     f"Error in incoming middleware for message ID {message_id} to agent {agent_name}: {e}\n{traceback.format_exc()}"
