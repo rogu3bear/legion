@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react'
 export default function PortMapDisplay() {
   const [ports, setPorts] = useState({})
 
+  // ${PORT_ALLOCATOR_PORTMAP_API:-5001}
+  const apiPort = import.meta.env.VITE_PORTMAP_API || '5001'
   useEffect(() => {
-    fetch('http://localhost:5001/ports')
+    fetch(`http://localhost:${apiPort}/ports`)
       .then(res => res.json())
       .then(data => setPorts(data))
   }, [])

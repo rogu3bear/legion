@@ -5,19 +5,21 @@ import DirectiveEditor from './components/DirectiveEditor.jsx'
 import PortMapDisplay from './components/PortMapDisplay.jsx'
 
 function App() {
+  // ${PORT_ALLOCATOR_PORTMAP_API:-5001}
+  const apiPort = import.meta.env.VITE_PORTMAP_API || '5001'
   const [agents, setAgents] = useState([])
   const [selectedAgent, setSelectedAgent] = useState(null)
   const [config, setConfig] = useState({})
   const [directive, setDirective] = useState('')
 
   useEffect(() => {
-    fetch("http://localhost:5001/agents")
+    fetch(`http://localhost:${apiPort}/agents`)
       .then(res => res.json())
       .then(data => setAgents(data.agents))
   }, [])
 
   const loadAgent = (agent) => {
-    fetch(`http://localhost:5001/agents/${agent}`)
+    fetch(`http://localhost:${apiPort}/agents/${agent}`)
       .then(res => res.json())
       .then(data => {
         setSelectedAgent(agent)
@@ -26,7 +28,7 @@ function App() {
   }
 
   const sendDirective = () => {
-    fetch('http://localhost:5001/echo', {
+    fetch(`http://localhost:${apiPort}/echo`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: directive })
