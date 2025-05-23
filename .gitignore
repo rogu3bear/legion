@@ -13,6 +13,7 @@ env/
 # Environment variables
 .env
 .env.*
+!ui/frontend/.env
 
 # Databases
 *.sqlite3
