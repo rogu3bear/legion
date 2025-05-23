@@ -84,6 +84,7 @@ For comprehensive documentation, see:
 - [Function Index](docs/function_index.md)
 - [Changelog](changelog.md)
 - [ASCII Dispatch Diagrams](docs/dispatch_flow_ascii.md)
+- [Function Flow Diagrams](docs/function_flow_ascii.md)
 
 ## Full System Operation
 
