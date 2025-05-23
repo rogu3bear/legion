@@ -16,6 +16,7 @@ This index lists all TODO comments found across the repository (May 2025) with r
 | legion/agents/go/developer.go | 181 | Implement refactoring logic | Add refactoring functions |
 | legion/agents/go/developer.go | 188 | Implement debugging logic | Add debugging helpers |
 | legion/agents/go/developer.go | 193 | implement developer agent logic | Complete agent workflows |
+| docs/function_index.md | 1 | Many functions show 'Needs Documentation' | Document missing functions |
 | legion/agents/python/metrics.py | 115 | Implement metrics collection logic | Gather usage stats from memory |
 | legion/agents/python/metrics.py | 120 | Implement metrics analysis logic | Compute trends and anomalies |
 | legion/agents/python/metrics.py | 125 | Implement reporting logic | Report metrics via Discord or logs |
