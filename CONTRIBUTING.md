@@ -2,17 +2,40 @@
 
 ## Code Quality
 
+### Pre-commit Setup
+
+**Required for all contributors:**
+```bash
+pre-commit install
+```
+
+This enables automatic checks on every commit including:
+- Agent instantiation guard
+- Type debt regression guard  
+- Code formatting and linting
+
 ### Agent Instantiation Guard
 
 - Do not import or call agent classes directly (e.g., `ArchitectAgent(...)`).
-- Use `orchestrator.load_agent('<agent_key>')` to obtain agent instances.
-- Ensure you have `pre-commit` installed and run:
-  ```bash
-  pre-commit install
-  ```
-- The "Guard direct agent instantiation" hook will run on commit to catch violations.
-- CI also enforces this via the `agent-instantiation-guard` job in `.github/workflows/ci.yml`.
-- Run `pnpm i` in `ui/frontend` to enable ESLint locally.
+- Use `orchestrator.load_agent('<agent_key>')` to obtain agent instance.
+- CI enforces this via the `agent-instantiation-guard` job in `.github/workflows/ci.yml`.
+
+### Type Debt Management
+
+**Zero-regression policy:** New code cannot increase mypy error count.
+
+- **Current baseline:** 90 type errors
+- **Check status:** `python tools/type_debt.py`
+- **Fix errors:** Focus on files with ≤3 errors for quick wins
+- **Progress tracking:** Automatic Discord notifications on changes
+
+**Guidelines:**
+- Add type annotations to new functions
+- Use `# type: ignore[specific-error]` for unavoidable issues
+- For files with >10 errors, add `# mypy: ignore-errors` header
+- PRs that reduce debt get auto-labeled `typing-reduction` 🏆
+
+Run `pnpm i` in `ui/frontend` to enable ESLint locally.
 
 ## Test Hygiene
 

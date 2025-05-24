@@ -1,0 +1,110 @@
+name: Daily Type Debt Digest
+
+on:
+  schedule:
+    # Run at 09:00 CDT (14:00 UTC) every day
+    - cron: '0 14 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  debt-digest:
+    name: "Post Daily Type Debt Status"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Create cache directories
+        run: mkdir -p .cache
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mypy types-PyYAML types-requests
+      - name: Generate debt digest
+        run: |
+          # Run type debt check
+          python tools/type_debt.py > debt_output.txt 2>&1 || true
+          
+          # Parse results
+          CURRENT=$(grep "Current errors:" debt_output.txt | grep -o '[0-9]\+' | head -1)
+          BASELINE=$(grep "Baseline:" debt_output.txt | grep -o '[0-9]\+' | head -1)
+          PROGRESS=$(echo "scale=1; ($BASELINE - $CURRENT) / $BASELINE * 100" | bc -l)
+          
+          # Create progress bar (10 segments)
+          FILLED=$(echo "($BASELINE - $CURRENT) * 10 / $BASELINE" | bc)
+          BAR=""
+          for i in $(seq 1 10); do
+            if [ $i -le $FILLED ]; then
+              BAR="${BAR}🟩"
+            elif [ $i -eq $((FILLED + 1)) ] && [ $CURRENT -lt $BASELINE ]; then
+              BAR="${BAR}🟨" 
+            else
+              BAR="${BAR}⬜"
+            fi
+          done
+          
+          # Get yesterday's count for comparison
+          YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
+          DELTA_MSG="(no history)"
+          if [ -f ".cache/type_debt.json" ]; then
+            YESTERDAY_COUNT=$(grep -o '"errors":[0-9]*' .cache/type_debt.json | tail -1 | grep -o '[0-9]*')
+            if [ -n "$YESTERDAY_COUNT" ]; then
+              DELTA=$((CURRENT - YESTERDAY_COUNT))
+              if [ $DELTA -eq 0 ]; then
+                DELTA_MSG="(±0 since yesterday)"
+              elif [ $DELTA -lt 0 ]; then
+                DELTA_MSG="(${DELTA} since yesterday 📉)"
+              else
+                DELTA_MSG="(+${DELTA} since yesterday 📈)"
+              fi
+            fi
+          fi
+          
+          echo "CURRENT=${CURRENT}" >> $GITHUB_ENV
+          echo "BASELINE=${BASELINE}" >> $GITHUB_ENV  
+          echo "PROGRESS=${PROGRESS}" >> $GITHUB_ENV
+          echo "BAR=${BAR}" >> $GITHUB_ENV
+          echo "DELTA_MSG=${DELTA_MSG}" >> $GITHUB_ENV
+        env:
+          PYTHONPATH: $PYTHONPATH:.
+      - name: Post to Discord
+        run: |
+          # Use the type debt script's Discord integration
+          python -c "
+          import asyncio
+          import sys
+          sys.path.insert(0, '.')
+          from legion.utils.discord_bridge import send_discord_embed, MessageType
+
+          async def post_digest():
+              message = f'Daily Type Debt Digest'
+              fields = [
+                  ('Current Errors', '${{ env.CURRENT }}'),
+                  ('Baseline', '${{ env.BASELINE }}'),
+                  ('Progress', '${{ env.BAR }} ${{ env.PROGRESS }}%'),
+                  ('Change', '${{ env.DELTA_MSG }}'),
+                  ('Branch', 'main')
+              ]
+              
+              await send_discord_embed(
+                  'TypeChecker-Daily',
+                  message,
+                  MessageType.INFO,
+                  fields=fields
+              )
+
+          asyncio.run(post_digest())
+          "
+        env:
+          PYTHONPATH: $PYTHONPATH:.
+      - name: Upload digest report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: daily-debt-digest
+          path: |
+            debt_output.txt
+            .cache/type_debt.json 
