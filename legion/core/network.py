@@ -2,6 +2,8 @@
 
 import logging
 import time
+import os
+from typing import Optional
 
 from .utils.network import fetch_with_retries
 
@@ -11,11 +13,16 @@ logger = logging.getLogger(__name__)
 
 
 def placeholder_network(
-    url: str = "http://localhost:8000/", timeout: float = 2.0
+    url: Optional[str] = None, timeout: float = 2.0
 ) -> dict:
     """
     Perform a basic HTTP GET health check and return status and response time.
     """
+    if url is None:
+        # Use environment variable or default port
+        port = os.getenv('WEB_API_PORT', '8000')
+        url = f"http://localhost:{port}/"
+    
     try:
         start = time.time()
         resp = requests.get(url, timeout=timeout)
