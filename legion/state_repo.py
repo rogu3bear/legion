@@ -19,8 +19,8 @@ class _MemoryRedis:
     """Very small subset of Redis used for tests when real client is absent."""
 
     def __init__(self) -> None:
-        self.store = {}
-        self.values = {}
+        self.store: Dict[str, Dict[str, Any]] = {}
+        self.values: Dict[str, str] = {}
 
     def hset(self, name: str, mapping: dict) -> None:
         self.store.setdefault(name, {}).update(mapping)
