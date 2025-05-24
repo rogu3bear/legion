@@ -1,9 +1,12 @@
-# Legion Documentation
+# Legion Documentation Hub
+1. [Architecture](architecture/README.md)
+2. [Agents](agents/README.md)
+3. [Operations](ops/README.md)
+4. [Dev Guide](guides/README.md)
+=======
 
-| Section | Description |
-|---------|-------------|
-| [Architecture](architecture/overview.md) | System design and flow |
-| [Agents](agents/architect.md) | Agent responsibilities |
-| [API](api/endpoints.md) | REST endpoints summary |
-| [Ops](ops/ports.md) | Ports, env vars, CI/CD |
-| [Guides](guides/local_dev.md) | Development workflows |
+1. [Architecture](architecture/README.md)
+2. [Agents](agents/README.md)
+3. [Ops](ops/README.md)
+4. [Dev Guide](guides/README.md)
+5. [Legacy](legacy/)

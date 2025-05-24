@@ -9,6 +9,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+import os
 
 import openai
 
@@ -16,6 +17,7 @@ from legion.core.di_container import ILLMClient, container
 from legion.core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
+from legion.utils.discord_bridge import send_discord_embed, MessageType
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -64,7 +66,52 @@ class BaseAgent:
 
     async def post_to_discord(self, message):
         """Post a message to the agent's Discord channel, splitting if too long."""
-        channel_id = self.orchestrator.agent_channel_ids.get(self.name)
+        try:
+            # Import here to avoid circular imports
+            from legion.utils.discord_bridge import send_discord_embed, MessageType
+
+            # Determine message type based on content
+            msg_type = MessageType.INFO
+            if "[Error]" in message or "ERROR" in message.upper():
+                msg_type = MessageType.ERROR
+            elif "[Warning]" in message or "WARNING" in message.upper():
+                msg_type = MessageType.WARNING
+            elif "[Assessment]" in message or "SUCCESS" in message.upper():
+                msg_type = MessageType.SUCCESS
+
+            # Get agent-specific channel ID from environment
+            agent_channel_var = f"{self.name.upper()}_CHANNEL_ID"
+            channel_id = int(os.getenv(agent_channel_var, 0))
+
+            # Fallback to orchestrator's channel mapping if no env var
+            if not channel_id and hasattr(self, 'orchestrator'):
+                channel_id = self.orchestrator.agent_channel_ids.get(self.name, 0)
+
+            # Final fallback to agent feed channel
+            if not channel_id:
+                channel_id = int(os.getenv("AGENT_FEED_CHANNEL_ID", 0))
+
+            if channel_id:
+                # Use the new discord bridge for better formatting
+                success = await send_discord_embed(
+                    self.name,
+                    message,
+                    msg_type,
+                    channel_id=channel_id
+                )
+                if not success:
+                    logging.warning(f"[BaseAgent] Failed to send Discord message for {self.name}")
+            else:
+                logging.error(f"[BaseAgent] No channel ID found for agent {self.name}")
+
+        except Exception as e:
+            logging.error(f"[BaseAgent] Error in post_to_discord for {self.name}: {e}")
+            # Fallback to old method if new bridge fails
+            await self._post_to_discord_fallback(message)
+
+    async def _post_to_discord_fallback(self, message):
+        """Fallback Discord posting method using the old approach."""
+        channel_id = self.orchestrator.agent_channel_ids.get(self.name) if hasattr(self, 'orchestrator') else None
         if not channel_id:
             logging.error(f"[BaseAgent] No channel_id found for agent {self.name}")
             return
@@ -99,6 +146,62 @@ class BaseAgent:
                 await channel.send(f"{prefix}{to_send}")
         else:
             await channel.send(f"{prefix}{message}")
+
+    async def send_status_update(self, status: str, details: Optional[Dict[str, Any]] = None):
+        """Send a formatted status update to Discord."""
+        try:
+            from legion.utils.discord_bridge import send_discord_embed, MessageType
+
+            fields = []
+            if details:
+                for key, value in details.items():
+                    fields.append((key.title(), str(value)))
+
+            await send_discord_embed(
+                self.name,
+                status,
+                MessageType.INFO,
+                fields=fields
+            )
+        except Exception as e:
+            logging.error(f"[BaseAgent] Error sending status update: {e}")
+
+    async def send_error_notification(self, error: str, context: Optional[str] = None):
+        """Send a formatted error notification to Discord."""
+        try:
+            from legion.utils.discord_bridge import send_discord_embed, MessageType
+
+            fields = []
+            if context:
+                fields.append(("Context", context))
+
+            await send_discord_embed(
+                self.name,
+                f"Error: {error}",
+                MessageType.ERROR,
+                fields=fields
+            )
+        except Exception as e:
+            logging.error(f"[BaseAgent] Error sending error notification: {e}")
+
+    async def send_success_notification(self, message: str, metrics: Optional[Dict[str, Any]] = None):
+        """Send a formatted success notification to Discord."""
+        try:
+            from legion.utils.discord_bridge import send_discord_embed, MessageType
+
+            fields = []
+            if metrics:
+                for key, value in metrics.items():
+                    fields.append((key.title(), str(value)))
+
+            await send_discord_embed(
+                self.name,
+                message,
+                MessageType.SUCCESS,
+                fields=fields
+            )
+        except Exception as e:
+            logging.error(f"[BaseAgent] Error sending success notification: {e}")
 
     async def self_assess(self):
         """Run a self-assessment and post the result to Discord."""

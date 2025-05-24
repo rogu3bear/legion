@@ -142,12 +142,29 @@ class MetricsAgent(BaseAgent):
             counts[author] = counts.get(author, 0) + 1
         avg_per_channel = len(all_messages) / len(channels) if channels else 0
         # Format report
-        lines = ["| Agent | Messages |", "|-------|----------|"]
+        report_lines = []
         for agent, count in sorted(counts.items(), key=lambda x: -x[1]):
-            lines.append(f"| {agent} | {count} |")
-        lines.append(f"\n**Average messages per channel:** {avg_per_channel:.2f}")
-        report_text = "\n".join(lines)
-        await self.post_to_discord("**Usage Metrics**\n" + report_text)
+            report_lines.append(f"{agent}: {count} messages")
+
+        # Use the new Discord bridge for better formatting
+        try:
+            await self.send_success_notification(
+                "Usage Metrics Report",
+                {
+                    "Total Messages": len(all_messages),
+                    "Active Channels": len(channels),
+                    "Avg per Channel": f"{avg_per_channel:.2f}",
+                    "Top Agent": report_lines[0] if report_lines else "None"
+                }
+            )
+        except Exception as e:
+            # Fallback to old method
+            lines = ["| Agent | Messages |", "|-------|----------|"]
+            for agent, count in sorted(counts.items(), key=lambda x: -x[1]):
+                lines.append(f"| {agent} | {count} |")
+            lines.append(f"\n**Average messages per channel:** {avg_per_channel:.2f}")
+            report_text = "\n".join(lines)
+            await self.post_to_discord("**Usage Metrics**\n" + report_text)
 
     async def handle_report(self):
         return await self.handle_message(
@@ -306,7 +323,7 @@ class MetricsAgent(BaseAgent):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
