@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from legion.agents.base import BaseAgent
 
@@ -18,8 +18,9 @@ class EchoAgent(BaseAgent):
         "useful for diagnostics and testing message flow."
     )
 
-    def __init__(self, orchestrator) -> None:
-        super().__init__(orchestrator)
+    def __init__(self, name: str = "echo_agent", config: Optional[dict] = None, orchestrator=None, llm_client=None) -> None:
+        super().__init__(name, config or {}, llm_client=llm_client)
+        self.orchestrator = orchestrator
         self.log_buffer: List[Dict[str, Any]] = []
         log_dir = Path("memory") / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)

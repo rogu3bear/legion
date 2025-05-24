@@ -21,10 +21,12 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
 # Project-specific imports
+import logging
 from legion.core.logging_config import setup_logging
 from legion import Orchestrator
 
-logger = setup_logging(__name__)
+setup_logging(__name__)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent

@@ -25,6 +25,7 @@ repos:
         # You might need additional_dependencies if mypy needs project dependencies
         additional_dependencies: [types-PyYAML, types-requests]
         args: [--config-file=mypy.ini]
+        exclude: ^(tests/|scripts/)
 
 # Bandit hook (optional)
 # -   repo: https://github.com/PyCQA/bandit
@@ -41,6 +42,12 @@ repos:
         entry: python scripts/agent_instantiation_guard.py legion/
         language: system
         types: [python]
+    -   id: type-debt-guard
+        name: Type debt regression guard
+        entry: python tools/type_debt.py
+        language: system
+        pass_filenames: false
+        always_run: true
     -   id: ban-3000-port
         name: Ban hard-coded port 3000 in docker-compose.yml
         entry: bash -c "grep -R '3000:' docker-compose.yml && echo 'Hard-coded port 3000 detected, please use env var' && exit 1 || exit 0"
