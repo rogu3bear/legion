@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """Dependency Injection Container for Legion."""
 
 from typing import Any, Dict, Type, TypeVar

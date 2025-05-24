@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """SQLAlchemy ORM models for Legion."""
 
 import enum

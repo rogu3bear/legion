@@ -7,6 +7,7 @@ repos:
     rev: v5.0.0 # Use a recent, stable version
     hooks:
     -   id: trailing-whitespace
+        exclude: \.env\.ports\.example$
     -   id: end-of-file-fixer
     -   id: check-yaml
         exclude: ^middleware/helm/templates/
@@ -14,16 +15,16 @@ repos:
     -   id: check-added-large-files
 
 
-# Mypy hook (optional, can be slow) - DISABLED: 85 type errors need fixing
+# Mypy hook (required for merge)
 # Ensure mypy is installed in the environment pre-commit runs in
 # or use pre-commit's additional_dependencies
-# -   repo: https://github.com/pre-commit/mirrors-mypy
-#     rev: v1.15.0 # Use a version compatible with project config
-#     hooks:
-#     -   id: mypy
-#         # You might need additional_dependencies if mypy needs project dependencies
-#         # additional_dependencies: [types-PyYAML, types-requests, ...]
-#         args: [--config-file=pyproject.toml, --ignore-missing-imports, --exclude, "(^tests/|interface/core/|legion/core/)"]
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0 # Use a version compatible with project config
+    hooks:
+    -   id: mypy
+        # You might need additional_dependencies if mypy needs project dependencies
+        additional_dependencies: [types-PyYAML, types-requests]
+        args: [--config-file=mypy.ini]
 
 # Bandit hook (optional)
 # -   repo: https://github.com/PyCQA/bandit

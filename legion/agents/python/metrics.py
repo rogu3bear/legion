@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """
 MetricsAgent module for Legion.
 

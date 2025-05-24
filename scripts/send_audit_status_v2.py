@@ -25,10 +25,10 @@ async def send_status():
         'doc_delta': '/docs/_temp_merge_log.md',
         'status': 'audit_complete_v2'
     }, indent=2)
-    
+
     success = await send_discord_message(f'✅ **Integration Audit Complete v2**\n```json\n{message}\n```')
     print(f"Final status message sent: {success}")
 
 
 if __name__ == "__main__":
-    asyncio.run(send_status()) 
+    asyncio.run(send_status())

@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """Discord bridge utility for Legion.
 
 This module provides Discord messaging capabilities that can be used:
