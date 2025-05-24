@@ -6,7 +6,7 @@ import openai
 
 import pytest
 from dotenv import load_dotenv
-from legion.core.llm_client import LLMClient
+from core.utils.llm_client import LLMClient
 
 load_dotenv()
 

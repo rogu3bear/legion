@@ -70,7 +70,7 @@ async def mock_dependencies():
     # For simplicity here, we assume tests either all mock or this clear is acceptable.
     # A more robust global setup/teardown for DI might be needed for larger test suites.
     # Re-registering defaults:
-    from legion.core.llm_client import LLMClient as DefaultLLMClient
+    from core.utils.llm_client import LLMClient as DefaultLLMClient
     from legion.core.state import StateManager as DefaultStateManager
 
     container.register_factory(ILLMClient, DefaultLLMClient)

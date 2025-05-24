@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
-from legion.core.utils.network import fetch_with_retries
+from core.utils.network import fetch_with_retries
 
 
 @patch("requests.get")

@@ -1,0 +1,7 @@
+# Example configuration for MCP core services
+services:
+  - name: example
+    endpoint: http://localhost:8001
+    enabled: true
+logging:
+  level: INFO

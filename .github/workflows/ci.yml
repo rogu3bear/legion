@@ -204,3 +204,17 @@ jobs:
         with:
           name: ci-logs-agent-guard
           path: /tmp/ci_logs/
+
+  build-go-agents:
+    name: Build Go Agents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Vet and Test
+        run: |
+          go vet ./...
+          go test ./...
