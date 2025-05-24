@@ -14,10 +14,13 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-Base: Any = declarative_base()
+
+class Base(DeclarativeBase):
+    """Base class for typed SQLAlchemy models."""
+
+    pass
 
 
 class TaskStatus(enum.Enum):
@@ -48,24 +51,26 @@ class Agent(Base):
 
     __tablename__ = "agents"
 
-    id: int = Column(Integer, primary_key=True)
-    name: str = Column(String, nullable=False, unique=True)
-    type: str = Column(String, nullable=False)
-    status: AgentStatus = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[AgentStatus] = mapped_column(
         Enum(AgentStatus), nullable=False, default=AgentStatus.OFFLINE
     )
-    capabilities: List[Any] = Column(JSON, default=lambda: [])
-    config: Dict[str, Any] = Column(JSON, default=lambda: {})
-    agent_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
-    is_active: bool = Column(Boolean, default=True)
-    last_heartbeat: Optional[datetime] = Column(DateTime, nullable=True)
-    created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at: datetime = Column(
+    capabilities: Mapped[List[Any]] = mapped_column(JSON, default=list)
+    config: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    agent_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_heartbeat: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     # Relationships
-    tasks: List["Task"] = relationship(
+    tasks: Mapped[List["Task"]] = relationship(
         "Task", back_populates="agent", cascade="all, delete-orphan"
     )
 
@@ -112,26 +117,28 @@ class Task(Base):
 
     __tablename__ = "tasks"
 
-    id: int = Column(Integer, primary_key=True)
-    agent_id: int = Column(Integer, ForeignKey("agents.id"), nullable=False)
-    type: str = Column(String, nullable=False)
-    status: TaskStatus = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    agent_id: Mapped[int] = mapped_column(Integer, ForeignKey("agents.id"), nullable=False)
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[TaskStatus] = mapped_column(
         Enum(TaskStatus), nullable=False, default=TaskStatus.PENDING
     )
-    priority: TaskPriority = Column(
+    priority: Mapped[TaskPriority] = mapped_column(
         Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM
     )
-    title: str = Column(String, nullable=False)
-    description: Optional[str] = Column(String, nullable=True)
-    task_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
-    result: Optional[Dict[str, Any]] = Column(JSON, nullable=True)
-    created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
-    started_at: Optional[datetime] = Column(DateTime, nullable=True)
-    completed_at: Optional[datetime] = Column(DateTime, nullable=True)
-    error: Optional[str] = Column(String, nullable=True)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    task_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
+    result: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    error: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # Relationships
-    agent: "Agent" = relationship("Agent", back_populates="tasks")
+    agent: Mapped["Agent"] = relationship("Agent", back_populates="tasks")
 
     def __repr__(self) -> str:
         return f"<Task {self.id}: {self.type} ({self.status})>"
