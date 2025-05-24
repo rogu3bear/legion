@@ -1,1 +1,0 @@
--- Legion database schema stub
