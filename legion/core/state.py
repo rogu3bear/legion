@@ -108,3 +108,71 @@ class StateManager:
         event["type"] = event.get("type", "telemetry")
         with open(self.task_log, "a") as f:
             f.write(json.dumps(event) + "\n")
+
+
+def save_agent_state_to_redis(redis_conn: Any) -> None:
+    """Persist all active agents to Redis as JSON."""
+    from interface.db.session import SessionLocal
+    from interface.models.agent import Agent
+
+    session = SessionLocal()
+    try:
+        agents = session.query(Agent).filter(Agent.is_active.is_(True)).all()
+        for agent in agents:
+            data = {
+                "id": agent.id,
+                "name": agent.name,
+                "description": agent.description,
+                "model": agent.model,
+                "temperature": agent.temperature,
+                "max_tokens": agent.max_tokens,
+                "is_active": agent.is_active,
+                "config": agent.config,
+                "created_at": agent.created_at.isoformat()
+                if agent.created_at
+                else None,
+                "last_active": agent.last_active.isoformat()
+                if agent.last_active
+                else None,
+            }
+            redis_conn.set(
+                f"legion:agents:{agent.id}",
+                json.dumps(data),
+                ex=86400,
+            )
+    finally:
+        session.close()
+
+
+def restore_agent_state_from_redis(redis_conn: Any) -> list[int]:
+    """Load agent state from Redis back into the database."""
+    from interface.db.session import SessionLocal
+    from interface.models.agent import Agent
+
+    session = SessionLocal()
+    restored: list[int] = []
+    try:
+        keys = redis_conn.keys("legion:agents:*")
+        for key in keys:
+            raw = redis_conn.get(key)
+            if not raw:
+                continue
+            data = json.loads(raw)
+            agent = session.get(Agent, data["id"])
+            if agent is None:
+                agent = Agent(id=data["id"], name=data["name"], model=data["model"])
+            agent.description = data.get("description")
+            agent.temperature = data.get("temperature", 0.0)
+            agent.max_tokens = data.get("max_tokens", 0)
+            agent.is_active = data.get("is_active", True)
+            agent.config = data.get("config")
+            if data.get("created_at"):
+                agent.created_at = datetime.fromisoformat(data["created_at"])
+            if data.get("last_active"):
+                agent.last_active = datetime.fromisoformat(data["last_active"])
+            session.add(agent)
+            restored.append(agent.id)
+        session.commit()
+    finally:
+        session.close()
+    return restored
