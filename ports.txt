@@ -104,8 +104,8 @@ Binary file ./.ruff_cache/0.11.8/10099297214924985843 matches
 ./.env.bak.20250518173026:44:CHROMA_API_URL=http://localhost:${PORT_ALLOCATOR_CHROMA:-27020}
 ./.env.example:15:CHROMA_API_URL=http://localhost:${CHROMA_PORT}
 ./.env.example:34:MIDDLEWARE_URL=http://localhost:${MIDDLEWARE_PORT}
-./.env.example:49:# OTHER_SERVICE_URL=http://localhost:270XX 
-./.env.example:84:LMSTUDIO_API_URL=http://127.0.0.1:1234/v1 
+./.env.example:49:# OTHER_SERVICE_URL=http://localhost:270XX
+./.env.example:84:LMSTUDIO_API_URL=http://127.0.0.1:1234/v1
 ./orchestrator_mypy_errors.txt:279:legion/orchestrator.py:1019: error: Function is missing a return type annotation  [no-untyped-def]
 ./orchestrator_mypy_errors.txt:280:legion/orchestrator.py:1019: note: Use "-> None" if function does not return a value
 ./orchestrator_mypy_errors.txt:281:legion/orchestrator.py:1111: error: Item "IStateManager" of "Union[Any, IStateManager]" has no attribute "list_documents"  [union-attr]

@@ -64,4 +64,4 @@ except openai.APIConnectionError as e:
     print(f"Error connecting to LLM at {API_BASE}: {e}")
     print("Please ensure LMStudio is running and the API server is enabled.")
 except Exception as e:
-    print(f"An unexpected error occurred: {e}") 
+    print(f"An unexpected error occurred: {e}")

@@ -91,4 +91,3 @@ def remove_task(task_id: str) -> bool:
     """Delete a task from the registry."""
 
     return _TASK_REGISTRY.pop(task_id, None) is not None
-

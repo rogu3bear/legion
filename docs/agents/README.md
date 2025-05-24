@@ -17,4 +17,3 @@
 | Healthcheck | Reports container health | `collect_health`, `report_anomaly` |
 
 👉 Deep dive: legacy/agents/*
-

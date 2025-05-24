@@ -22,7 +22,7 @@ def placeholder_network(
         # Use environment variable or default port
         port = os.getenv('WEB_API_PORT', '8000')
         url = f"http://localhost:{port}/"
-    
+
     try:
         start = time.time()
         resp = requests.get(url, timeout=timeout)
@@ -56,5 +56,3 @@ def health_check(url: str, timeout: float = 2.0) -> bool:
     except requests.exceptions.RequestException as e:
         logger.error("Health check error", extra={"url": url, "error": str(e)})
         return False
-
-

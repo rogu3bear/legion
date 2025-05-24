@@ -5,12 +5,11 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, JSON, String, Text
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-
-class Base(DeclarativeBase):
-    """Base class for memory DB models."""
+# Import the shared Base and Agent model
+from legion.core.db.models import Base, Agent
 
 
 class EchoLog(Base):

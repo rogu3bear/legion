@@ -14,10 +14,9 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 
-Base: Any = declarative_base()
+Base = declarative_base()
 
 
 class TaskStatus(enum.Enum):
@@ -65,7 +64,7 @@ class Agent(Base):
     )
 
     # Relationships
-    tasks: List["Task"] = relationship(
+    tasks = relationship(
         "Task", back_populates="agent", cascade="all, delete-orphan"
     )
 
@@ -131,7 +130,7 @@ class Task(Base):
     error: Optional[str] = Column(String, nullable=True)
 
     # Relationships
-    agent: "Agent" = relationship("Agent", back_populates="tasks")
+    agent = relationship("Agent", back_populates="tasks")
 
     def __repr__(self) -> str:
         return f"<Task {self.id}: {self.type} ({self.status})>"

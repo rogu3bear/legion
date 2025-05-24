@@ -8,7 +8,18 @@ All scripts rely on environment variables. Failure to provide them is failure.
     - `DISCORD_TOKEN`: Your Discord bot token.
     - `ORCH_CONFIG_PATH`: Path to the main orchestrator config (e.g., `legion/configs/orchestrator.yaml`).
     - `DISCORD_CHANNELS_PATH`: Path to the agent channel mapping file (e.g., `legion/configs/channels.yaml`).
+    - `LEGION_API_PORT`: Port for the main API service (default: 7803).
+    - `WEB_API_PORT`: Port for web interface health checks (default: 8000).
     - *Add other critical variables here as needed.*
+
+## Port Configuration
+Legion uses a PortAllocator system for development environments:
+
+- **Base Port:** 7800 (configurable via `PORT_ALLOCATOR_BASE`)
+- **Cluster Size:** 10 ports (7800-7809)
+- **Environment Variables:** All services read from env vars (e.g., `LEGION_API_PORT`, `PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_PUB`)
+- **Docker:** Uses `LEGION_API_PORT` environment variable with fallback to 7803
+- **Staging vs Production:** Use different port bases or explicit port assignments per environment
 
 ## Execution (Makefile is Law)
 Use `make` for all standard operations:

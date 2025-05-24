@@ -54,4 +54,4 @@
 - **Communication**: 27070-27079 (ZMQ pub/sub, messaging)
 - **Agents**: 27080-27089 (therapist, executor, architect, metrics)
 - **Middleware**: 27090-27099 (validator, hallucination guard)
-- **Core Services**: 27100+ (middleware, chroma, vector DB) 
+- **Core Services**: 27100+ (middleware, chroma, vector DB)

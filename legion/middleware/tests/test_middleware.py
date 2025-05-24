@@ -4,4 +4,3 @@ import unittest
 @mark_legacy
 class LegacyPlaceHolder(unittest.TestCase):
     pass
-

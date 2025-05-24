@@ -80,18 +80,18 @@ def main():
         processed_key = key.lower()
         # Example: 'services_web_ui' -> 'web_ui'
         # Example: 'core_services_chroma' -> 'chroma'
-        
+
         # More robust prefix stripping from the full key
         temp_key = processed_key
         for prefix in PREFIXES_TO_STRIP:
             if temp_key.startswith(prefix):
                 temp_key = temp_key[len(prefix):]
-        
+
         # If after stripping all defined prefixes, a key part still looks like a prefix
         # (e.g. services_web_ui -> web_ui rather than just ui)
         # This might need more sophisticated logic if keys are like 'services_core_web_ui'
         # For now, simple prefix removal on the flattened key.
-        
+
         final_key_parts = []
         for part in temp_key.split('_'):
              # This logic might be too aggressive or not match the desired outcome.
@@ -107,7 +107,7 @@ def main():
         for prefix in PREFIXES_TO_STRIP:
             if stripped_key.startswith(prefix):
                 stripped_key = stripped_key[len(prefix):]
-        
+
         # Further refinement for keys like 'orchestrator_zmq_rep_port' -> 'zmq_rep_port'
         # This is implicitly handled if 'orchestrator_' is in PREFIXES_TO_STRIP
         # and the remaining part is 'zmq_rep_port'

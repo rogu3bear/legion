@@ -556,4 +556,3 @@ def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
     if not response or response.get("status") != "success":
         raise HTTPException(status_code=502, detail="Orchestrator registration failed")
     return AgentRegisterResponse(token=response.get("token", ""))
-

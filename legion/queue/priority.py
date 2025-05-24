@@ -85,5 +85,3 @@ class PriorityQueue:
         score = priority * 1_000_000 + int(time.time())
         self.r.hset(self.TASK_HASH, task_id, json.dumps(task))
         self.r.zadd(self.KEY, {task_id: score})
-
-
