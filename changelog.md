@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved memory logging and deduplication to handle non-serializable and unhashable types
 - Patched Discord integration tests to use unique temporary PID files for orchestrator, eliminating lock contention and enabling parallel test runs
 - Completed structural audit using `tree`.
-- Moved `core/db/schema.sql` and `core/db/migrations/` to `legion/core/db/`.
+- Moved `core/db/migrations/` to proper locations with initial migration.
 - Integrated dependency injection container (`legion/core/di_container.py`) into `Orchestrator` and `BaseAgent` for managing `ILLMClient` and `IStateManager` dependencies.
 - **Documentation:** Unified `README.md`, `DEPLOYMENT.md`, and `architecture.md` with a consistent, rigorous style. Incorporated GitHub Flow principles and standards into documentation.
 - **Security:** Ran `bandit` security scan; report generated in `artifacts/reports/`.
@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Legion Structure Compliance:**
   - Created missing `legion/core/utils/` directory.
   - Ensured core utilities (`network.py`, `indexing.py`) are in `legion/core/utils/`.
-  - Ensured DB files (`schema.sql`, `migrations/`) are in `legion/core/db/`.
+  - Ensured DB files (`core/db/migrations/`) are properly structured.
   - Ensured required agents (`python/developer.py`) exist.
   - Ensured required test file structure exists (`tests/core/test_network.py`).
 

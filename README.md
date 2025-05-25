@@ -168,7 +168,7 @@ The table below tracks scaffolded files introduced by Codex.
 | `core/` | Wrapper exposing `legion.core` modules |
 | `core/utils/network.py` | Re-exports network helpers |
 | `core/utils/indexing.py` | Re-exports indexing helpers |
-| `core/db/schema.sql` | Database schema mirror |
+| `core/db/migrations/` | Core database migrations |
 | `legion/agents/python/doctor.py` | Doctor agent implementation |
 | `legion/agents/python/researcher.py` | Researcher agent implementation |
 
