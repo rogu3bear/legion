@@ -10,7 +10,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from legion.core.logging_config import setup_logging
+from core.logging_config import setup_logging
 from legion.orchestrator import Orchestrator, ProcessRunningError
 
 # Enable logging

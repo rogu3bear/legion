@@ -24,7 +24,7 @@ try:
     engine = db_session.engine
     SessionLocal = db_session.SessionLocal
     Agent = model_agent.Agent
-    from legion.core.state import save_agent_state_to_redis, restore_agent_state_from_redis
+    from core.state import save_agent_state_to_redis, restore_agent_state_from_redis
 except ImportError as e:
     print(f"Import error: {e}")
     print("Some dependencies may not be available for testing")

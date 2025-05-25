@@ -21,7 +21,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
 # Project-specific imports
-from legion.core.logging_config import setup_logging
+from core.logging_config import setup_logging
 from legion import Orchestrator
 
 logger = setup_logging(__name__)
@@ -73,7 +73,7 @@ def on_startup():
     except Exception:
         redis = None
 
-    from legion.core.state import restore_agent_state_from_redis
+    from core.state import restore_agent_state_from_redis
 
     Base.metadata.create_all(bind=engine)
 

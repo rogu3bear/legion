@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import zmq.asyncio
 
-from legion.core.di_container import ILLMClient, IStateManager, container
+from core.di_container import ILLMClient, IStateManager, container
 from legion.orchestrator import Orchestrator
 
 # Configure logging for tests (optional, but can be helpful for debugging)
@@ -71,7 +71,7 @@ async def mock_dependencies():
     # A more robust global setup/teardown for DI might be needed for larger test suites.
     # Re-registering defaults:
     from core.utils.llm_client import LLMClient as DefaultLLMClient
-    from legion.core.state import StateManager as DefaultStateManager
+    from core.state import StateManager as DefaultStateManager
 
     container.register_factory(ILLMClient, DefaultLLMClient)
     container.register_factory(IStateManager, DefaultStateManager)

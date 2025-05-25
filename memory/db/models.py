@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 # Import the shared Base and Agent model
-from legion.core.db.models import Base, Agent
+from core.db.models import Base, Agent
 
 
 class EchoLog(Base):

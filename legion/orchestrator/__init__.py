@@ -33,7 +33,7 @@ from legion.agents.python import (
     TherapistAgent,
     UxDesignerAgent,
 )
-from legion.core.di_container import ILLMClient, IStateManager, container
+from core.di_container import ILLMClient, IStateManager, container
 from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
 from legion.agent_registry import registry as agent_registry

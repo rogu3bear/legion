@@ -6,8 +6,8 @@ import pytest
 import yaml
 
 from legion.agents.python import EchoAgent  # Ensure EchoAgent is importable
-from legion.core.di_container import ILLMClient, IStateManager, container
-from legion.core.state import StateManager
+from core.di_container import ILLMClient, IStateManager, container
+from core.state import StateManager
 from legion.orchestrator import Orchestrator
 
 
@@ -92,7 +92,7 @@ def setup_di_container(state_manager_instance, mock_llm_client_instance):
         if IStateManager in container._instances:  # Accessing internal for cleanup
             del container._instances[IStateManager]
         # Re-register default factory if it was overwritten and not present before
-        # from legion.core.state import StateManager # Ensure import
+        # from core.state import StateManager # Ensure import
         # container.register_factory(IStateManager, StateManager)
 
     if original_llm_client:

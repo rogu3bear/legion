@@ -13,8 +13,8 @@ import os
 
 import openai
 
-from legion.core.di_container import ILLMClient, container
-from legion.core.logging_config import setup_logging
+from core.di_container import ILLMClient, container
+from core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
 from legion.utils.discord_bridge import send_discord_embed, MessageType

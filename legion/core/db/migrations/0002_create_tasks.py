@@ -20,7 +20,7 @@ from sqlalchemy import (
     Enum as SQLEnum,
 )
 
-from legion.core.db.models import TaskPriority, TaskStatus
+from core.db.models import TaskPriority, TaskStatus
 
 metadata = MetaData()
 
