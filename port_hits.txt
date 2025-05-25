@@ -1,0 +1,1 @@
+./docs/system/queue_protocol.md:Messages are sent on `tcp://127.0.0.1:7808` (see `LEGION_PORT_MAP['zmq_pub']`).
