@@ -32,6 +32,10 @@ def check_forbidden_docs():
         skip_dirs = {'ui', 'artifacts', 'legion/prompts', 'research'}
         if any(skip_dir in str(md_file) for skip_dir in skip_dirs):
             continue
+            
+        # Allow README.md in skills subdirectories
+        if md_file.name == 'README.md' and 'skills/' in str(md_file):
+            continue
 
         violations.append(str(md_file))
 
