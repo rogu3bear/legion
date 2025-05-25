@@ -76,7 +76,7 @@ grep -R ":78[01][0-9]" . --exclude-dir=.git --exclude-dir=node_modules --exclude
 ```bash
 # Multiple Alembic configurations found:
 - ./interface/alembic.ini (Interface migrations)
-- ./legion/core/db/alembic.ini (Core DB migrations)
+- ./core/db/alembic.ini (Core DB migrations)
 - ./alembic.ini (Root level)
 ```
 

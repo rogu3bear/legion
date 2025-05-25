@@ -24,7 +24,7 @@ Legion is a distributed agent-based system with a modular architecture consistin
 
 ### Key Components
 - `legion/orchestrator.py`: Central system coordinator
-- `legion/core/`: Core system functionality
+- `core/`: Core system functionality
 - `legion/agents/`: Agent implementations
 - `legion/memory/`: Memory management
 - `interface/`: Web API and interface
@@ -42,7 +42,7 @@ The orchestrator (`legion/orchestrator.py`) manages:
 - Inter-agent communication
 
 ### Core System
-Located in `legion/core/`:
+Located in `core/`:
 - `state.py`: System state management
 - `logging_config.py`: Logging configuration
 - `llm_client.py`: LLM integration

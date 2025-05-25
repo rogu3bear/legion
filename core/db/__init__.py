@@ -1,1 +1,1 @@
-"""Core database utilities and models."""
+# Ensure this file ends with a newline

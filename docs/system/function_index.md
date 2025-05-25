@@ -1,12 +1,12 @@
 | Path | Module/Class | Function | Signature | Summary |
 |------|-------------|----------|-----------|---------|
-| legion/core/utils/chroma_client.py | AsyncChromaClient | __init__ | (self, api_url, api_key) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | __setattr__ | (self, name, value) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | delete_by_id | (self, agent_name, interaction_id) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | get_collection_stub | (name_arg) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | query_similar | (self, agent_name, embedding, n_results) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | upsert_batch | (self, records) | Needs Documentation |
-| legion/core/utils/chroma_client.py | AsyncChromaClient | upsert_embedding | (self, record) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | __init__ | (self, api_url, api_key) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | __setattr__ | (self, name, value) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | delete_by_id | (self, agent_name, interaction_id) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | get_collection_stub | (name_arg) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | query_similar | (self, agent_name, embedding, n_results) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | upsert_batch | (self, records) | Needs Documentation |
+| core/utils/chroma_client.py | AsyncChromaClient | upsert_embedding | (self, record) | Needs Documentation |
 | integration/discord/bot.py | - | fetch_thread_history | (channel, thread, limit) | Fetch up to `limit` messages from the given thread (or channel). |
 | integration/discord/bot.py | - | main | () | Main entry point for the Discord bot. |
 | integration/discord/bot.py | - | run_self_assess_all | (orchestrator) | Needs Documentation |
@@ -256,72 +256,72 @@
 | legion/agents/therapist/validation.py | - | logical_flow_is_valid | (directive_to_check) | Needs Documentation |
 | legion/agents/therapist/validation.py | - | therapist_validate | (request) | Needs Documentation |
 | legion/cli.py | - | main | () | Needs Documentation |
-| legion/core/db/migrations/0001_initial.py | - | downgrade | () | Needs Documentation |
-| legion/core/db/migrations/0001_initial.py | - | upgrade | () | Needs Documentation |
-| legion/core/db/migrations/0002_create_tasks.py | - | downgrade | (migrator) | Drop tasks table. |
-| legion/core/db/migrations/0002_create_tasks.py | - | upgrade | (migrator) | Create tasks table. |
-| legion/core/db/models.py | Agent | __repr__ | (self) | Needs Documentation |
-| legion/core/db/models.py | Agent | get_active_task | (self) | Get the currently active task for this agent, if any. |
-| legion/core/db/models.py | Agent | get_pending_tasks | (self) | Get all pending tasks for this agent. |
-| legion/core/db/models.py | Agent | to_dict | (self) | Convert agent to dictionary representation. |
-| legion/core/db/models.py | Agent | update_status | (self, status) | Update agent status and last heartbeat. |
-| legion/core/db/models.py | Task | __repr__ | (self) | Needs Documentation |
-| legion/core/db/models.py | Task | cancel | (self) | Mark task as cancelled. |
-| legion/core/db/models.py | Task | complete | (self, result) | Mark task as completed with optional result. |
-| legion/core/db/models.py | Task | fail | (self, error) | Mark task as failed with error message. |
-| legion/core/db/models.py | Task | start | (self) | Mark task as started. |
-| legion/core/db/models.py | Task | to_dict | (self) | Convert task to dictionary representation. |
-| legion/core/db_utils.py | - | init_db | (db_path) | Initialize the database schema (stub). |
-| legion/core/db_utils.py | - | run_migrations | (db_path) | Run database migrations (stub). |
-| legion/core/di_container.py | - | get_llm_client | () | Get the registered LLM client. |
-| legion/core/di_container.py | - | get_memory_manager | () | Get the registered memory manager. |
-| legion/core/di_container.py | - | get_state_manager | () | Get the registered state manager. |
-| legion/core/di_container.py | DIContainer | __init__ | (self) | Needs Documentation |
-| legion/core/di_container.py | DIContainer | clear | (self) | Clear all registered instances and factories (useful for tests). |
-| legion/core/di_container.py | DIContainer | get | (self, service_type) | Retrieve a service instance by its type. |
-| legion/core/di_container.py | DIContainer | register_factory | (self, service_type, factory) | Register a factory function for creating a service instance. |
-| legion/core/di_container.py | DIContainer | register_instance | (self, service_type, instance) | Register a pre-created instance of a service. |
-| legion/core/indexing.py | - | placeholder_indexing | (docs, field) | Build a simple inverted index for a list of docs. |
-| legion/core/init_memory.py | - | main | () | Needs Documentation |
-| legion/core/interfaces.py | ILLMClient | call | (self, messages, **kwargs) | Call the LLM with a list of messages and return the response. |
-| legion/core/interfaces.py | ILLMClient | get_embedding | (self, text) | Generate an embedding for the given text. |
-| legion/core/interfaces.py | IMemoryManager | log_task | (self, task) | Log a task or event to memory. |
-| legion/core/interfaces.py | IMemoryManager | retrieve_memories | (self, agent_name, embedding, top_k, category) | Retrieve memories based on embedding similarity. |
-| legion/core/interfaces.py | IMemoryManager | store_memories | (self, agent_name, snippets, base_dir) | Store multiple memory snippets with embeddings. |
-| legion/core/interfaces.py | IMemoryManager | store_memory | (self, id, content, metadata) | Store a memory entry with optional metadata. |
-| legion/core/interfaces.py | IStateManager | get_state | (self, key) | Retrieve a state value by key. |
-| legion/core/interfaces.py | IStateManager | log_task | (self, task) | Log a task or event to persistent state. |
-| legion/core/interfaces.py | IStateManager | set_state | (self, key, value) | Set a state value by key. |
-| legion/core/llm_client.py | LLMClient | __init__ | (self, api_key, model, api_base, **default_kwargs) | Initialize the LLM client with optional API key, model, base URL, and [...] |
-| legion/core/llm_client.py | LLMClient | generate | (self, agent_name, thread_id, dynamic_rules, history, **override_kwargs) | Generate a completion using dynamic rules and history. |
-| legion/core/logging_config.py | - | setup_logging | (log_level) | Configure structured JSON logging for the Legion system. |
-| legion/core/logging_config.py | JsonFormatter | format | (self, record) | Needs Documentation |
-| legion/core/network.py | - | health_check | (url, timeout) | HTTP GET, return True if 200 else False. |
-| legion/core/network.py | - | placeholder_network | (url, timeout) | Perform a basic HTTP GET health check and return status and response time. |
-| legion/core/prompt_builder.py | PromptBuilder | build | (system_prompt, memories, thread_history, user_query, memory_prefix, reflection_prompt) | Constructs a list of message dicts for LLM consumption. |
-| legion/core/state.py | StateManager | __init__ | (self, state_dir) | Initialize state directory, files, and default config. |
-| legion/core/state.py | StateManager | _save_state | (self, state) | Save state to JSON file. |
-| legion/core/state.py | StateManager | add_feedback | (self, feedback) | Add feedback entry. |
-| legion/core/state.py | StateManager | adjust_confidence_threshold | (self, new_threshold) | Adjust confidence threshold in config. |
-| legion/core/state.py | StateManager | get_recent_errors | (self, limit) | Get recent errors from log. |
-| legion/core/state.py | StateManager | get_recent_tasks | (self, limit) | Get recent tasks from log. |
-| legion/core/state.py | StateManager | get_state | (self) | Get current state. |
-| legion/core/state.py | StateManager | log_error | (self, error) | Append error to error log. |
-| legion/core/state.py | StateManager | log_task | (self, task) | Append task to task log. |
-| legion/core/state.py | StateManager | log_telemetry | (self, event) | Append a telemetry event to the task log (or a dedicated telemetry log if [...] |
-| legion/core/state.py | StateManager | update_state | (self, updates) | Update state with new values. |
-| legion/core/utils/chroma_client.py | ChromaClient | __init__ | (self, persist_directory, embedding_model) | Initializes the Chroma client and collection. |
-| legion/core/utils/chroma_client.py | ChromaClient | add_embedding | (self, embedding_id, embedding, metadata) | Alias for store_embedding to add or update an embedding. |
-| legion/core/utils/chroma_client.py | ChromaClient | compute_similarity | (self, emb1, emb2) | Compute cosine similarity between two embeddings. |
-| legion/core/utils/chroma_client.py | ChromaClient | create_embedding | (self, text) | Generate an embedding for the given text via OpenAI. |
-| legion/core/utils/chroma_client.py | ChromaClient | query_embeddings | (self, embedding, top_k) | Alias for retrieve_similar_embeddings with no threshold filtering. |
-| legion/core/utils/chroma_client.py | ChromaClient | retrieve_similar_embeddings | (self, query_embedding, top_k, threshold) | Retrieve embeddings with similarity >= threshold. |
-| legion/core/utils/chroma_client.py | ChromaClient | store_embedding | (self, embedding_id, embedding, metadata) | Add or update an embedding in the Chroma collection. |
-| legion/core/utils/chroma_client.py | ChromaClient | validate_embedding | (self, embedding, threshold) | Validate if any stored embedding meets or exceeds the similarity threshold. |
-| legion/core/utils/indexing.py | - | extract_keywords | (text) | Extracts keywords from text (stub). |
-| legion/core/utils/indexing.py | - | index_text | (text) | Placeholder for text indexing logic. |
-| legion/core/utils/indexing.py | - | render_feed_item | (agent_name, message, fields) | Placeholder for rendering a feed item (e.g., Discord embed). |
-| legion/core/utils/network.py | - | fetch_with_retries | (url, retries, delay) | Fetch URL with basic retry logic. |
+| core/db/migrations/0001_initial.py | - | downgrade | () | Needs Documentation |
+| core/db/migrations/0001_initial.py | - | upgrade | () | Needs Documentation |
+| core/db/migrations/0002_create_tasks.py | - | downgrade | (migrator) | Drop tasks table. |
+| core/db/migrations/0002_create_tasks.py | - | upgrade | (migrator) | Create tasks table. |
+| core/db/models.py | Agent | __repr__ | (self) | Needs Documentation |
+| core/db/models.py | Agent | get_active_task | (self) | Get the currently active task for this agent, if any. |
+| core/db/models.py | Agent | get_pending_tasks | (self) | Get all pending tasks for this agent. |
+| core/db/models.py | Agent | to_dict | (self) | Convert agent to dictionary representation. |
+| core/db/models.py | Agent | update_status | (self, status) | Update agent status and last heartbeat. |
+| core/db/models.py | Task | __repr__ | (self) | Needs Documentation |
+| core/db/models.py | Task | cancel | (self) | Mark task as cancelled. |
+| core/db/models.py | Task | complete | (self, result) | Mark task as completed with optional result. |
+| core/db/models.py | Task | fail | (self, error) | Mark task as failed with error message. |
+| core/db/models.py | Task | start | (self) | Mark task as started. |
+| core/db/models.py | Task | to_dict | (self) | Convert task to dictionary representation. |
+| core/db_utils.py | - | init_db | (db_path) | Initialize the database schema (stub). |
+| core/db_utils.py | - | run_migrations | (db_path) | Run database migrations (stub). |
+| core/di_container.py | - | get_llm_client | () | Get the registered LLM client. |
+| core/di_container.py | - | get_memory_manager | () | Get the registered memory manager. |
+| core/di_container.py | - | get_state_manager | () | Get the registered state manager. |
+| core/di_container.py | DIContainer | __init__ | (self) | Needs Documentation |
+| core/di_container.py | DIContainer | clear | (self) | Clear all registered instances and factories (useful for tests). |
+| core/di_container.py | DIContainer | get | (self, service_type) | Retrieve a service instance by its type. |
+| core/di_container.py | DIContainer | register_factory | (self, service_type, factory) | Register a factory function for creating a service instance. |
+| core/di_container.py | DIContainer | register_instance | (self, service_type, instance) | Register a pre-created instance of a service. |
+| core/indexing.py | - | placeholder_indexing | (docs, field) | Build a simple inverted index for a list of docs. |
+| core/init_memory.py | - | main | () | Needs Documentation |
+| core/interfaces.py | ILLMClient | call | (self, messages, **kwargs) | Call the LLM with a list of messages and return the response. |
+| core/interfaces.py | ILLMClient | get_embedding | (self, text) | Generate an embedding for the given text. |
+| core/interfaces.py | IMemoryManager | log_task | (self, task) | Log a task or event to memory. |
+| core/interfaces.py | IMemoryManager | retrieve_memories | (self, agent_name, embedding, top_k, category) | Retrieve memories based on embedding similarity. |
+| core/interfaces.py | IMemoryManager | store_memories | (self, agent_name, snippets, base_dir) | Store multiple memory snippets with embeddings. |
+| core/interfaces.py | IMemoryManager | store_memory | (self, id, content, metadata) | Store a memory entry with optional metadata. |
+| core/interfaces.py | IStateManager | get_state | (self, key) | Retrieve a state value by key. |
+| core/interfaces.py | IStateManager | log_task | (self, task) | Log a task or event to persistent state. |
+| core/interfaces.py | IStateManager | set_state | (self, key, value) | Set a state value by key. |
+| core/llm_client.py | LLMClient | __init__ | (self, api_key, model, api_base, **default_kwargs) | Initialize the LLM client with optional API key, model, base URL, and [...] |
+| core/llm_client.py | LLMClient | generate | (self, agent_name, thread_id, dynamic_rules, history, **override_kwargs) | Generate a completion using dynamic rules and history. |
+| core/logging_config.py | - | setup_logging | (log_level) | Configure structured JSON logging for the Legion system. |
+| core/logging_config.py | JsonFormatter | format | (self, record) | Needs Documentation |
+| core/network.py | - | health_check | (url, timeout) | HTTP GET, return True if 200 else False. |
+| core/network.py | - | placeholder_network | (url, timeout) | Perform a basic HTTP GET health check and return status and response time. |
+| core/prompt_builder.py | PromptBuilder | build | (system_prompt, memories, thread_history, user_query, memory_prefix, reflection_prompt) | Constructs a list of message dicts for LLM consumption. |
+| core/state.py | StateManager | __init__ | (self, state_dir) | Initialize state directory, files, and default config. |
+| core/state.py | StateManager | _save_state | (self, state) | Save state to JSON file. |
+| core/state.py | StateManager | add_feedback | (self, feedback) | Add feedback entry. |
+| core/state.py | StateManager | adjust_confidence_threshold | (self, new_threshold) | Adjust confidence threshold in config. |
+| core/state.py | StateManager | get_recent_errors | (self, limit) | Get recent errors from log. |
+| core/state.py | StateManager | get_recent_tasks | (self, limit) | Get recent tasks from log. |
+| core/state.py | StateManager | get_state | (self) | Get current state. |
+| core/state.py | StateManager | log_error | (self, error) | Append error to error log. |
+| core/state.py | StateManager | log_task | (self, task) | Append task to task log. |
+| core/state.py | StateManager | log_telemetry | (self, event) | Append a telemetry event to the task log (or a dedicated telemetry log if [...] |
+| core/state.py | StateManager | update_state | (self, updates) | Update state with new values. |
+| core/utils/chroma_client.py | ChromaClient | __init__ | (self, persist_directory, embedding_model) | Initializes the Chroma client and collection. |
+| core/utils/chroma_client.py | ChromaClient | add_embedding | (self, embedding_id, embedding, metadata) | Alias for store_embedding to add or update an embedding. |
+| core/utils/chroma_client.py | ChromaClient | compute_similarity | (self, emb1, emb2) | Compute cosine similarity between two embeddings. |
+| core/utils/chroma_client.py | ChromaClient | create_embedding | (self, text) | Generate an embedding for the given text via OpenAI. |
+| core/utils/chroma_client.py | ChromaClient | query_embeddings | (self, embedding, top_k) | Alias for retrieve_similar_embeddings with no threshold filtering. |
+| core/utils/chroma_client.py | ChromaClient | retrieve_similar_embeddings | (self, query_embedding, top_k, threshold) | Retrieve embeddings with similarity >= threshold. |
+| core/utils/chroma_client.py | ChromaClient | store_embedding | (self, embedding_id, embedding, metadata) | Add or update an embedding in the Chroma collection. |
+| core/utils/chroma_client.py | ChromaClient | validate_embedding | (self, embedding, threshold) | Validate if any stored embedding meets or exceeds the similarity threshold. |
+| core/utils/indexing.py | - | extract_keywords | (text) | Extracts keywords from text (stub). |
+| core/utils/indexing.py | - | index_text | (text) | Placeholder for text indexing logic. |
+| core/utils/indexing.py | - | render_feed_item | (agent_name, message, fields) | Placeholder for rendering a feed item (e.g., Discord embed). |
+| core/utils/network.py | - | fetch_with_retries | (url, retries, delay) | Fetch URL with basic retry logic. |
 | legion/database/chroma_interface.py | - | query_context | (query_text) | Queries ChromaDB for context related to the query_text. |
 | legion/discord/commands.py | - | _safe_send | (channel, *args, **kwargs) | Send a message only if the channel supports .send() |
 | legion/discord/commands.py | - | setup | (bot) | Needs Documentation |

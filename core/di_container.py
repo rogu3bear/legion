@@ -61,8 +61,15 @@ def get_memory_manager() -> IMemoryManager:
 
 
 # Default service registrations
+import os
 from core.utils.llm_client import LLMClient
-from core.state import StateManager
+from legion.core.state import StateManager
 
-container.register_factory(ILLMClient, LLMClient)
+# Use mode-switching client if LLM_MODE is set, otherwise use legacy client
+if os.getenv("LLM_MODE"):
+    from legion.core.llm_mode_client import create_mode_switching_llm_client
+    container.register_factory(ILLMClient, create_mode_switching_llm_client)
+else:
+    container.register_factory(ILLMClient, LLMClient)
+
 container.register_factory(IStateManager, StateManager)
