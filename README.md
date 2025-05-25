@@ -77,14 +77,9 @@ This executes `scripts/selftest_handshake.py` and prints `[HANDSHAKE TEST] PASS`
 
 ## Documentation
 For comprehensive documentation, see:
-- [Architecture Guide](docs/architecture.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
-- [Web Interface Guide](docs/web_interface_guide.md)
-- [Discord Integration](docs/discord_integration.md)
-- [Function Index](docs/function_index.md)
+- [Documentation Index](docs/README.md)
+- [Function Index](docs/system/function_index.md)
 - [Changelog](changelog.md)
-- [ASCII Dispatch Diagrams](docs/dispatch_flow_ascii.md)
-- [Function Flow Diagrams](docs/function_flow_ascii.md)
 
 ## Full System Operation
 
