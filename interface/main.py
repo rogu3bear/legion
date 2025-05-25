@@ -68,7 +68,24 @@ def on_startup():
     # Import Base and engine to initialize tables
     from interface.db.base import Base, engine
 
+    try:
+        import redis  # type: ignore
+    except Exception:
+        redis = None
+
+    from legion.core.state import restore_agent_state_from_redis
+
     Base.metadata.create_all(bind=engine)
+
+    if redis is not None:
+        try:
+            r = redis.Redis(host="localhost", port=7810, decode_responses=True)
+            recovered = restore_agent_state_from_redis(r)
+            logger.info(
+                "Recovered %d agent(s) from Redis", len(recovered)
+            )
+        except Exception as exc:  # pragma: no cover - startup logging only
+            logger.error("Failed to restore agents from Redis: %s", exc)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
