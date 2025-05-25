@@ -7,6 +7,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 import openai
+from core.interfaces import ILLMClient
 
 # pick up our local LM Studio endpoint
 base = os.getenv("OPENAI_API_BASE")
@@ -27,7 +28,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY", "")
 logger = logging.getLogger(__name__)
 
 
-class LLMClient:
+class LLMClient(ILLMClient):
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -117,3 +118,26 @@ class LLMClient:
                 f"[ERROR] Exception parsing LLM response: {e}\nRaw response: {response}"
             )
             raise RuntimeError(f"Key error parsing LLM response: {e}")
+
+    def call(self, messages: List[Dict[str, str]], **kwargs) -> str:
+        """Call the LLM with a list of messages and return the response."""
+        # Use generate method as backend with dummy values
+        return self.generate(
+            agent_name="api_call",
+            thread_id="default",
+            dynamic_rules={"default": []},
+            history=messages,
+            **kwargs
+        )
+
+    def get_embedding(self, text: str) -> List[float]:
+        """Generate an embedding for the given text."""
+        try:
+            response = openai.Embedding.create(
+                input=text,
+                model="text-embedding-ada-002"
+            )
+            return response["data"][0]["embedding"]
+        except Exception as e:
+            logger.error(f"Embedding generation failed: {e}")
+            raise

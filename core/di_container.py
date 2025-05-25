@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Type, TypeVar
 
-from legion.core.interfaces import ILLMClient, IMemoryManager, IStateManager
+from core.interfaces import ILLMClient, IMemoryManager, IStateManager
 
 T = TypeVar("T")
 
@@ -63,11 +63,11 @@ def get_memory_manager() -> IMemoryManager:
 # Default service registrations
 import os
 from core.utils.llm_client import LLMClient
-from legion.core.state import StateManager
+from core.state import StateManager
 
 # Use mode-switching client if LLM_MODE is set, otherwise use legacy client
 if os.getenv("LLM_MODE"):
-    from legion.core.llm_mode_client import create_mode_switching_llm_client
+    from core.llm_mode_client import create_mode_switching_llm_client
     container.register_factory(ILLMClient, create_mode_switching_llm_client)
 else:
     container.register_factory(ILLMClient, LLMClient)

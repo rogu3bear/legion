@@ -17,6 +17,18 @@ class ILLMClient(ABC):
         """Generate an embedding for the given text."""
         pass
 
+    @abstractmethod
+    def generate(
+        self,
+        agent_name: str,
+        thread_id: str,
+        dynamic_rules: Dict[str, Any],
+        history: List[Dict[str, str]],
+        **override_kwargs: Any,
+    ) -> str:
+        """Legacy generate method for backward compatibility with existing code."""
+        pass
+
 
 class IStateManager(ABC):
     """Interface for state management implementations."""

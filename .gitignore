@@ -21,6 +21,15 @@ env/
 # Keep schema files, ignore instance data:
 memory/db/*.db
 
+# MCP Unified Database (keep structure, ignore data)
+memory/db/mcp_unified.db
+memory/db/mcp_unified.db-wal
+memory/db/mcp_unified.db-shm
+
+# MCP Configuration (allow examples, ignore instances)
+mcp_config.json
+.mcp_*
+
 # Logs & Temp Files
 *.log
 logs/

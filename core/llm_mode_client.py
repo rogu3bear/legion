@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Any, Dict, List, Optional, Union
 
-from legion.core.interfaces import ILLMClient
+from core.interfaces import ILLMClient
 from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class ModeSwitchingLLMClient(ILLMClient):
     ):
         """
         Initialize the mode-switching LLM client.
-        
+
         Args:
             mode: 'local' for LM Studio, 'remote' for OpenAI, or None for env-based detection
             api_key: API key for remote services
@@ -34,9 +34,9 @@ class ModeSwitchingLLMClient(ILLMClient):
         self.mode = mode or os.getenv("LLM_MODE", "local")
         self.model = model or os.getenv("OPENAI_MODEL", "meta-llama-3.1-8b-instruct")
         self.default_kwargs = default_kwargs or {}
-        
+
         logger.info(f"ModeSwitchingLLMClient initialized in {self.mode} mode")
-        
+
         # Initialize backends based on mode
         if self.mode.lower() == "local":
             self.lmstudio_adapter = LMStudioAdapter(api_base)
@@ -48,7 +48,7 @@ class ModeSwitchingLLMClient(ILLMClient):
                 openai.api_base = api_base
             elif os.getenv("OPENAI_API_BASE"):
                 openai.api_base = os.getenv("OPENAI_API_BASE")
-            
+
             openai.api_key = api_key or os.getenv("OPENAI_API_KEY", "")
             self.openai = openai
             logger.info("Remote OpenAI client initialized")
@@ -65,7 +65,7 @@ class ModeSwitchingLLMClient(ILLMClient):
         try:
             params = {**self.default_kwargs, **kwargs}
             response = await self.lmstudio_adapter.chat_complete(messages, **params)
-            
+
             # Extract response text from various response formats
             if "choices" in response and response["choices"]:
                 return response["choices"][0]["message"]["content"]
@@ -74,7 +74,7 @@ class ModeSwitchingLLMClient(ILLMClient):
             else:
                 logger.error(f"Unexpected local LLM response format: {response}")
                 raise RuntimeError(f"Unexpected local LLM response format: {response}")
-                
+
         except Exception as e:
             logger.error(f"Local LLM call failed: {e}")
             raise
@@ -86,9 +86,9 @@ class ModeSwitchingLLMClient(ILLMClient):
             params["model"] = params.get("model", self.model)
             params["messages"] = messages
             params["max_tokens"] = params.get("max_tokens", 1024)
-            
+
             response = self.openai.ChatCompletion.create(**params)
-            
+
             # Extract response text
             if hasattr(response, "choices"):
                 return response.choices[0].message.content
@@ -97,7 +97,7 @@ class ModeSwitchingLLMClient(ILLMClient):
             else:
                 logger.error(f"Unexpected remote LLM response format: {response}")
                 raise RuntimeError(f"Unexpected remote LLM response format: {response}")
-                
+
         except Exception as e:
             logger.error(f"Remote LLM call failed: {e}")
             raise
@@ -134,17 +134,17 @@ class ModeSwitchingLLMClient(ILLMClient):
         """
         # Select rules for this thread
         rules = dynamic_rules.get(thread_id, dynamic_rules.get("default", []))
-        
+
         # Build the messages sequence
         messages: List[Dict[str, str]] = []
         if isinstance(rules, list):
             messages.extend(rules)
         elif isinstance(rules, dict):
             messages.append(rules)
-        
+
         # Append conversation history
         messages.extend(history)
-        
+
         # Call the async method synchronously (for backward compatibility)
         import asyncio
         try:
@@ -152,7 +152,7 @@ class ModeSwitchingLLMClient(ILLMClient):
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        
+
         return loop.run_until_complete(self.call(messages, **override_kwargs))
 
     async def health_check(self) -> Dict[str, Any]:
@@ -170,7 +170,7 @@ class ModeSwitchingLLMClient(ILLMClient):
                 }
             except Exception as e:
                 return {
-                    "status": "unhealthy", 
+                    "status": "unhealthy",
                     "mode": "remote",
                     "error": str(e)
                 }
@@ -179,4 +179,4 @@ class ModeSwitchingLLMClient(ILLMClient):
 # Factory function for DI container
 def create_mode_switching_llm_client() -> ModeSwitchingLLMClient:
     """Factory function to create mode-switching LLM client."""
-    return ModeSwitchingLLMClient() 
+    return ModeSwitchingLLMClient()
