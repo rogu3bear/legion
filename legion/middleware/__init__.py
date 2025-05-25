@@ -9,7 +9,7 @@ Therapist agent.
 
 import logging
 
-from legion.agents.therapist.validation import therapist_validate
+from legion.agents.therapist import validate as therapist_validate
 from legion.utils.agent_feed import post_agent_feed
 
 from .hallucination_guard import guard_response
