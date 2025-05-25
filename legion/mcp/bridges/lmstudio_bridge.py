@@ -8,8 +8,6 @@ import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from core.utils.llm_client import LLMClient
-
 logger = logging.getLogger(__name__)
 
 
@@ -18,13 +16,13 @@ class LMStudioAdapter:
 
     def __init__(self, base_url: Optional[str] = None):
         """Initialize the LM Studio adapter."""
-        self.base_url = base_url or os.getenv("LMSTUDIO_API_URL", "http://127.0.0.1:1234/v1")
+        self.base_url = base_url or os.getenv("LMSTUDIO_BASE_URL", os.getenv("LMSTUDIO_API_URL", "http://127.0.0.1:1234/v1"))
         if not self.base_url.endswith("/v1"):
             self.base_url = self.base_url.rstrip("/") + "/v1"
-        
+
         self.completions_endpoint = f"{self.base_url}/chat/completions"
         self.models_endpoint = f"{self.base_url}/models"
-        
+
         logger.info(f"LMStudioAdapter initialized with base_url: {self.base_url}")
 
     async def discover_model(self) -> Dict[str, Any]:
@@ -47,7 +45,7 @@ class LMStudioAdapter:
             "temperature": kwargs.get("temperature", 0.7),
             **{k: v for k, v in kwargs.items() if k not in ("model", "messages", "max_tokens", "temperature")}
         }
-        
+
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
@@ -105,7 +103,7 @@ class LMStudioMCP:
 
     def _setup_routes(self):
         """Setup FastAPI routes for the MCP server."""
-        
+
         @self.app.post("/v1/chat/completions")
         async def chat_completions(request: Request):
             """Handle chat completions requests."""
@@ -155,4 +153,4 @@ def create_lmstudio_adapter() -> LMStudioAdapter:
 
 def create_lmstudio_mcp() -> LMStudioMCP:
     """Factory function to create LM Studio MCP server."""
-    return LMStudioMCP() 
+    return LMStudioMCP()

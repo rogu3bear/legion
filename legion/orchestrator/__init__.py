@@ -2205,6 +2205,30 @@ if __name__ == "__main__":
     )  # Assuming already registered from core
     container.register_instance(IStateManager, container.get(IStateManager))
 
+    # Initialize LM Studio MCP service if in local mode
+    if os.getenv("LLM_MODE", "").lower() == "local":
+        try:
+            from legion.mcp.bridges.lmstudio_bridge import create_lmstudio_mcp
+            import uvicorn
+            import threading
+
+            lmstudio_mcp = create_lmstudio_mcp()
+            container.register_instance("LMStudioMCP", lmstudio_mcp)
+
+            # Start MCP server in background thread
+            mcp_port = int(os.getenv("LMSTUDIO_MCP_PORT", "8009"))
+
+            def run_mcp_server():
+                uvicorn.run(lmstudio_mcp.app, host="127.0.0.1", port=mcp_port, log_level="info")
+
+            mcp_thread = threading.Thread(target=run_mcp_server, daemon=True)
+            mcp_thread.start()
+
+            logger.info(f"LM Studio MCP service started at http://localhost:{mcp_port}")
+        except Exception as e:
+            logger.error(f"Failed to start LM Studio MCP service: {e}")
+            logger.warning("Continuing without LM Studio MCP service")
+
     orch = Orchestrator(
         pid_file=PID_FILE,
         state_manager=container.get(IStateManager),

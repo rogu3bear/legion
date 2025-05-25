@@ -198,6 +198,73 @@ jobs:
       - name: Run instantiation guard
         run: |
           python scripts/agent_instantiation_guard.py legion/
+
+  lmstudio-integration:
+    name: "LM Studio MCP Integration Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install requests
+      - name: Mock LM Studio Server
+        run: |
+          # Start a mock LM Studio server for testing
+          python - << 'PYCODE' &
+          from http.server import HTTPServer, BaseHTTPRequestHandler
+          import json
+
+          class MockLMStudio(BaseHTTPRequestHandler):
+              def do_POST(self):
+                  if self.path == '/v1/chat/completions':
+                      self.send_response(200)
+                      self.send_header('Content-type', 'application/json')
+                      self.end_headers()
+                      response = {"choices": [{"message": {"content": "pong"}}]}
+                      self.wfile.write(json.dumps(response).encode())
+                  elif self.path == '/v1/models':
+                      self.send_response(200)
+                      self.send_header('Content-type', 'application/json')
+                      self.end_headers()
+                      response = {"data": [{"id": "mock-model"}]}
+                      self.wfile.write(json.dumps(response).encode())
+
+              def do_GET(self):
+                  if self.path == '/v1/models':
+                      self.send_response(200)
+                      self.send_header('Content-type', 'application/json')
+                      self.end_headers()
+                      response = {"data": [{"id": "mock-model"}]}
+                      self.wfile.write(json.dumps(response).encode())
+
+          server = HTTPServer(('localhost', 1234), MockLMStudio)
+          server.serve_forever()
+          PYCODE
+          sleep 3
+      - name: Test LM Studio MCP Integration
+        run: |
+          python - << 'PY'
+          import requests, os, json
+          url = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234") + "/chat/completions"
+          payload = {"model":"mock-model","messages":[{"role":"user","content":"ping"}]}
+          r = requests.post(url, json=payload, timeout=10)
+          print("status", r.status_code)
+          assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+
+          # Test model discovery
+          models_url = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234") + "/models"
+          r2 = requests.get(models_url, timeout=10)
+          print("models status", r2.status_code)
+          assert r2.status_code == 200, f"Expected 200, got {r2.status_code}"
+
+          print("✅ LM Studio MCP integration test passed")
+          PY
       - name: Upload CI Logs
         uses: actions/upload-artifact@v3
         if: always()
