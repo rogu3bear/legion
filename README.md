@@ -139,6 +139,11 @@ Legion follows a strict layered architecture enforced by CI:
 3. Update documentation when adding features
 4. Maintain the changelog
 
+## MCP Stack
+The **MCP** (Modular Control Plane) stack coordinates core services and tool
+invocations. This release introduces the foundational scaffolding and database
+schema for upcoming functionality.
+
 ## Agent Instantiation Guard
 **Purpose:** Prevent direct construction of agent classes outside the orchestrator.
 

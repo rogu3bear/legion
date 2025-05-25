@@ -61,7 +61,7 @@ def get_memory_manager() -> IMemoryManager:
 
 
 # Default service registrations
-from legion.core.llm_client import LLMClient
+from core.utils.llm_client import LLMClient
 from legion.core.state import StateManager
 
 container.register_factory(ILLMClient, LLMClient)

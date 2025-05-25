@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from legion.core.utils.chroma_client import ChromaClient
+from core.utils.chroma_client import ChromaClient
 from legion.core.middleware.directive_definitions import (AGENT_DIRECTIVE_STRING,
                                                         MIDDLEWARE_DIRECTIVE_PROMPT)
 from middleware.src.middleware.directive_compliance import DirectiveCompliance
