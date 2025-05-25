@@ -1,0 +1,7 @@
+
+name: demo_agent
+version: 1.0
+settings:
+  max_memory_mb: 512
+  log_level: INFO
+  auto_save: true

@@ -1,0 +1,203 @@
+{
+  "audit_metadata": {
+    "scan_date": "2025-01-18",
+    "legion_version": "M24.2",
+    "scan_scope": "legion/** recursive",
+    "total_findings": 15,
+    "categories": ["hardcoded_ports", "database_workflow", "legacy_references", "missing_files", "outdated_api_docs"]
+  },
+  "findings": [
+    {
+      "id": "F001",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/function_index.md",
+      "line_number": 8,
+      "outdated_content": "| `legion/core/network.py` | module | `placeholder_network` | `(url: str = \"http://localhost:8000/\", timeout: float = 2.0) -> dict` | Perform basic HTTP GET health check, return status and elapsed time. |",
+      "issue": "References hardcoded port 8000 which conflicts with M24.2 port allocation (7800-7810 range)",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to reference environment variable WEB_API_PORT or current M24.2 port scheme"
+    },
+    {
+      "id": "F002",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/web_interface_guide.md",
+      "line_number": 16,
+      "outdated_content": "- Web UI: `http://<your-host>:8000`",
+      "issue": "References port 8000 which is not in M24.2 port allocation",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use PORT_ALLOCATOR_WEB_UI (27001) or environment variable"
+    },
+    {
+      "id": "F003",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/web_interface_guide.md",
+      "line_number": 18,
+      "outdated_content": "- WebSocket: `ws://<your-host>:8000/ws`",
+      "issue": "References port 8000 which is not in M24.2 port allocation",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use PORT_ALLOCATOR_WEB_UI (27001) or environment variable"
+    },
+    {
+      "id": "F004",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/REFERENCE.md",
+      "line_number": 286,
+      "outdated_content": "4. **Access**: API at `http://localhost:8000/api/v1`, WebSocket at `ws://localhost:8000/ws`",
+      "issue": "References port 8000 which conflicts with M24.2 port allocation",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use current M24.2 port scheme"
+    },
+    {
+      "id": "F005",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/REFERENCE.md",
+      "line_number": 614,
+      "outdated_content": "- **Endpoint**: `ws://localhost:8000/ws/events`",
+      "issue": "References port 8000 which is not in M24.2 port allocation",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use environment variable or current port scheme"
+    },
+    {
+      "id": "F006",
+      "category": "hardcoded_ports",
+      "severity": "medium",
+      "file_path": "docs/REFERENCE.md",
+      "line_number": 637,
+      "outdated_content": "- **Endpoint**: `ws://localhost:8000/ws/agents/{agent_name}/feed`",
+      "issue": "References port 8000 which is not in M24.2 port allocation",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use environment variable or current port scheme"
+    },
+    {
+      "id": "F007",
+      "category": "hardcoded_ports",
+      "severity": "low",
+      "file_path": "docs/monitoring.md",
+      "line_number": 75,
+      "outdated_content": "curl -f \"http://localhost:9090/-/ready\"",
+      "issue": "References port 9090 which should use PORT_ALLOCATOR_PROMETHEUS (27030) in M24.2",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to use PORT_ALLOCATOR_PROMETHEUS environment variable"
+    },
+    {
+      "id": "F008",
+      "category": "database_workflow",
+      "severity": "high",
+      "file_path": "legion/core/db_utils.py",
+      "line_number": 14,
+      "outdated_content": "# TODO: Execute schema.sql or define tables here",
+      "issue": "References manual schema.sql execution which conflicts with Alembic migration workflow",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove TODO as Alembic migrations are now in place (0001_initial.py, 0002_create_tasks.py)"
+    },
+    {
+      "id": "F009",
+      "category": "database_workflow",
+      "severity": "medium",
+      "file_path": "legion/core/db_utils.py",
+      "line_number": 20,
+      "outdated_content": "# cursor.execute(\"CREATE TABLE example (id INTEGER PRIMARY KEY, data TEXT)\")",
+      "issue": "Example of manual table creation conflicts with Alembic schema management",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove manual table creation example as Alembic handles schema"
+    },
+    {
+      "id": "F010",
+      "category": "database_workflow",
+      "severity": "medium",
+      "file_path": "README.md",
+      "line_number": 170,
+      "outdated_content": "| `core/db/schema.sql` | Database schema mirror |",
+      "issue": "References schema.sql as active component when it's just a stub (2 lines) and Alembic manages schema",
+      "suggested_disposition": "rewrite",
+      "recommendation": "Update to reference Alembic migrations directory instead"
+    },
+    {
+      "id": "F011",
+      "category": "legacy_references",
+      "severity": "low",
+      "file_path": "legion/orchestrator/__init__.py",
+      "line_number": 836,
+      "outdated_content": "# --- Legacy IPC Check - REMOVE LATER --- START ---",
+      "issue": "Contains legacy IPC code marked for removal",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove legacy IPC check code block as indicated by comment"
+    },
+    {
+      "id": "F012",
+      "category": "legacy_references",
+      "severity": "low",
+      "file_path": "legion/orchestrator/__init__.py",
+      "line_number": 841,
+      "outdated_content": "# --- Legacy IPC Check - REMOVE LATER --- END ---",
+      "issue": "End marker for legacy IPC code marked for removal",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove legacy IPC check code block as indicated by comment"
+    },
+    {
+      "id": "F013",
+      "category": "outdated_api_docs",
+      "severity": "medium",
+      "file_path": "docs/_temp_merge_log.md",
+      "line_number": 7,
+      "outdated_content": "⟪ 133 characters skipped ⟫ariable instead of hard-coded `localhost:8000`",
+      "issue": "References localhost:8000 hardcoding issue that should be resolved",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove temporary merge log as it references resolved issues"
+    },
+    {
+      "id": "F014",
+      "category": "outdated_api_docs",
+      "severity": "medium",
+      "file_path": "docs/_temp_merge_log.md",
+      "line_number": 40,
+      "outdated_content": "- `legion/core/network.py:14` - Hard-coded `localhost:8000` → Environment variable",
+      "issue": "References hardcoded port issue that has been addressed in current code",
+      "suggested_disposition": "delete",
+      "recommendation": "Remove temporary merge log as changes have been implemented"
+    },
+    {
+      "id": "F015",
+      "category": "missing_files",
+      "severity": "low",
+      "file_path": "memory/logs/task_log.jsonl",
+      "line_number": 1,
+      "outdated_content": "Empty file (0 bytes)",
+      "issue": "Documentation references task_log.jsonl but file is empty, unclear if this is expected",
+      "suggested_disposition": "relocate",
+      "recommendation": "Add documentation clarifying that empty task_log.jsonl is expected initial state"
+    }
+  ],
+  "summary": {
+    "critical_issues": 0,
+    "high_priority": 1,
+    "medium_priority": 9,
+    "low_priority": 5,
+    "port_conflicts": 6,
+    "database_workflow_conflicts": 3,
+    "legacy_code_references": 2,
+    "files_needing_updates": 8,
+    "recommendations": {
+      "immediate_action": [
+        "Update all hardcoded port references to use M24.2 port allocation scheme",
+        "Remove legacy database workflow references in favor of Alembic",
+        "Clean up legacy IPC code marked for removal"
+      ],
+      "documentation_updates": [
+        "Update web interface guide with correct port variables",
+        "Revise API reference documentation for current endpoints",
+        "Remove temporary merge logs and outdated TODO comments"
+      ],
+      "verification_needed": [
+        "Confirm task_log.jsonl empty state is expected",
+        "Verify all M24.2 port allocations are correctly documented",
+        "Check if schema.sql stub should be removed entirely"
+      ]
+    }
+  }
+} 

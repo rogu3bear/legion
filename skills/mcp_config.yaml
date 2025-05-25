@@ -1,0 +1,161 @@
+---
+# Legion MCP Server Configuration
+# This file defines the configuration for the FastMCP server that integrates with Legion
+
+server:
+  name: "Legion MCP Server"
+  description: "Model Context Protocol server for Legion agent system integration"
+  version: "1.0.0"
+  host: "localhost"
+  port: 8765
+  
+  # Logging configuration
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    enable_file_logging: true
+    log_file: "logs/mcp_server.log"
+
+# Memory system configuration
+memory:
+  base_directory: "memory"
+  auto_create_agent_dirs: true
+  enable_vector_storage: true
+  vector_store_format: "jsonl"
+  
+  # Memory cleanup settings
+  cleanup:
+    enable_automatic_cleanup: false
+    max_age_days: 30
+    max_memory_size_mb: 1024
+
+# Skills configuration
+skills:
+  search:
+    enabled: true
+    default_sources: ["web", "documentation"]
+    max_results: 10
+    timeout_seconds: 30
+    
+  summarization:
+    enabled: true
+    default_max_length_ratio: 0.3  # 30% of original length
+    min_length: 50
+    max_length: 1000
+    
+  vector_search:
+    enabled: true
+    default_top_k: 5
+    similarity_threshold: 0.1
+
+# Resource access configuration
+resources:
+  enable_agent_memory: true
+  enable_task_logs: true
+  enable_documents: true
+  enable_system_status: true
+  
+  # Security settings
+  security:
+    allow_cross_agent_access: true
+    require_agent_authentication: false
+    max_resource_size_mb: 10
+
+# Prompt configuration
+prompts:
+  enable_agent_diagnosis: true
+  enable_memory_analysis: true
+  enable_system_health_check: true
+  
+  # Custom prompt templates
+  templates:
+    agent_diagnosis:
+      max_symptoms_length: 1000
+      include_remediation_steps: true
+      
+    memory_analysis:
+      include_performance_metrics: true
+      include_optimization_suggestions: true
+      
+    health_check:
+      include_detailed_metrics: true
+      include_recommendations: true
+
+# Error handling and resilience
+error_handling:
+  max_retries: 3
+  retry_delay_seconds: 1
+  enable_graceful_degradation: true
+  fallback_responses: true
+  
+  # Circuit breaker settings
+  circuit_breaker:
+    enabled: false
+    failure_threshold: 5
+    recovery_timeout_seconds: 60
+
+# Performance settings
+performance:
+  max_concurrent_requests: 100
+  request_timeout_seconds: 30
+  enable_request_caching: false
+  cache_ttl_seconds: 300
+  
+  # Rate limiting
+  rate_limiting:
+    enabled: false
+    requests_per_minute: 1000
+    requests_per_hour: 10000
+
+# Integration settings
+integration:
+  legion:
+    auto_discover_agents: true
+    watch_memory_changes: false
+    sync_agent_configs: false
+    
+  external:
+    enable_webhook_notifications: false
+    webhook_url: ""
+    notification_events: ["agent_error", "system_health_alert"]
+
+# LLM Integration settings (LM Studio / OpenAI)
+llm:
+  # Primary LLM configuration
+  provider: "lm_studio"  # Options: "openai", "lm_studio", "mock"
+  
+  # LM Studio settings
+  lm_studio:
+    base_url: "http://localhost:1234/v1"  # Default LM Studio endpoint
+    api_key: "${LM_STUDIO_API_KEY:-not-needed}"  # LM Studio may not need real key
+    model: "meta-llama-3.1-8b-instruct"  # Use available model from LM Studio
+    max_tokens: 1000
+    temperature: 0.3
+    timeout_seconds: 30
+    
+  # OpenAI settings (fallback or alternative)
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    base_url: "https://api.openai.com/v1"  # Standard OpenAI endpoint
+    model: "gpt-3.5-turbo"
+    max_tokens: 1000
+    temperature: 0.3
+    timeout_seconds: 30
+    
+  # Mock settings for testing
+  mock:
+    enable_deterministic_responses: true
+    response_delay_ms: 100
+
+# Development and debugging
+development:
+  enable_debug_mode: false
+  enable_verbose_logging: false
+  enable_request_tracing: false
+  enable_performance_metrics: true
+  
+  # Testing settings
+  testing:
+    enable_mock_mode: false
+    mock_response_delay_ms: 100
+    enable_test_fixtures: true 

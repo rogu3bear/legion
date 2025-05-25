@@ -15,10 +15,11 @@ import os
 import openai
 
 from legion.core.di_container import ILLMClient, container
+from legion.core.interfaces import IStateManager
 from legion.core.logging_config import setup_logging
 from legion.core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
-from legion.utils.discord_bridge import send_discord_embed, MessageType
+# Discord bridge imports moved to function scope to avoid circular imports
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -430,6 +431,30 @@ class BaseAgent:
                 pass
             return "[Error: Internal error in message processing]"
 
+    async def handle_task(self, payload: dict) -> str:
+        """Handle a task payload from the orchestrator."""
+        try:
+            # Extract content from payload
+            content = payload.get("prompt") or payload.get("content") or payload.get("directive", "")
+            context = payload.get("context", {})
+            
+            # Delegate to handle_message
+            response = await self.handle_message(
+                content=content,
+                author=payload.get("author"),
+                timestamp=payload.get("timestamp"),
+                context=context
+            )
+            
+            return response or "[No response generated]"
+            
+        except Exception as e:
+            logging.error(
+                f"[{self.name}] Error in handle_task: {e}",
+                exc_info=True,
+            )
+            return f"[Error: Task handling failed for {self.name}]"
+
     def get_message_embedding(self, text: str) -> List[float]:
         """Generate an embedding for the given text, safely handling errors."""
         model = self.config.get("embedding_model", "text-embedding-ada-002")
@@ -488,6 +513,20 @@ class BaseAgent:
         self, thread_id: str, history: List[Dict[str, str]], **override_kwargs
     ) -> str:
         """Centralized LLM invocation: selects dynamic rules and calls the LLM client."""
+        
+        # Check if LLM calls are disabled via environment variable
+        env_value = os.getenv("ENABLE_LLM_CALLS", "true")
+        # Handle empty string case - should default to true
+        if not env_value:
+            env_value = "true"
+        enable_llm = env_value.lower() in ["true", "1", "yes", "on"]
+        
+        if not enable_llm:
+            # Return placeholder response when LLM is disabled
+            placeholder_response = self._get_placeholder_response(thread_id, history)
+            print(f"[DEBUG] {self.name} LLM calls disabled, returning placeholder: {placeholder_response[:100]}...")
+            return placeholder_response
+        
         if not self.llm.model:
             raise RuntimeError(
                 f"[{self.name}] No LLM model loaded. Please load a model before requesting completions."
@@ -555,6 +594,46 @@ class BaseAgent:
             print(f"[ERROR] LLM call failed: {e}")
             traceback.print_exc()
             raise RuntimeError(f"[{self.name}] LLM call failed due to value error: {e}")
+
+    def _get_placeholder_response(self, thread_id: str, history: List[Dict[str, str]]) -> str:
+        """Generate a placeholder response when LLM calls are disabled."""
+        # Extract the user's last message for context
+        last_user_message = ""
+        for msg in reversed(history):
+            if msg.get("role") == "user":
+                last_user_message = msg.get("content", "")
+                break
+        
+        # Generate agent-specific placeholder responses based on the agent name and context
+        agent_type = self.name.lower()
+        
+        if "doctor" in agent_type or "health" in agent_type:
+            return f"[PLACEHOLDER] Doctor agent response: Analyzing symptoms from '{last_user_message[:50]}...' - Diagnosis: System appears healthy. Suggested actions: Monitor logs and check resource usage."
+        
+        elif "architect" in agent_type:
+            return f"[PLACEHOLDER] Architect agent response: Reviewing code/design from '{last_user_message[:50]}...' - Architecture looks sound. Recommendations: Follow established patterns and maintain documentation."
+        
+        elif "metrics" in agent_type:
+            return f"[PLACEHOLDER] Metrics agent response: Processing metrics request '{last_user_message[:50]}...' - Current status: All systems operational. Key metrics within normal ranges."
+        
+        elif "researcher" in agent_type:
+            return f"[PLACEHOLDER] Researcher agent response: Research query '{last_user_message[:50]}...' - Findings: Based on available data, the topic requires further investigation. Key insights pending."
+        
+        elif "therapist" in agent_type:
+            return f"[PLACEHOLDER] Therapist agent response: Therapy session context '{last_user_message[:50]}...' - Assessment: Communication patterns appear normal. Recommendation: Continue regular check-ins."
+        
+        elif "ux" in agent_type or "designer" in agent_type:
+            return f"[PLACEHOLDER] UX Designer agent response: Design feedback on '{last_user_message[:50]}...' - UI/UX suggestions: Interface is functional. Consider user experience improvements."
+        
+        elif "ping" in agent_type:
+            return f"[PLACEHOLDER] Ping agent response: Pinging '{last_user_message[:50]}...' - Connection status: Active and responsive."
+        
+        elif "echo" in agent_type:
+            return f"[PLACEHOLDER] Echo agent response: Echoing '{last_user_message[:50]}...' - Message received and acknowledged."
+        
+        else:
+            # Generic fallback for unknown agent types
+            return f"[PLACEHOLDER] {self.name} agent response: Processing request '{last_user_message[:50]}...' - Operation completed successfully. LLM calls are currently disabled for debugging."
 
     def start_self_assessment(self, interval_seconds=600):
         """Start the self-assessment loop if not already running."""

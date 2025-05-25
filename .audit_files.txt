@@ -1,0 +1,15 @@
+docs/_temp_merge_log.md
+docs/_temp_merge_log.md
+docs/function_index.md
+docs/monitoring.md
+docs/REFERENCE.md
+docs/REFERENCE.md
+docs/REFERENCE.md
+docs/web_interface_guide.md
+docs/web_interface_guide.md
+legion/core/db_utils.py
+legion/core/db_utils.py
+legion/orchestrator/__init__.py
+legion/orchestrator/__init__.py
+memory/logs/task_log.jsonl
+README.md

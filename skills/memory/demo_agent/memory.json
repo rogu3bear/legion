@@ -1,0 +1,8 @@
+{
+  "current_task": "processing_data",
+  "config": {
+    "max_retries": 5,
+    "timeout_seconds": 30,
+    "debug_mode": true
+  }
+}

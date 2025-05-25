@@ -16,7 +16,7 @@ function App() {
     fetch(`http://localhost:${apiPort}/agents`)
       .then(res => res.json())
       .then(data => setAgents(data.agents))
-  }, [])
+  }, [apiPort])
 
   const loadAgent = (agent) => {
     fetch(`http://localhost:${apiPort}/agents/${agent}`)
