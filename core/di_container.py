@@ -67,7 +67,7 @@ from core.state import StateManager
 
 # Use mode-switching client if LLM_MODE is set, otherwise use legacy client
 if os.getenv("LLM_MODE"):
-    from core.llm_mode_client import create_mode_switching_llm_client
+    from legion.core.llm_mode_client import create_mode_switching_llm_client
     container.register_factory(ILLMClient, create_mode_switching_llm_client)
 else:
     container.register_factory(ILLMClient, LLMClient)
