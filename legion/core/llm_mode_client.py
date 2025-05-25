@@ -5,7 +5,7 @@ import logging
 import os
 from typing import Any, Dict, List, Optional
 
-from legion.core.interfaces import ILLMClient
+from core.interfaces import ILLMClient
 
 logger = logging.getLogger(__name__)
 
