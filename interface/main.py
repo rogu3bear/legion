@@ -10,6 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
 # Standard library imports
 import asyncio
 import json
+import secrets
 # import os # No longer needed for os.path
 
 # Third-party imports
@@ -23,6 +24,7 @@ from starlette.responses import Response
 # Project-specific imports
 from core.logging_config import setup_logging
 from legion import Orchestrator
+from interface.core.config import settings
 
 logger = setup_logging(__name__)
 
@@ -37,6 +39,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     auth_router,
     login_router,
     memory_router,
+    prompts_router,
     echo_router,
     system_router,
     task_registry_router,
@@ -44,11 +47,13 @@ from interface.api.v1.endpoints import (  # noqa: E402
     lmstudio_proxy_router,
     queue_router,
     metrics_router,
+    demo_router,
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
 app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
+app.include_router(prompts_router, prefix="/api/v1/prompts", tags=["prompts"])
 app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
@@ -57,6 +62,10 @@ app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["metrics"])
+
+# Only include demo router in debug mode
+if settings.DEBUG:
+    app.include_router(demo_router, prefix="/api/demo", tags=["demo"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []
@@ -91,8 +100,19 @@ def on_startup():
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response: Response = await call_next(request)
+
+        # Generate a nonce for scripts
+        nonce = secrets.token_urlsafe(16)
+
+        # Set CSP with nonce and allow React CDN
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+            f"default-src 'self'; "
+            f"script-src 'self' 'nonce-{nonce}' https://unpkg.com https://cdn.jsdelivr.net; "
+            f"style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            f"font-src 'self'; "
+            f"object-src 'none'; "
+            f"base-uri 'self'; "
+            f"form-action 'self'"
         )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -102,6 +122,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["Strict-Transport-Security"] = (
                 "max-age=63072000; includeSubDomains; preload"
             )
+
+        # Add nonce to request state for templates
+        request.state.nonce = nonce
+
         return response
 
 
@@ -112,6 +136,18 @@ app.add_middleware(SecurityHeadersMiddleware)
 def read_root(request: Request):
     """Renders the main feed HTML page."""
     return templates.TemplateResponse("feed.html", {"request": request})
+
+
+@app.get("/webui", response_class=HTMLResponse)
+def read_webui(request: Request):
+    """Renders the Legion WebUI page."""
+    return templates.TemplateResponse("webui.html", {"request": request})
+
+
+@app.get("/prompts", response_class=HTMLResponse)
+def prompts_page(request: Request):
+    """Renders the prompt management page."""
+    return templates.TemplateResponse("prompts.html", {"request": request})
 
 
 @app.get("/api/feed")

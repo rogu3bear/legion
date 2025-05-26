@@ -1,0 +1,23 @@
+{
+  "db_path": "memory/db/mcp_unified.db",
+  "connection_pool_size": 10,
+  "default_cache_ttl": 3600,
+  "cache_cleanup_interval": 300,
+  "max_cache_size": 10000,
+  "max_vector_results": 100,
+  "default_similarity_threshold": 0.8,
+  "vector_embedding_dimension": 1536,
+  "max_event_batch_size": 1000,
+  "event_retention_days": 30,
+  "codebase_cache_ttl": 86400,
+  "max_file_size_mb": 10,
+  "devops_operation_ttl": 604800,
+  "max_operation_history": 1000,
+  "query_timeout_seconds": 30,
+  "slow_query_threshold": 1.0,
+  "stats_report_interval": 300,
+  "health_check_interval": 60,
+  "enable_auth": false,
+  "auth_token": null,
+  "allowed_agents": null
+}

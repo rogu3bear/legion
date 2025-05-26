@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legion WebUI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+        }
+        .message-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            margin-right: 0;
+            max-width: 80%;
+        }
+        .message-assistant {
+            background: rgba(255, 255, 255, 0.9);
+            color: #374151;
+            margin-left: 0;
+            margin-right: auto;
+            max-width: 80%;
+        }
+        .prompt-editor {
+            min-height: 300px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .save-feedback {
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .dropdown-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Message component for chat
+        const Message = ({ message, isUser }) => (
+            <div className={`p-3 rounded-lg mb-3 ${isUser ? 'message-user' : 'message-assistant'}`}>
+                <div className="text-sm font-medium mb-1">
+                    {isUser ? 'You' : 'Assistant'}
+                </div>
+                <div className="whitespace-pre-wrap">{message}</div>
+            </div>
+        );
+
+        // Save feedback component
+        const SaveFeedback = ({ show, type, message }) => {
+            if (!show) return null;
+
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+
+            return (
+                <div className={`save-feedback fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50`}>
+                    {message}
+                </div>
+            );
+        };
+
+        // Main WebUI Component
+        const WebUI = () => {
+            const [agents, setAgents] = useState([]);
+            const [selectedAgent, setSelectedAgent] = useState('');
+            const [promptContent, setPromptContent] = useState('');
+            const [chatMessages, setChatMessages] = useState([]);
+            const [chatInput, setChatInput] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const [saveStatus, setSaveStatus] = useState({ show: false, type: '', message: '' });
+            const chatEndRef = useRef(null);
+
+            // Load agents on component mount
+            useEffect(() => {
+                fetchAgents();
+            }, []);
+
+            // Auto-scroll chat to bottom
+            useEffect(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [chatMessages]);
+
+            // Hide save feedback after 3 seconds
+            useEffect(() => {
+                if (saveStatus.show) {
+                    const timer = setTimeout(() => {
+                        setSaveStatus({ show: false, type: '', message: '' });
+                    }, 3000);
+                    return () => clearTimeout(timer);
+                }
+            }, [saveStatus]);
+
+            const fetchAgents = async () => {
+                try {
+                    const response = await fetch('/api/demo/agents');
+                    const data = await response.json();
+                    setAgents(data.agents || []);
+                } catch (error) {
+                    console.error('Error fetching agents:', error);
+                    setSaveStatus({ show: true, type: 'error', message: 'Failed to load agents' });
+                }
+            };
+
+            const loadPrompt = async (agentName) => {
+                if (!agentName) {
+                    setPromptContent('');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/demo/prompts/${agentName}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setPromptContent(data.content);
+                    } else {
+                        setPromptContent('');
+                    }
+                } catch (error) {
+                    console.error('Error loading prompt:', error);
+                    setSaveStatus({ show: true, type: 'error', message: 'Failed to load prompt' });
+                }
+            };
+
+            const handleAgentChange = (agentName) => {
+                setSelectedAgent(agentName);
+                loadPrompt(agentName);
+            };
+
+            const savePrompt = async () => {
+                if (!selectedAgent) {
+                    setSaveStatus({ show: true, type: 'error', message: 'Please select an agent first' });
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/demo/prompts/${selectedAgent}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ content: promptContent }),
+                    });
+
+                    if (response.ok) {
+                        setSaveStatus({ show: true, type: 'success', message: 'Prompt saved successfully!' });
+                    } else {
+                        setSaveStatus({ show: true, type: 'error', message: 'Failed to save prompt' });
+                    }
+                } catch (error) {
+                    console.error('Error saving prompt:', error);
+                    setSaveStatus({ show: true, type: 'error', message: 'Failed to save prompt' });
+                }
+            };
+
+            const sendMessage = async () => {
+                if (!chatInput.trim()) return;
+
+                const userMessage = chatInput.trim();
+                setChatInput('');
+                setChatMessages(prev => [...prev, { content: userMessage, isUser: true }]);
+                setIsLoading(true);
+
+                try {
+                    const response = await fetch('/api/v1/lmstudio/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            messages: [
+                                ...chatMessages.map(msg => ({
+                                    role: msg.isUser ? 'user' : 'assistant',
+                                    content: msg.content
+                                })),
+                                { role: 'user', content: userMessage }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 2048
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const assistantMessage = data.choices?.[0]?.message?.content || 'No response';
+                        setChatMessages(prev => [...prev, { content: assistantMessage, isUser: false }]);
+                    } else {
+                        setChatMessages(prev => [...prev, { content: 'Error: Failed to get response from LM Studio', isUser: false }]);
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    setChatMessages(prev => [...prev, { content: 'Error: Connection failed', isUser: false }]);
+                }
+
+                setIsLoading(false);
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+
+            return (
+                <div className="min-h-screen p-6">
+                    <SaveFeedback {...saveStatus} />
+
+                    {/* Header */}
+                    <div className="glass-effect rounded-xl p-6 mb-6 text-white">
+                        <h1 className="text-4xl font-bold mb-2">Legion WebUI</h1>
+                        <p className="text-lg opacity-90">Manage agents, edit prompts, and chat with LM Studio</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left Column: Agent & Prompt Editor */}
+                        <div className="space-y-6">
+                            {/* Agent Selector */}
+                            <div className="glass-effect rounded-xl p-6">
+                                <h2 className="text-2xl font-semibold text-white mb-4">Agent Selector</h2>
+                                <select
+                                    className="dropdown-glass w-full p-3 rounded-lg border-0 shadow-lg"
+                                    value={selectedAgent}
+                                    onChange={(e) => handleAgentChange(e.target.value)}
+                                >
+                                    <option value="">Select an agent...</option>
+                                    {agents.map(agent => (
+                                        <option key={agent} value={agent}>{agent}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Prompt Editor */}
+                            <div className="glass-effect rounded-xl p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-2xl font-semibold text-white">Prompt Editor</h2>
+                                    <button
+                                        className="btn-primary text-white px-6 py-2 rounded-lg font-medium"
+                                        onClick={savePrompt}
+                                        disabled={!selectedAgent}
+                                    >
+                                        Save Prompt
+                                    </button>
+                                </div>
+                                <textarea
+                                    className="prompt-editor w-full p-4 rounded-lg border-0 shadow-lg resize-none bg-white bg-opacity-95"
+                                    value={promptContent}
+                                    onChange={(e) => setPromptContent(e.target.value)}
+                                    placeholder={selectedAgent ? `Edit prompt for ${selectedAgent}...` : "Select an agent to edit its prompt"}
+                                    disabled={!selectedAgent}
+                                />
+                                <div className="text-sm text-white opacity-75 mt-2">
+                                    Supports Markdown formatting
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Chat Interface */}
+                        <div className="glass-effect rounded-xl p-6">
+                            <h2 className="text-2xl font-semibold text-white mb-4">LM Studio Chat</h2>
+
+                            {/* Chat Messages */}
+                            <div className="chat-container bg-white bg-opacity-10 rounded-lg p-4 mb-4">
+                                {chatMessages.length === 0 ? (
+                                    <div className="text-center text-white opacity-75 py-8">
+                                        Start a conversation with LM Studio...
+                                    </div>
+                                ) : (
+                                    chatMessages.map((message, index) => (
+                                        <Message
+                                            key={index}
+                                            message={message.content}
+                                            isUser={message.isUser}
+                                        />
+                                    ))
+                                )}
+                                {isLoading && (
+                                    <div className="message-assistant p-3 rounded-lg mb-3">
+                                        <div className="text-sm font-medium mb-1">Assistant</div>
+                                        <div className="animate-pulse">Thinking...</div>
+                                    </div>
+                                )}
+                                <div ref={chatEndRef} />
+                            </div>
+
+                            {/* Chat Input */}
+                            <div className="flex gap-3">
+                                <textarea
+                                    className="flex-1 p-3 rounded-lg border-0 shadow-lg resize-none bg-white bg-opacity-95"
+                                    rows="2"
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                                    disabled={isLoading}
+                                />
+                                <button
+                                    className="btn-primary text-white px-6 py-2 rounded-lg font-medium self-end"
+                                    onClick={sendMessage}
+                                    disabled={isLoading || !chatInput.trim()}
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<WebUI />, document.getElementById('root'));
+    </script>
+</body>
+</html>

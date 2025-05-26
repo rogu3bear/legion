@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legion Prompt Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .prompt-editor {
+            font-family: 'Courier New', monospace;
+            height: 400px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        .agent-selector {
+            margin-bottom: 20px;
+        }
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .chat-message.user {
+            background-color: #e3f2fd;
+            text-align: right;
+        }
+        .chat-message.assistant {
+            background-color: #f1f8e9;
+        }
+        .chat-message.system {
+            background-color: #fff3e0;
+            font-style: italic;
+        }
+        .chat-input {
+            margin-top: 10px;
+        }
+        .loading {
+            opacity: 0.6;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h3 class="text-center mb-4">Legion Login</h3>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <button type="submit" id="login-btn" class="btn btn-primary w-100">Login</button>
+                <div id="login-error" class="alert alert-danger mt-3 hidden"></div>
+            </form>
+            <div class="mt-3 text-center">
+                <small class="text-muted">Demo credentials: testuser / test123</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Legion Prompt Management & Chat</h1>
+                <div class="nav">
+                    <span id="user-info" class="me-3 text-muted"></span>
+                    <a href="/" class="btn btn-outline-secondary me-2">Dashboard</a>
+                    <a href="/agents" class="btn btn-outline-secondary me-2">Agents</a>
+                    <a href="/tasks" class="btn btn-outline-secondary me-2">Tasks</a>
+                    <button id="logout-btn" class="btn btn-outline-danger">Logout</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Prompt Editor Column -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h3 class="h5 mb-0">Prompt Editor</h3>
+                            <div>
+                                <button id="btn-save-prompt" class="btn btn-success btn-sm" disabled>Save</button>
+                                <button id="btn-new-prompt" class="btn btn-light btn-sm">New</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Agent Selection -->
+                            <div class="agent-selector">
+                                <label for="agent-select" class="form-label">Select Agent:</label>
+                                <select id="agent-select" class="form-select">
+                                    <option value="">Loading agents...</option>
+                                </select>
+                            </div>
+
+                            <!-- Prompt Editor -->
+                            <div class="mb-3">
+                                <label for="prompt-editor" class="form-label">Prompt Content (Markdown):</label>
+                                <textarea id="prompt-editor" class="form-control prompt-editor"
+                                          placeholder="Select an agent to load its prompt, or create a new one..."></textarea>
+                            </div>
+
+                            <!-- Status and Info -->
+                            <div id="prompt-status" class="text-muted small">
+                                Ready to edit prompts
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Interface Column -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <h3 class="h5 mb-0">LM Studio Chat Interface</h3>
+                            <div>
+                                <span id="lm-status-text">Checking...</span>
+                                <span id="lm-status-indicator" class="status-indicator status-offline"></span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Chat Container -->
+                            <div id="chat-container" class="chat-container">
+                                <div class="text-center text-muted">
+                                    Start a conversation to test prompts with LM Studio
+                                </div>
+                            </div>
+
+                            <!-- Chat Controls -->
+                            <div class="chat-input">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="text" id="chat-input" class="form-control"
+                                               placeholder="Type your message..." disabled>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button id="btn-send-chat" class="btn btn-primary w-100" disabled>Send</button>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <button id="btn-clear-chat" class="btn btn-outline-secondary btn-sm w-100">Clear</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button id="btn-test-prompt" class="btn btn-outline-info btn-sm w-100" disabled>Test Current Prompt</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div id="notification-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+                <!-- Notifications will be inserted here -->
+            </div>
+        </div>
+
+        <!-- New Prompt Modal -->
+        <div class="modal fade" id="newPromptModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create New Prompt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new-agent-name" class="form-label">Agent Name:</label>
+                            <input type="text" id="new-agent-name" class="form-control"
+                                   placeholder="Enter agent name (e.g., 'researcher', 'doctor')">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="btn-create-prompt" class="btn btn-primary">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" nonce="{{ request.state.nonce }}"></script>
+    <!-- Custom JavaScript -->
+    <script src="/static/js_prompts.js" nonce="{{ request.state.nonce }}"></script>
+</body>
+</html>

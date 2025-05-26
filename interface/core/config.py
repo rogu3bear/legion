@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
 
+    # Debug/Development
+    DEBUG: bool = False
+
     # Database
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///./test.db"
 

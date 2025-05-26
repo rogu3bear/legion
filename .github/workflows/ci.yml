@@ -70,6 +70,10 @@ jobs:
           fi
       - name: Lint
         run: make lint
+      - name: Run pytest
+        run: |
+          bash scripts/activate_once.sh
+          pytest tests/ -v --tb=short --cov=core --cov=interface --cov-report=term-missing --cov-report=json:artifacts/reports/coverage.json
       - name: Security Scan (Bandit)
         run: |
           bash scripts/activate_once.sh
