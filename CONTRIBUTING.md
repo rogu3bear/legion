@@ -45,8 +45,6 @@ class LegacyPlaceHolder(unittest.TestCase):
     ...
 ```
 
-Record quarantined files in `docs/TODO.md` under **Legacy Tests (quarantined)**.
-
 ## Smoke Test
 Run the integration smoke test with:
 

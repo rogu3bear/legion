@@ -5,7 +5,6 @@ from pathlib import Path
 
 DEPRECATED = [
     "schema.sql",
-    "localhost:8000",
     "task_log.jsonl",
 ]
 

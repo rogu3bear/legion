@@ -9,4 +9,10 @@ DEFAULT_PORTS = {
     "zmq_pub": 7808,
     "zmq_sub": 7809,
     "redis": 7810,
+    "web": 27001,  # Web UI port - changed from 8000 to 27001 to avoid conflicts
+    "chroma": 27020,  # ChromaDB port
+    "prometheus": 27030,  # Prometheus metrics port
+    "postgres": 27050,  # PostgreSQL port
+    "grafana": 27060,  # Grafana port
+    "orchestrator": 27000,  # Orchestrator port
 }

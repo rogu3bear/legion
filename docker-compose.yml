@@ -10,8 +10,8 @@ services:
       dockerfile: Dockerfile
       target: "runtime"
     container_name: legion-web
-    # ${WEB_UI_PORT:-8000}
-    command: bash -c "alembic upgrade head && uvicorn interface.main:app --host 0.0.0.0 --port ${WEB_UI_PORT:-8000} --reload" # Use reload for dev
+    # ${WEB_UI_PORT:-27001}
+    command: bash -c "alembic upgrade head && uvicorn interface.main:app --host 0.0.0.0 --port ${WEB_UI_PORT:-27001} --reload" # Use reload for dev
     volumes:
       - ./interface:/app/interface
       - ./legion:/app/legion
@@ -22,14 +22,14 @@ services:
       - ./memory/db:/app/memory/db # Mount DB volume
       - ./.env:/app/.env # Mount .env file
     ports:
-      - "${PORT_ALLOCATOR_DEV_FRONTEND}:8000"
+      - "${PORT_ALLOCATOR_DEV_FRONTEND}:27001"
     healthcheck:
       # ${PORT_ALLOCATOR_ORCHESTRATOR:-7803}
       test: "curl -f http://web:${PORT_ALLOCATOR_ORCHESTRATOR:-7803}/health || exit 1"
     environment:
       - PYTHONUNBUFFERED=1
-      # ${PORT_ALLOCATOR_DEV_FRONTEND:-8000}
-      - WEB_UI_PORT=${PORT_ALLOCATOR_DEV_FRONTEND:-8000}
+      # ${PORT_ALLOCATOR_DEV_FRONTEND:-27001}
+      - WEB_UI_PORT=${PORT_ALLOCATOR_DEV_FRONTEND:-27001}
       # Ensure ZMQ communication works if orchestrator is outside docker
       # ${PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_REP:-5555}
       # - ORCHESTRATOR_ADDRESS=tcp://host.docker.internal:${PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_REP:-5555} # Example for Docker Desktop

@@ -1,21 +1,24 @@
 # Legion: Modular Agent Orchestration System
 
 ## Overview
-Legion is a sophisticated agent orchestration system built on a canonical layered architecture with robust memory management and strict agent contracts. The system manages agent lifecycles, facilitates message routing, and maintains system state.
+Legion is a sophisticated agent orchestration system built on a canonical layered architecture with robust memory management and MCP (Model Context Protocol) integration. The system manages agent lifecycles, facilitates message routing, and maintains system state with modern development tool integration.
 
 ## Core Features
-- **Modular Agent System**: BaseAgent framework with strict contracts, vector memory, and self-assessment
+- **Modular Agent System**: BaseAgent framework with strict contracts and vector memory
 - **Advanced Memory Management**: Dual vector/SQL storage for semantic search and structured data
 - **Task Management**: Priority-based scheduling with real-time status updates
 - **Agent Registration**: Agents obtain persistent tokens via `/agent/register`
-- **Web Interface**: FastAPI backend with WebSockets for real-time updates
+- **Web Interface**: FastAPI backend with authentication and real-time updates
 - **Discord Integration**: Bot integration with channel-based agent interactions
+- **MCP Integration**: Model Context Protocol servers for AI development tools (Cursor IDE)
 - **Comprehensive Logging & Telemetry**: Structured JSON logging and metric collection
 
 ## Project Status
-Current development focus is on completing the web interface backend according to the phases outlined in `BACKEND_IMPLEMENTATION_TRACKER.md`:
-- ✅ Phase 0-5 Complete: Setup, Authentication, Core APIs, Task Management, Agent Management, UI Integration
-- ⏳ Phase 6 In Progress: Finalizing API Documentation, User Guide, and System Hardening
+<!-- reviewme: BACKEND_IMPLEMENTATION_TRACKER.md referenced but doesn't exist - need to verify current phase status -->
+Current development focus is on MCP integration and web interface stabilization. The system includes:
+- ✅ Core Infrastructure: Authentication, APIs, Task Management, Agent Management
+- ✅ MCP Servers: Unified MCP system for Cursor IDE integration
+- ⏳ In Progress: Documentation updates and system optimization
 
 ## Quick Start
 1. Environment Setup
@@ -40,16 +43,40 @@ Current development focus is on completing the web interface backend according t
 4. Lint and Test
    ```bash
    make lint
- make test
-  ```
+   make test
+   ```
+
 5. Run integration smoke test
    ```bash
    python scripts/integration_smoke.py
    ```
+
 6. Docker Deployment (Alternative)
    ```bash
    docker-compose up -d
    ```
+
+## MCP Integration
+Legion provides unified **MCP (Model Context Protocol)** servers that integrate with modern AI development tools like Cursor IDE. The MCP system exposes Legion's capabilities as tools that AI assistants can use during development workflows.
+
+### Quick MCP Setup for Cursor IDE
+```bash
+# Automated setup - configures Cursor with Legion MCP tools
+./scripts/setup_cursor_mcp.sh
+
+# Test the integration
+python scripts/test_mcp_setup.py
+```
+
+**Available MCP Tools:**
+- Vector memory operations for contextual information storage
+- Smart caching with TTL expiration
+- Event logging and querying by severity/type
+- Codebase analysis with change detection
+- DevOps operations monitoring
+
+**Quick Start:** [2-Minute MCP Setup Guide](docs/mcp_quickstart.md)
+**Detailed Guide:** [MCP Cursor Integration](docs/mcp_cursor_integration.md)
 
 ## Tooling: Offline Install
 To install dev tools (pipdeptree, safety, pytest) offline, run:
@@ -73,7 +100,6 @@ This executes `scripts/selftest_handshake.py` and prints `[HANDSHAKE TEST] PASS`
 | Web UI | PORT_ALLOCATOR_WEB_UI | 27001 |
 | Redis | PORT_ALLOCATOR_REDIS | 27040 |
 | Postgres | PORT_ALLOCATOR_POSTGRES | 27050 |
-
 
 ## Documentation
 For comprehensive documentation, see:
@@ -134,11 +160,6 @@ Legion follows a strict layered architecture enforced by CI:
 3. Update documentation when adding features
 4. Maintain the changelog
 
-## MCP Stack
-The **MCP** (Modular Control Plane) stack coordinates core services and tool
-invocations. This release introduces the foundational scaffolding and database
-schema for upcoming functionality.
-
 ## Agent Instantiation Guard
 **Purpose:** Prevent direct construction of agent classes outside the orchestrator.
 
@@ -160,6 +181,7 @@ Use the `orchestrator.load_agent()` API to instantiate agents correctly.
 `tasks` — orchestrator routes
 `registry_tasks` — public task registry endpoints
 
+<!-- reviewme: Scaffolding Roadmap section may be outdated - verify these files still exist and are relevant -->
 ## Scaffolding Roadmap
 The table below tracks scaffolded files introduced by Codex.
 

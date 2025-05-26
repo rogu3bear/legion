@@ -1,6 +1,25 @@
 # Research Skills
 
-Domain-specific skills for information gathering, analysis, and fact-checking.
+<!-- reviewme: This directory is currently empty - contains only placeholder documentation -->
+
+**Status**: Placeholder directory - no implementations yet
+
+This directory is reserved for future research skills including:
+
+- Information gathering utilities
+- Analysis tools
+- Fact-checking capabilities
+
+## Current Implementation
+
+The actual research functionality is currently implemented in:
+- `legion/agents/python/researcher.py` - Research agent implementation
+- `skills/search.py` - Search utilities (in root skills directory)
+- `skills/summarize.py` - Summarization utilities (in root skills directory)
+
+## Future Plans
+
+This directory may be populated with reusable research utilities that can be shared across agents.
 
 ## Skills
 
@@ -14,4 +33,4 @@ Domain-specific skills for information gathering, analysis, and fact-checking.
 from skills.research import search, summarize
 ```
 
-*Part of Legion Re-org Safety Blueprint - Phase 2* 
+*Part of Legion Re-org Safety Blueprint - Phase 2*

@@ -1,5 +1,7 @@
 # Legion WebUI
 
+<!-- Note: Default dev port changed from 8000 to 27001 to avoid conflicts -->
+
 The Legion WebUI is a lightweight, intuitive web interface for managing Legion's MCP (Model Control Protocol) system. It provides a modern React-based interface for agent management, prompt editing, and direct communication with LM Studio.
 
 ## Features
@@ -23,7 +25,7 @@ The Legion WebUI is a lightweight, intuitive web interface for managing Legion's
 
 ## Access
 
-The WebUI is available at: `http://localhost:8000/webui`
+The WebUI is available at: `http://localhost:27001/webui`
 
 ## API Endpoints
 
@@ -53,7 +55,7 @@ The WebUI uses the following demo endpoints (no authentication required):
 
 ## Usage
 
-1. **Navigate to WebUI**: Open `http://localhost:8000/webui` in your browser
+1. **Navigate to WebUI**: Open `http://localhost:27001/webui` in your browser
 2. **Select Agent**: Choose an agent from the dropdown to load its prompt
 3. **Edit Prompt**: Modify the prompt content in the editor
 4. **Save Changes**: Click "Save Prompt" to persist changes

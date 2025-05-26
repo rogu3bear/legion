@@ -10,17 +10,6 @@
 				"MCP_DB_PATH": "memory/db/mcp_unified.db",
 				"MCP_LOG_LEVEL": "INFO"
 			}
-		},
-		"legion-lmstudio": {
-			"command": "/Users/vix/Dev/Programs/Legion/.venv/bin/python",
-			"args": ["-m", "legion.mcp.bridges.lmstudio_bridge"],
-			"cwd": "/Users/vix/Dev/Programs/Legion",
-			"env": {
-				"MCP_SERVER_ID": "legion-lmstudio",
-				"MCP_TRANSPORT": "stdio",
-				"LMSTUDIO_BASE_URL": "http://127.0.0.1:1234/v1",
-				"OPENAI_API_BASE": "http://127.0.0.1:1234/v1"
-			}
 		}
 	}
 }

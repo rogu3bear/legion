@@ -51,7 +51,7 @@ def test_port_loading_with_valid_env_file(tmp_path):
 
         assert legion_ports.get_port("redis") == 1234
         assert legion_ports.get_port("postgres") == 5678
-        assert legion_ports.get_port("web") == 8001  # Overrides default 8000
+        assert legion_ports.get_port("web") == 8001  # Overrides default 27001
         # Grafana had an invalid port value, should use default
         assert legion_ports.get_port("grafana") == legion_ports.DEFAULT_PORTS["grafana"]
         # Chroma is in .env.ports, should use the override

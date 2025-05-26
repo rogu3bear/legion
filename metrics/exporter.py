@@ -16,8 +16,9 @@ dispatch_latency = Histogram(
 )
 
 
-def start_metrics_server(port: int = 8000):
+def start_metrics_server(port: int = 27030):
     """
     Start Prometheus metrics HTTP server on the specified port.
+    Default changed from 8000 to 27030 to avoid conflicts.
     """
     start_http_server(port)

@@ -137,7 +137,7 @@ jobs:
       run: legion list-agents
     - name: Check service health
       env:
-        PORT_ALLOCATOR_WEB: 8000
+        PORT_ALLOCATOR_WEB: 27001
         PORT_ALLOCATOR_CHROMA: 27020
         PORT_ALLOCATOR_PROMETHEUS: 9090
         PORT_ALLOCATOR_REDIS: 6379

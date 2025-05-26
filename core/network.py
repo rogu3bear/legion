@@ -16,7 +16,7 @@ def placeholder_network(url: Optional[str] = None, timeout: float = 2.0) -> dict
     """
     if url is None:
         # Use environment variable or default port
-        port = os.getenv("WEB_API_PORT", "8000")
+        port = os.getenv("WEB_API_PORT", "27001")
         url = f"http://localhost:{port}/"
 
     try:

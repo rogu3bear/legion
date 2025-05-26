@@ -1,5 +1,7 @@
 # LM Studio Proxy Documentation
 
+<!-- Note: Default dev port changed from 8000 to 27001 to avoid conflicts -->
+
 ## Overview
 
 The LM Studio proxy provides a standardized interface for interacting with local LM Studio instances through Legion's API. It includes robust error handling, rate limiting, privacy features, and comprehensive retry logic.
@@ -136,7 +138,7 @@ The proxy returns specific HTTP status codes:
 ### Basic Chat Request
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/lmstudio/chat \
+curl -X POST http://localhost:27001/api/v1/lmstudio/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -148,7 +150,7 @@ curl -X POST http://localhost:8000/api/v1/lmstudio/chat \
 ### Streaming Request
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/lmstudio/chat \
+curl -X POST http://localhost:27001/api/v1/lmstudio/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -162,7 +164,7 @@ curl -X POST http://localhost:8000/api/v1/lmstudio/chat \
 ### Custom Parameters
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/lmstudio/chat \
+curl -X POST http://localhost:27001/api/v1/lmstudio/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [

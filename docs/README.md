@@ -1,5 +1,7 @@
 # Legion Documentation
 
+<!-- Note: Default dev port changed from 8000 to 27001 to avoid conflicts -->
+
 This directory centralizes architecture and system documentation.
 
 ## Quick Start
@@ -10,10 +12,10 @@ The Legion WebUI now requires authentication. To access the prompt management in
 
 1. Start the Legion interface server:
    ```bash
-   uvicorn interface.main:app --host 127.0.0.1 --port 8000
+   uvicorn interface.main:app --host 127.0.0.1 --port 27001
    ```
 
-2. Navigate to `http://localhost:8000/prompts`
+2. Navigate to `http://localhost:27001/prompts`
 
 3. Login with demo credentials:
    - **Username:** `testuser`
@@ -26,13 +28,7 @@ The Legion WebUI now requires authentication. To access the prompt management in
 
 ### Creating Additional Users
 
-To create additional users for testing:
-
-```bash
-python create_test_user.py
-```
-
-Or use the registration API endpoint at `/api/v1/auth/register`.
+To create additional users for testing, use the registration API endpoint at `/api/v1/auth/register`.
 
 ## Deployment Profiles & Port Map
 
@@ -68,6 +64,7 @@ See [Port Map](architecture/ports.md) for detailed port configuration.
 
 ## Documentation Index
 
+### Core Documentation
 - [Architecture Overview](architecture/overview.md)
 - [Port Map](architecture/ports.md)
 - [Architecture Diagrams](architecture/)
@@ -77,3 +74,10 @@ See [Port Map](architecture/ports.md) for detailed port configuration.
 - [State Schema](system/state_schema.md)
 - [Project Configuration](system/config.md)
 - [Dependencies](system/dependencies.md)
+
+### Development Integration
+- [MCP Quick Start](mcp_quickstart.md) - **2-minute setup** for Legion MCP tools with Cursor IDE
+- [MCP Cursor Integration](mcp_cursor_integration.md) - Detailed MCP setup and configuration guide
+- [WebUI Guide](webui.md) - Web interface documentation
+- [LM Studio Integration](llm/local-lmstudio.md) - Local LLM inference setup
+- [Security Guidelines](security.md) - Security best practices
