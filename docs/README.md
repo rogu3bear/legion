@@ -40,7 +40,7 @@ Legion supports multiple deployment environments with different configurations:
 
 ### Development Profile (`.env.development`)
 - **DEBUG**: `true` (enabled)
-- **Ports**: 8000-8080 range
+- **Ports**: 27000-27999 range
 - **Features**: Hot reload, detailed logging, development middleware
 
 ### Staging Profile (`.env`)
@@ -57,12 +57,12 @@ Legion supports multiple deployment environments with different configurations:
 
 | Service | Dev | Staging | Production |
 |---------|-----|---------|------------|
-| Web UI | 8000-8080 | Dynamic | 31001 |
-| Orchestrator | 8000-8080 | Dynamic | 31000 |
-| ChromaDB | 8000-8080 | Dynamic | 31020 |
-| Prometheus | 8000-8080 | Dynamic | 31030 |
-| Redis | 8000-8080 | Dynamic | 31040 |
-| PostgreSQL | 8000-8080 | Dynamic | 31050 |
+| Web UI | 27000-27999 | Dynamic | 31001 |
+| Orchestrator | 27000-27999 | Dynamic | 31000 |
+| ChromaDB | 27000-27999 | Dynamic | 31020 |
+| Prometheus | 27000-27999 | Dynamic | 31030 |
+| Redis | 27000-27999 | Dynamic | 31040 |
+| PostgreSQL | 27000-27999 | Dynamic | 31050 |
 
 See [Port Map](architecture/ports.md) for detailed port configuration.
 
