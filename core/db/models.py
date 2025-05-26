@@ -14,7 +14,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import Mapped, declarative_base, relationship
 
 Base = declarative_base()
 
@@ -57,14 +57,14 @@ class Agent(Base):
     config: Dict[str, Any] = Column(JSON, default=lambda: {})
     agent_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
     is_active: bool = Column(Boolean, default=True)
-    last_heartbeat: Optional[datetime] = Column(DateTime, nullable=True)
+    last_heartbeat: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at: datetime = Column(
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     # Relationships
-    tasks = relationship("Task", back_populates="agent", cascade="all, delete-orphan")
+    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="agent", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Agent {self.name}: {self.type} ({self.status})>"
@@ -119,16 +119,16 @@ class Task(Base):
         Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM
     )
     title: str = Column(String, nullable=False)
-    description: Optional[str] = Column(String, nullable=True)
+    description: Mapped[Optional[str]] = Column(String, nullable=True)
     task_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
     result: Optional[Dict[str, Any]] = Column(JSON, nullable=True)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
-    started_at: Optional[datetime] = Column(DateTime, nullable=True)
-    completed_at: Optional[datetime] = Column(DateTime, nullable=True)
-    error: Optional[str] = Column(String, nullable=True)
+    started_at: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
+    completed_at: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
+    error: Mapped[Optional[str]] = Column(String, nullable=True)
 
     # Relationships
-    agent = relationship("Agent", back_populates="tasks")
+    agent: Mapped["Agent"] = relationship("Agent", back_populates="tasks")
 
     def __repr__(self) -> str:
         return f"<Task {self.id}: {self.type} ({self.status})>"

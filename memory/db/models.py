@@ -15,7 +15,7 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.sql import func
 
 # Import the shared Base and Agent model
@@ -43,7 +43,7 @@ class Conversation(Base):
     title = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    agent = relationship("Agent")
+    agent: Mapped["Agent"] = relationship("Agent")
 
 
 class Directive(Base):
@@ -57,4 +57,4 @@ class Directive(Base):
     is_active = Column(Boolean, nullable=False, server_default="1")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    agent = relationship("Agent")
+    agent: Mapped["Agent"] = relationship("Agent")

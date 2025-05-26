@@ -10,7 +10,7 @@ try:  # pragma: no cover - handle stripped dependencies in offline mode
     from dotenv import dotenv_values
 except Exception:  # pragma: no cover
 
-    def dotenv_values(*_args, **_kwargs):
+    def dotenv_values(dotenv_path: Optional[str] = None, **_kwargs) -> Dict[str, Optional[str]]:
         return {}
 
 
