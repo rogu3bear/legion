@@ -9,7 +9,7 @@ import asyncio
 import json
 import os
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Optional, Any
 
 try:
     import redis  # type: ignore
@@ -18,10 +18,16 @@ except Exception:  # pragma: no cover - optional dependency
 
 from legion.agents.base import BaseAgent
 from legion.task_queue import queue as task_queue
+from legion.utils.discord_bridge import send_discord_embed, MessageType
+from datetime import datetime, timezone
+
+AGENT_FEED_CHANNEL_ID = 1362902052279291904
 
 
 class MetricsAgent(BaseAgent):
     """An agent for collecting and analyzing system metrics."""
+
+
 
     def __init__(self, name: str, config: dict, orchestrator_ref=None, llm_client=None):
         """Initialize the MetricsAgent with name, config, orchestrator reference, and optional llm_client."""
@@ -37,9 +43,11 @@ class MetricsAgent(BaseAgent):
         if redis is None:
             return None
         try:
-            port = int(os.getenv("REDIS_PORT", 7810))
+            # Use the new Legion-specific Redis port and variable
+            port = int(os.getenv("LEGION_REDIS_PORT", "7610")) 
             return redis.Redis(host="localhost", port=port, decode_responses=True)
-        except Exception:
+        except Exception as e: # Added exception logging
+            self.logger.error(f"MetricsAgent: Failed to connect to Redis: {e}")
             return None
 
     def setup(self) -> None:
@@ -51,7 +59,14 @@ class MetricsAgent(BaseAgent):
     async def _heartbeat(self) -> None:
         while True:
             await self.collect_stats()
-            await asyncio.sleep(15)
+            await self.log_to_feed(
+                skill_name="_heartbeat",
+                status="✅ Collected & Pushed",
+                input_summary="Scheduled statistics collection",
+                output_summary="Stats pushed to Redis",
+                message_type=MessageType.INFO
+            )
+            await asyncio.sleep(15) # Consider making interval configurable
 
     async def collect_stats(self) -> None:
         """Collect queue and agent stats then push to Redis."""
@@ -95,13 +110,29 @@ class MetricsAgent(BaseAgent):
     async def push_to_redis(self, stats: Dict[str, int]) -> None:
         """Store metrics in Redis and increment counters."""
         if self._redis is None:
+            await self.log_to_feed(
+                skill_name="push_to_redis",
+                status="⚠️ Skipped",
+                input_summary=stats,
+                output_summary="Redis client not available",
+                message_type=MessageType.WARNING
+            )
             return
         try:
             self._redis.hset("metrics:latest", mapping=stats)
             for key, value in stats.items():
                 self._redis.incrby(f"metrics:{key}:total", int(value))
-        except Exception:
-            pass
+            # No direct agent-feed log here to avoid noise from _heartbeat, 
+            # _heartbeat itself will log completion.
+        except Exception as e:
+            self.logger.error(f"MetricsAgent: Error pushing to Redis: {e}")
+            await self.log_to_feed(
+                skill_name="push_to_redis",
+                status="❌ Error",
+                input_summary=stats,
+                output_summary=str(e),
+                message_type=MessageType.ERROR
+            )
 
     def _default_prompt(self):
         """Return the default system prompt for the MetricsAgent."""
@@ -300,32 +331,147 @@ class MetricsAgent(BaseAgent):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
+
+    async def record_counter(self, counter_name: str, value: int = 1, tags: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """Records a custom counter. Tags can be used for dimensionality (future use)."""
+        # For now, simple Redis increment. Tags could be part of the key or a separate hash.
+        metric_key = f"metrics:custom:{counter_name}:total"
+        result_summary = ""
+        status_emoji = "✅"
+        msg_type = MessageType.SUCCESS
+
+        if self._redis is None:
+            result_summary = "Redis client not available. Metric not recorded."
+            status_emoji = "⚠️"
+            msg_type = MessageType.WARNING
+        else:
+            try:
+                self._redis.incrby(metric_key, int(value))
+                result_summary = f"Counter '{counter_name}' incremented by {value}."
+            except Exception as e:
+                self.logger.error(f"MetricsAgent: Error recording counter '{counter_name}': {e}")
+                result_summary = f"Error recording counter: {str(e)}"
+                status_emoji = "❌"
+                msg_type = MessageType.ERROR
+
+        await self.log_to_feed(
+            skill_name="record_counter",
+            status=f"{status_emoji} {(msg_type.name).capitalize()}",
+            input_summary={"counter_name": counter_name, "value": value, "tags": tags},
+            output_summary=result_summary,
+            message_type=msg_type
+        )
+        return {"status": result_summary, "key": metric_key}
+
+    async def record_histogram(self, histogram_name: str, value: float, tags: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """(Stub) Records a custom histogram value."""
+        result_summary = f"Histogram '{histogram_name}' with value {value} received. Actual recording not yet implemented."
+        await self.log_to_feed(
+            skill_name="record_histogram",
+            status="⚠️ Stubbed",
+            input_summary={"histogram_name": histogram_name, "value": value, "tags": tags},
+            output_summary=result_summary,
+            message_type=MessageType.WARNING
+        )
+        self.logger.info(f"MetricsAgent: record_histogram stub called for '{histogram_name}'")
+        return {"status": "Histogram recording is stubbed."}
+
+    async def push_metric(self, metric_name: str, value: Any, unit: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """(Stub) Pushes a generic metric."""
+        result_summary = f"Metric '{metric_name}' with value {value} (unit: {unit}) received. Actual push not yet implemented."
+        await self.log_to_feed(
+            skill_name="push_metric",
+            status="⚠️ Stubbed",
+            input_summary={"metric_name": metric_name, "value": value, "unit": unit, "tags": tags},
+            output_summary=result_summary,
+            message_type=MessageType.WARNING
+        )
+        self.logger.info(f"MetricsAgent: push_metric stub called for '{metric_name}'")
+        return {"status": "Generic metric push is stubbed."}
+
+    async def handle_task(self, payload: dict) -> dict:
+        """Dispatches a task to the correct skill method based on function_tag."""
+        function_tag = payload.get("function_tag")
+        result = None
+        status = "✅ Success"
+        error = None
+        try:
+            if function_tag == "record_counter":
+                result = await self.record_counter(
+                    counter_name=payload.get("counter_name"),
+                    value=payload.get("value", 1),
+                    tags=payload.get("tags")
+                )
+            elif function_tag == "record_histogram":
+                result = await self.record_histogram(
+                    histogram_name=payload.get("histogram_name"),
+                    value=payload.get("value"),
+                    tags=payload.get("tags")
+                )
+            elif function_tag == "push_metric":
+                result = await self.push_metric(
+                    metric_name=payload.get("metric_name"),
+                    value=payload.get("value"),
+                    unit=payload.get("unit"),
+                    tags=payload.get("tags")
+                )
+            else:
+                status = "❌ Unknown function_tag"
+                error = f"Unknown function_tag: {function_tag}"
+                result = None
+                await self.log_to_feed(
+                    skill_name=function_tag or "<missing>",
+                    status=status,
+                    input_summary=payload,
+                    output_summary=error,
+                    message_type=MessageType.ERROR
+                )
+                return {"status": status, "error": error}
+            await self.log_to_feed(
+                skill_name=function_tag,
+                status=status,
+                input_summary=payload,
+                output_summary=result,
+                message_type=MessageType.SUCCESS
+            )
+            return {"status": status, "result": result}
+        except Exception as e:
+            status = "❌ Exception"
+            error = str(e)
+            await self.log_to_feed(
+                skill_name=function_tag or "<missing>",
+                status=status,
+                input_summary=payload,
+                output_summary=error,
+                message_type=MessageType.ERROR
+            )
+            return {"status": status, "error": error}

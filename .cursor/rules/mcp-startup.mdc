@@ -1,0 +1,192 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# MCP Server Startup and Management
+
+## Quick Start Commands
+
+### Start MCP Server
+```bash
+# Automated setup and start
+./scripts/setup_cursor_mcp.sh
+
+# Manual start (for testing)
+./scripts/start_mcp_unified.sh
+
+# Direct Python execution
+python -m core.mcp_server
+```
+
+### Verify MCP Server Status
+```bash
+# Run comprehensive tests
+python scripts/test_mcp_setup.py
+
+# Quick health check
+echo '{"jsonrpc": "2.0", "id": 1, "method": "health", "params": {}}' | python -m core.mcp_server
+```
+
+## Server Configuration
+
+### Environment Variables
+The MCP server recognizes these environment variables:
+- `MCP_SERVER_ID` - Server identifier (default: "legion-unified")
+- `MCP_TRANSPORT` - Communication transport (default: "stdio")
+- `MCP_DB_PATH` - Database path (default: "memory/db/mcp_unified.db")
+- `MCP_LOG_LEVEL` - Logging level (default: "INFO")
+- `MCP_CONFIG_PATH` - Config file path (default: "mcp_config.json")
+
+### Configuration Files
+- **Cursor Config**: [cursor_mcp_unified.json.template](mdc:cursor_mcp_unified.json.template) - Defines how Cursor connects to MCP
+- **Server Config**: [mcp_config.json](mdc:mcp_config.json) - MCP server runtime settings
+- **Environment**: [.env.mcp](mdc:.env.mcp) - Environment-specific variables
+
+## Server States and Health
+
+### Normal Startup Sequence
+1. **Initialization**: Database schema creation and connection pool setup
+2. **Background Tasks**: Cache cleanup worker and stats reporter start
+3. **Ready State**: Server accepts JSON-RPC requests via stdio
+4. **Health Check**: Available via `health` method
+
+### Health Check Response
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "uptime": "00:15:32",
+  "operations": {
+    "vector_operations": 42,
+    "cache_operations": 18,
+    "event_operations": 7
+  }
+}
+```
+
+## Process Management
+
+### Running in Background
+The MCP server is designed to run as a child process of Cursor IDE:
+- Cursor manages the server lifecycle
+- Communication via stdin/stdout JSON-RPC
+- Server shuts down when Cursor closes
+
+### Manual Process Control
+For development/testing:
+```bash
+# Run in foreground
+python -m core.mcp_server
+
+# Test with input
+echo '{"jsonrpc": "2.0", "id": 1, "method": "stats", "params": {}}' | python -m core.mcp_server
+```
+
+## Database Management
+
+### Database Location
+- **Path**: `memory/db/mcp_unified.db`
+- **Type**: SQLite with WAL mode for performance
+- **Backup**: Automatic via SQLite WAL files
+
+### Database Initialization
+The database is automatically created on first run with:
+- Schema creation for all MCP record types
+- Indexes for performance optimization
+- Connection pooling configuration (10 connections)
+
+### Performance Settings
+- **Journal Mode**: WAL (Write-Ahead Logging)
+- **Synchronous**: NORMAL (balanced performance/safety)
+- **Cache Size**: 10,000 pages
+- **Temp Store**: Memory for faster operations
+
+## Troubleshooting Startup Issues
+
+### Common Problems
+
+1. **Permission Denied**
+   ```bash
+   chmod +x scripts/start_mcp_unified.sh
+   chmod +x scripts/setup_cursor_mcp.sh
+   ```
+
+2. **Database Directory Missing**
+   ```bash
+   mkdir -p memory/db
+   ```
+
+3. **Virtual Environment Issues**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+   pip install -r requirements.txt
+   ```
+
+4. **Port/Resource Conflicts**
+   - MCP uses stdio, not network ports
+   - Check for file system permissions on database directory
+
+### Debug Mode
+Enable debug logging:
+```bash
+MCP_LOG_LEVEL=DEBUG python -m core.mcp_server
+```
+
+### Cursor Integration Issues
+1. **Restart Cursor**: After changing MCP configuration
+2. **Check Developer Console**: For MCP server logs
+3. **Verify Config Path**: Ensure `~/.cursor/mcp.json` exists
+4. **Test Manually**: Use `python scripts/test_mcp_setup.py`
+
+## Performance Monitoring
+
+### Built-in Stats
+Access performance statistics:
+```bash
+echo '{"jsonrpc": "2.0", "id": 1, "method": "stats", "params": {}}' | python -m core.mcp_server
+```
+
+### Background Tasks
+The server runs these background tasks:
+- **Cache Cleanup**: Every 5 minutes, removes expired entries
+- **Stats Reporter**: Every 10 minutes, logs performance metrics
+
+### Resource Usage
+- **Memory**: Connection pool + cache data + query buffers
+- **Disk**: SQLite database file grows with stored data
+- **CPU**: Minimal except during vector similarity calculations
+
+## Shutdown Procedures
+
+### Graceful Shutdown
+The server handles:
+- **SIGTERM/SIGINT**: Graceful shutdown via signal handlers
+- **Cursor Close**: Automatic when parent process ends
+- **Resource Cleanup**: Connection pool closure and task cancellation
+
+### Emergency Procedures
+If server becomes unresponsive:
+```bash
+# Find and kill MCP server process
+ps aux | grep "core.mcp_server"
+kill -TERM <pid>
+
+# Clean restart
+./scripts/setup_cursor_mcp.sh
+```
+
+## Integration with Cursor
+
+### Automatic Startup
+Cursor automatically starts the MCP server when:
+- Configuration exists in `~/.cursor/mcp.json`
+- Server command is valid and executable
+- Working directory and environment are accessible
+
+### Communication Protocol
+- **Transport**: JSON-RPC over stdio
+- **Request Format**: Standard JSON-RPC 2.0
+- **Response Format**: JSON with result or error
+- **Tool Discovery**: Via Cursor's MCP client implementation

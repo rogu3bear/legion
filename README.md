@@ -51,10 +51,27 @@ Current development focus is on MCP integration and web interface stabilization.
    python scripts/integration_smoke.py
    ```
 
-6. Docker Deployment (Alternative)
-   ```bash
-   docker-compose up -d
-   ```
+### 🩺 Quick Start Check
+
+```bash
+git clone <repository-url>
+cd legion
+make doctor   # env sanity
+make dev      # launch full stack, Ctrl-C to stop
+```
+
+#### Local Redis Setup
+```bash
+# macOS
+brew install redis
+redis-server --port 7600  &
+
+# Ubuntu / Debian
+sudo apt-get install redis-server
+redis-server --port 7600  &
+```
+
+*Note: Keep `LEGION_REDIS_PORT=7600` in your `.env.ports` file.*
 
 ## MCP Integration
 Legion provides unified **MCP (Model Context Protocol)** servers that integrate with modern AI development tools like Cursor IDE. The MCP system exposes Legion's capabilities as tools that AI assistants can use during development workflows.
@@ -96,10 +113,17 @@ This executes `scripts/selftest_handshake.py` and prints `[HANDSHAKE TEST] PASS`
 ### Development Ports
 | Service | Env Var | Default |
 |---------|---------|---------|
-| Orchestrator | PORT_ALLOCATOR_ORCHESTRATOR | 27000 |
-| Web UI | PORT_ALLOCATOR_WEB_UI | 27001 |
-| Redis | PORT_ALLOCATOR_REDIS | 27040 |
-| Postgres | PORT_ALLOCATOR_POSTGRES | 27050 |
+| Orchestrator | PORT_ALLOCATOR_ORCHESTRATOR | 7601 |
+| Web UI | PORT_ALLOCATOR_WEB_UI | 7602 |
+| Redis | LEGION_REDIS_PORT | 7600 |
+| Postgres | PORT_ALLOCATOR_POSTGRES | 7650 |
+
+### Agent Prompt Editor
+Prompts can be edited live at:
+http://localhost:7602/admin/agent-prompts
+
+✔️ Edits apply immediately to running agents (if they are active and listening).
+↩️ Use the Revert button in the edit modal to restore the last saved version of a prompt.
 
 ## Documentation
 For comprehensive documentation, see:
@@ -154,11 +178,16 @@ Legion follows a strict layered architecture enforced by CI:
 7. **Presentation Layer**: Web UI with FastAPI backend
 8. **Infrastructure Layer**: CI/CD, scripts, documentation
 
-## Development
-1. Follow the canonical structure (enforced by CI)
-2. Ensure comprehensive test coverage
-3. Update documentation when adding features
-4. Maintain the changelog
+### Development
+
+```bash
+make doctor      # Environment health check
+make dev         # Launch Orchestrator + Web UI
+```
+
+* Redis runs on port `7600`
+* UI available at [http://localhost:7602](http://localhost:7602)
+* Agent Prompt Editor at [/admin/agent-prompts](http://localhost:7602/admin/agent-prompts)
 
 ## Agent Instantiation Guard
 **Purpose:** Prevent direct construction of agent classes outside the orchestrator.

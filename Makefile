@@ -1,5 +1,5 @@
 # Legion Makefile
-.PHONY: dev lint test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv
+.PHONY: dev lint test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv doctor
 
 venv:
 	@echo "Activating virtual environment..."
@@ -10,10 +10,8 @@ venv:
 	@bash scripts/activate_once.sh
 
 dev:
-		@echo "Starting backend and frontend..."
-		bash scripts/activate_once.sh && \
-		uvicorn interface.main:app --reload &
-		npm --prefix ui/frontend run dev
+	@echo "Starting Redis, Orchestrator, and UI..."
+	bash scripts/dev_start.sh
 
 lint:
 	@echo "Running linters..."
@@ -36,6 +34,9 @@ test:
 	bash scripts/activate_once.sh
 	PYTHONPATH=. python scripts/selftest_handshake.py
 
+doctor:
+	@echo "Running environment health check..."
+	python scripts/doctor.py
 
 deploy:
 	@echo "Running deployment..."

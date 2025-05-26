@@ -81,38 +81,10 @@ async def test_unified_mcp():
 
 
 async def test_lmstudio_bridge():
-    """Test the LM Studio bridge functionality."""
-    logger.info("Testing LM Studio MCP Bridge...")
-
-    try:
-        from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter
-
-        # Initialize LM Studio adapter
-        adapter = LMStudioAdapter()
-        logger.info("✅ LM Studio adapter initialized")
-
-        # Test stats (this doesn't require LM Studio to be running)
-        stats = await adapter.stats()
-        if stats.get("base_url"):
-            logger.info(f"✅ LM Studio bridge stats: {stats['base_url']}")
-        else:
-            logger.warning("⚠️ LM Studio stats incomplete")
-
-        # Test model discovery (will fail if LM Studio not running, but that's OK)
-        try:
-            models = await adapter.discover_model()
-            if "error" not in models:
-                logger.info(f"✅ Model discovery: {len(models.get('data', []))} models")
-            else:
-                logger.info("ℹ️ Model discovery failed (LM Studio may not be running)")
-        except Exception:
-            logger.info("ℹ️ Model discovery failed (LM Studio may not be running)")
-
-        return True
-
-    except Exception as e:
-        logger.error(f"❌ LM Studio bridge test failed: {e}")
-        return False
+    """LM Studio bridge was removed from the MCP architecture."""
+    logger.info("LM Studio bridge was removed - no longer part of MCP architecture")
+    logger.info("ℹ️ MCP servers should provide tools TO AI models, not call other AI models")
+    return True  # Always pass since it's intentionally removed
 
 
 def test_cursor_config():
@@ -137,11 +109,8 @@ def test_cursor_config():
             logger.error("❌ Legion unified MCP server not configured")
             return False
 
-        if "legion-lmstudio" in servers:
-            logger.info("✅ Legion LM Studio bridge configured")
-        else:
-            logger.error("❌ Legion LM Studio bridge not configured")
-            return False
+        # LM Studio bridge intentionally removed from MCP architecture
+        logger.info("ℹ️ LM Studio bridge removed - MCP servers should provide tools TO models")
 
         # Check script paths
         unified_script = servers["legion-unified"]["command"]
@@ -151,13 +120,7 @@ def test_cursor_config():
             logger.error(f"❌ Unified MCP script not found: {unified_script}")
             return False
 
-        # Check virtual environment
-        venv_python = servers["legion-lmstudio"]["command"]
-        if Path(venv_python).exists():
-            logger.info("✅ Virtual environment Python exists")
-        else:
-            logger.error(f"❌ Virtual environment Python not found: {venv_python}")
-            return False
+        # LM Studio bridge removed - skip venv check for it
 
         return True
 
@@ -176,9 +139,9 @@ def test_file_structure():
         "core/mcp_server.py",
         "core/mcp_unified.py",
         "core/mcp_server/__main__.py",
-        "legion/mcp/bridges/lmstudio_bridge.py",
-        "legion/mcp/bridges/__main__.py",
-        "cursor_mcp_unified.json",
+        # "legion/mcp/bridges/lmstudio_bridge.py",  # Removed - not part of MCP architecture
+        # "legion/mcp/bridges/__main__.py",        # Removed - not part of MCP architecture
+        "cursor_mcp_unified.json.template",
         "mcp_config.json",
     ]
 

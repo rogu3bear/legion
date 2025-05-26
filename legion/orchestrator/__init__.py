@@ -49,6 +49,7 @@ try:  # pragma: no cover - optional during tests
 except Exception:
     state_repo = object()
 from legion.orchestrator.intro_prompt import build_intro
+from legion.orchestrator.routing_map import get_agent_for_function_tag
 from legion.task_queue import Task
 from legion.task_queue import queue as task_queue
 
@@ -2102,11 +2103,26 @@ class Orchestrator:
                 logger.error(f"Dispatch failed: Agent '{agent_key}' not found.")
                 return {"status": "error", "message": f"Agent '{agent_key}' not found."}
 
-            # TODO: This is a synchronous call to an agent that might be async.
-            # Consider using asyncio.run_coroutine_threadsafe or similar if agent.handle_task is async
-            # and orchestrator runs in a separate thread.
-            # For now, assuming agent.handle_task is blocking or orchestrator is async.
-            response = agent.handle_task(payload)
+            # Handle async agent.handle_task calls
+            import inspect
+            if inspect.iscoroutinefunction(agent.handle_task):
+                # Run the async function in the current event loop or create one
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If we're already in an async context, we can't use run()
+                        # This is a limitation - we need to make dispatch async too
+                        import concurrent.futures
+                        with concurrent.futures.ThreadPoolExecutor() as executor:
+                            future = executor.submit(asyncio.run, agent.handle_task(payload))
+                            response = future.result()
+                    else:
+                        response = asyncio.run(agent.handle_task(payload))
+                except RuntimeError:
+                    # Fallback: create new event loop
+                    response = asyncio.run(agent.handle_task(payload))
+            else:
+                response = agent.handle_task(payload)
             return {"status": "success", "response": response}
         except AgentLoadError as e:
             logger.error(f"Error loading agent '{agent_key}' during dispatch: {e}")
@@ -2139,6 +2155,33 @@ class Orchestrator:
                 "status": "error",
                 "message": f"Unexpected error with agent '{agent_key}': {e}",
             }
+
+    def dispatch_by_function_tag(self, payload: dict) -> dict:
+        """
+        Dispatches a task based on function_tag in the payload.
+        
+        Args:
+            payload: The payload containing function_tag and other task data.
+            
+        Returns:
+            A dictionary containing the agent's response.
+        """
+        function_tag = payload.get("function_tag")
+        if not function_tag:
+            return {
+                "status": "error", 
+                "message": "No function_tag specified in payload"
+            }
+            
+        agent_key = get_agent_for_function_tag(function_tag)
+        if not agent_key:
+            return {
+                "status": "error",
+                "message": f"No agent found for function_tag: {function_tag}"
+            }
+            
+        logger.info(f"Routing function_tag '{function_tag}' to agent '{agent_key}'")
+        return self.dispatch(agent_key, payload)
 
     def init_context(self, namespace, **kwargs):
         """Returns a context dict for agent interactions."""

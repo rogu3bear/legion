@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "legion-vector-memory": {
+      "command": "python",
+      "args": [".MCP/vector-memory/server.py"],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "legion-cache-memory": {
+      "command": "python",
+      "args": [".MCP/cache-memory/server.py"],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "legion-event-logging": {
+      "command": "python",
+      "args": [".MCP/event-logging/server.py"],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "legion-codebase-analysis": {
+      "command": "python",
+      "args": [".MCP/codebase-analysis/server.py"],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "legion-devops-operations": {
+      "command": "python",
+      "args": [".MCP/devops-operations/server.py"],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+} 

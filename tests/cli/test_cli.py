@@ -17,7 +17,7 @@ class FakeOrchestrator:
         }
         # Simulate port allocations
         self.port_allocator = MagicMock()
-        self.port_allocator._allocations = {"architect": 7000, "echo": 7001}
+        self.port_allocator._allocations = {"architect": 27000, "echo": 27001}
         self.port_allocator.get_all_resolved_ports = (
             lambda: self.port_allocator._allocations
         )
@@ -98,8 +98,8 @@ def test_ports(capsys):
     code = exc.value.code
     out_lines = capsys.readouterr().out.strip().splitlines()
     assert code == 0
-    assert "architect\t7000" in out_lines
-    assert "echo\t7001" in out_lines
+    assert "architect\t27000" in out_lines
+    assert "echo\t27001" in out_lines
 
 
 def test_version(capsys, monkeypatch):

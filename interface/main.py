@@ -49,6 +49,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     task_registry_router,
     tasks_router,
 )
+from interface.routes_admin import router as admin_router  # noqa: E402
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
@@ -64,6 +65,7 @@ app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["metrics"])
+app.include_router(admin_router, prefix="/api/admin/prompts", tags=["admin_prompts"])
 
 # Only include demo router in debug mode
 if settings.DEBUG:

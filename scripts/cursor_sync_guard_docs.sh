@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Cursor automation: Sync main, run guards, capture docs overview, comment on latest merged PR
-# Note: requires gh CLI and docker compose
+# Note: requires gh CLI
 
 set -euo pipefail
 
@@ -21,16 +21,16 @@ fi
 git checkout main
 git pull --ff-only origin main
 
-# Rebuild containers
-
-docker compose down
-if ! docker compose up --build -d; then
-  echo "Docker build failed" >&2
-  if [[ -n "$LAST_PR" && $(command -v gh) ]]; then
-    gh pr comment "$LAST_PR" --repo "$REPO" --body "Cursor verification build failed"
-  fi
-  exit 1
-fi
+# Rebuild containers (Docker commands removed)
+echo "[INFO] Docker compose commands removed from script. Service checks might not behave as expected."
+# docker compose down
+# if ! docker compose up --build -d; then
+#  echo "Docker build failed" >&2
+#  if [[ -n "$LAST_PR" && $(command -v gh) ]]; then
+#    gh pr comment "$LAST_PR" --repo "$REPO" --body "Cursor verification build failed"
+#  fi
+#  exit 1
+# fi
 
 # Run guard scripts
 PORT_OUT=$(./scripts/dev/port_sanity_check.sh 2>&1 || true)

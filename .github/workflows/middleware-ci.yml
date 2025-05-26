@@ -32,7 +32,7 @@ jobs:
         run: |
           cd middleware
           scripts/gen_ports_env.sh
-          docker-compose up -d --build
+          echo "[INFO] Docker compose step removed. Service must be started by other means for subsequent steps to work."
       - name: Wait for health
         run: |
           sleep 5

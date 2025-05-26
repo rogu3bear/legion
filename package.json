@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vite --config ui/frontend/vite.config.js --host",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "test:playwright": "playwright test"
   },
   "author": "",
   "license": "ISC"

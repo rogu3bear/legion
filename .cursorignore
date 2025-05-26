@@ -1,0 +1,43 @@
+# Legion Cursor Ignore Configuration
+# Excludes files from Cursor's AI features (Chat, Tab, ⌘K, indexing)
+
+# Reference material and archived documentation
+.recycle/
+
+# Build outputs and dependencies (already in default ignore list but being explicit)
+node_modules/
+.venv/
+__pycache__/
+.next/
+.nuxt/
+.cache/
+dist/
+build/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Environment files (already in default ignore list but being explicit for security)
+.env*
+
+# IDE and system files
+.DS_Store
+.vscode/
+.idea/
+
+# Large binary files that don't need AI context
+*.pdf
+*.zip
+*.tar.gz
+*.dmg
+*.iso
+
+# Database files (unless specifically needed for development)
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated documentation that might be outdated
+docs/system/function_index.md 

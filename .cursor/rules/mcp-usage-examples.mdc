@@ -1,0 +1,214 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# MCP Tool Usage Examples
+
+## Practical Examples for Cursor AI
+
+These examples show how to request MCP tool usage when working with Cursor's AI assistant.
+
+## Vector Memory Examples
+
+### Store Development Context
+"Store this function analysis in vector memory for the architect agent with metadata about its purpose and dependencies."
+
+**What happens**: The AI will use the `vector/store` tool to save the analysis with embeddings for future semantic search.
+
+### Retrieve Related Context
+"Retrieve similar vector memories for functions that handle database connections."
+
+**What happens**: The AI will use `vector/retrieve` with query embeddings to find related stored context.
+
+## Cache Management Examples
+
+### Store Computed Results
+"Cache this expensive computation result with a 1-hour TTL under the key 'model_analysis_v2'."
+
+**What happens**: Uses `cache/store` to save the result with time-to-live expiration.
+
+### Check Cached Data
+"Check if we have cached results for the previous code analysis."
+
+**What happens**: Uses `cache/get` to retrieve any cached analysis data.
+
+## Event Logging Examples
+
+### Log Development Activity
+"Log this deployment event with severity 'info' including the version number and timestamp."
+
+**What happens**: Uses `event/log` to create a structured event record.
+
+### Query Development History
+"Show me all error-level events from the last development session."
+
+**What happens**: Uses `event/get` with severity filter to retrieve relevant events.
+
+## Codebase Analysis Examples
+
+### Store File Analysis
+"Analyze this Python file and store the results including its imports and exported functions."
+
+**What happens**: AI analyzes the file and uses `codebase/store` to save the analysis.
+
+### Check File Changes
+"Has this file been analyzed before, and what were the results?"
+
+**What happens**: Uses `codebase/get` to retrieve previous analysis for comparison.
+
+## DevOps Operation Examples
+
+### Log Deployment
+"Log a deployment operation for version 2.1.0 with status 'completed' and include the deployment metrics."
+
+**What happens**: Uses `devops/log` to record the deployment operation.
+
+### Update Operation Status
+"Update the deployment operation status to 'completed' with success metrics."
+
+**What happens**: Uses `devops/update` to modify the operation record.
+
+## System Monitoring Examples
+
+### Health Check
+"Check the MCP server health and database status."
+
+**What happens**: Uses `health` tool to verify system status and return diagnostic information.
+
+### Performance Statistics
+"Show me the MCP server performance statistics and operation counts."
+
+**What happens**: Uses `stats` tool to retrieve server metrics and usage data.
+
+## Development Workflow Examples
+
+### Context-Aware Development
+```
+AI Request: "Before we refactor this function, store the current implementation 
+in vector memory and check if we have any cached analysis of similar functions."
+```
+
+**MCP Tool Flow**:
+1. `vector/store` - Save current function implementation
+2. `cache/get` - Check for cached analysis
+3. `vector/retrieve` - Find similar function patterns
+
+### Code Review Process
+```
+AI Request: "Analyze this pull request, store the analysis results, and log 
+this code review event for tracking."
+```
+
+**MCP Tool Flow**:
+1. `codebase/store` - Save file analysis results
+2. `event/log` - Record code review activity
+3. `cache/store` - Cache analysis for future reference
+
+### Deployment Monitoring
+```
+AI Request: "We're deploying version 3.0. Log the deployment start, cache the 
+current system state, and prepare for monitoring."
+```
+
+**MCP Tool Flow**:
+1. `devops/log` - Record deployment start
+2. `cache/store` - Save current system state
+3. `event/log` - Log monitoring setup
+
+## Advanced Usage Patterns
+
+### Contextual Memory Chain
+```
+AI Request: "Based on previous vector memories about authentication, implement 
+a new login system and store the implementation approach for future reference."
+```
+
+**Pattern**: Retrieve → Process → Store → Log
+
+### Performance Optimization Workflow
+```
+AI Request: "Check cached performance metrics, analyze current bottlenecks, 
+and store optimization recommendations."
+```
+
+**Pattern**: Cache Check → Analysis → Storage → Event Logging
+
+### Code Evolution Tracking
+```
+AI Request: "Compare this file with previous analysis, identify changes, 
+and update our codebase tracking with the evolution."
+```
+
+**Pattern**: Retrieve Previous → Compare → Update → Log Changes
+
+## Error Handling Examples
+
+### When Tools Fail
+If MCP tools are unavailable, the AI will:
+- Inform you that MCP functionality is not available
+- Suggest running `python scripts/test_mcp_setup.py` to diagnose issues
+- Recommend restarting Cursor IDE if configuration changes were made
+
+### Debugging Tool Issues
+```
+AI Request: "The MCP server seems unresponsive. Run a health check and 
+show me the server status."
+```
+
+**Diagnostic Flow**: Health check → Status report → Troubleshooting suggestions
+
+## Best Practices
+
+### When to Use Each Tool
+
+**Vector Memory**:
+- Storing complex analysis results
+- Building contextual knowledge base
+- Finding related code patterns
+
+**Cache**:
+- Expensive computations
+- Temporary session data
+- Frequently accessed results
+
+**Events**:
+- Development activity tracking
+- Error and warning logs
+- Audit trails
+
+**Codebase Analysis**:
+- File dependency tracking
+- Code quality metrics
+- Architecture documentation
+
+**DevOps**:
+- Deployment tracking
+- System operation logs
+- Infrastructure changes
+
+### Performance Considerations
+- Vector operations are CPU-intensive for large datasets
+- Cache cleanup happens automatically every 5 minutes
+- Database grows with stored data - monitor disk usage
+- Background tasks run continuously for maintenance
+
+## Integration with Legion Agents
+
+### Agent Memory Sharing
+```
+AI Request: "Store this architectural decision in vector memory so the 
+architect agent can reference it in future planning sessions."
+```
+
+### Cross-Agent Communication
+```
+AI Request: "Log this API change event so all agents can be aware of the 
+interface modifications."
+```
+
+### Persistent Agent State
+```
+AI Request: "Cache the current agent configuration so it persists across 
+development sessions."
+```

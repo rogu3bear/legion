@@ -28,7 +28,7 @@ mkdir -p "$(dirname "$CURSOR_MCP_CONFIG")"
 
 # Copy the new unified MCP configuration
 echo "🚀 Installing Legion Unified MCP configuration..."
-cp "$PROJECT_ROOT/cursor_mcp_unified.json" "$CURSOR_MCP_CONFIG"
+cp "$PROJECT_ROOT/cursor_mcp_unified.json.template" "$CURSOR_MCP_CONFIG"
 
 # Make the startup script executable
 chmod +x "$PROJECT_ROOT/scripts/start_mcp_unified.sh"
@@ -37,7 +37,7 @@ echo "✅ Cursor MCP configuration updated successfully!"
 echo ""
 echo "📋 Configuration Details:"
 echo "  • Unified MCP Server: legion-unified"
-echo "  • LM Studio Bridge: legion-lmstudio"
+echo "  • LM Studio Bridge: removed (architecture doesn't fit MCP pattern)"
 echo "  • Database: memory/db/mcp_unified.db"
 echo "  • Working Directory: $PROJECT_ROOT"
 echo ""

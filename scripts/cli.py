@@ -7,9 +7,9 @@ import click
 @click.option(
     "--dev-start",
     is_flag=True,
-    help="Start the development environment using Docker Compose.",
+    help="Start the local development environment.",
 )
 def dev_start(dev_start):
-    """Start the development environment using Docker Compose."""
+    """Start the local development environment."""
     if dev_start:
         subprocess.run(["./scripts/dev_start.sh"], check=True)

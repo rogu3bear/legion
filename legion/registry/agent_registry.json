@@ -40,12 +40,5 @@
     "function_tags": ["echo_task", "log_payload"],
     "max_retries": 1,
     "cooldown": 0
-  },
-  "healthcheck": {
-    "priority": 9,
-    "status_route": "/api/v1/agents/healthcheck/status",
-    "function_tags": ["collect_health", "report_anomaly"],
-    "max_retries": 3,
-    "cooldown": 5
   }
 }

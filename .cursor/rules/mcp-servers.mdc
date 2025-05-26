@@ -1,0 +1,295 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Legion MCP Servers - Isolated Architecture - Cursor Rules
+
+## Overview
+
+Legion provides **isolated MCP (Model Context Protocol) servers** that integrate with Cursor IDE to expose Legion's capabilities as specialized tools for AI assistance during development. Each server runs independently for better debugging and maintainability.
+
+## 🏗️ MCP Server Architecture
+
+### Isolated Server Design
+
+Legion uses **5 independent MCP servers** instead of a single unified server:
+
+| Server | Purpose | Location |
+|--------|---------|----------|
+| 🧠 **Vector Memory** | Semantic search & embeddings | [.MCP/vector-memory/server.py](mdc:.MCP/vector-memory/server.py) |
+| 💾 **Cache Memory** | TTL-based caching | [.MCP/cache-memory/server.py](mdc:.MCP/cache-memory/server.py) |
+| 📊 **Event Logging** | Structured event logging | [.MCP/event-logging/server.py](mdc:.MCP/event-logging/server.py) |
+| 🔍 **Codebase Analysis** | File analysis & dependencies | [.MCP/codebase-analysis/server.py](mdc:.MCP/codebase-analysis/server.py) |
+| 🚀 **DevOps Operations** | Infrastructure monitoring | [.MCP/devops-operations/server.py](mdc:.MCP/devops-operations/server.py) |
+
+**Configuration File**: [.MCP/config.json](mdc:.MCP/config.json)
+**Setup Script**: [.MCP/setup_cursor.sh](mdc:.MCP/setup_cursor.sh)
+**Master Documentation**: [.MCP/README.md](mdc:.MCP/README.md)
+
+## 🧩 Available MCP Tools by Server
+
+### 🧠 Vector Memory Server (legion-vector-memory)
+
+**Purpose**: Store and retrieve text with semantic search using embeddings
+
+**Available Tools**:
+- **`vector/store`** - Store text with embeddings for semantic search
+  - Parameters: agent_name, text, embedding, metadata?, similarity_threshold?
+  - Returns: record_id, status
+- **`vector/retrieve`** - Find similar text using vector similarity  
+  - Parameters: agent_name, query_embedding, top_k?, similarity_threshold?
+  - Returns: results[], count
+
+**Use Cases**: Code similarity search, documentation retrieval, context memory
+
+### 💾 Cache Memory Server (legion-cache-memory)
+
+**Purpose**: TTL-based caching for temporary data storage
+
+**Available Tools**:
+- **`cache/store`** - Store data with expiration time (TTL)
+  - Parameters: agent_name, key, value, ttl_seconds?
+  - Returns: record_id, status
+- **`cache/get`** - Retrieve cached data if not expired
+  - Parameters: key
+  - Returns: value, found, key
+- **`cache/invalidate`** - Remove a cache entry
+  - Parameters: key
+  - Returns: success, key
+
+**Use Cases**: API response caching, computation results, temporary storage
+
+### 📊 Event Logging Server (legion-event-logging)
+
+**Purpose**: Structured event logging with severity levels
+
+**Available Tools**:
+- **`event/log`** - Log structured events with severity levels
+  - Parameters: agent_name, event_type, event_data, severity?, metadata?
+  - Returns: record_id, status
+- **`event/get`** - Query event history with filtering
+  - Parameters: agent_name?, event_type?, severity?, limit?
+  - Returns: events[], count
+
+**Use Cases**: Development tracking, error logging, audit trails
+
+### 🔍 Codebase Analysis Server (legion-codebase-analysis)
+
+**Purpose**: File analysis and dependency tracking
+
+**Available Tools**:
+- **`codebase/store`** - Store file analysis results
+  - Parameters: agent_name, file_path, analysis_data, dependencies?, metadata?
+  - Returns: record_id, status
+- **`codebase/get`** - Retrieve analysis for specific files
+  - Parameters: file_path, file_hash?
+  - Returns: analysis, found, file_path
+- **`codebase/dependencies`** - Get dependencies for a file
+  - Parameters: file_path
+  - Returns: dependencies[], count, file_path
+- **`codebase/dependents`** - Find files that depend on a file
+  - Parameters: file_path
+  - Returns: dependents[], count, file_path
+
+**Use Cases**: Code analysis storage, dependency tracking, impact analysis
+
+### 🚀 DevOps Operations Server (legion-devops-operations)
+
+**Purpose**: DevOps operations logging and monitoring
+
+**Available Tools**:
+- **`devops/log`** - Log DevOps operations (deploy, rollback, scale)
+  - Parameters: agent_name, operation_type, operation_data, status?, metadata?
+  - Returns: operation_id, status
+- **`devops/update`** - Update operation status and results
+  - Parameters: operation_id, status, result?
+  - Returns: success, operation_id
+- **`devops/get`** - Get operations with filtering
+  - Parameters: operation_type?, status?, limit?
+  - Returns: operations[], count
+- **`devops/history`** - Get complete operation history
+  - Parameters: operation_id
+  - Returns: history[], count, operation_id
+
+**Use Cases**: Deployment tracking, infrastructure monitoring, operation status
+
+## 🔧 Setup and Configuration
+
+### Quick Setup
+Run the automated setup script:
+```bash
+./.MCP/setup_cursor.sh
+```
+
+### Manual Configuration
+1. **Configuration**: The MCP configuration is defined in [.MCP/config.json](mdc:.MCP/config.json)
+2. **Install to Cursor**: Configuration gets copied to `~/.cursor/mcp.json`
+3. **Database**: All servers share SQLite database at `memory/db/mcp_unified.db`
+
+### Testing Setup
+Test individual servers:
+```bash
+# Test specific server
+echo '{"jsonrpc": "2.0", "id": 1, "method": "health", "params": {}}' | python .MCP/vector-memory/server.py
+```
+
+## 🎯 How to Use MCP Tools in Cursor
+
+### Direct Tool Usage
+When working in Cursor, reference specific server capabilities:
+
+**Vector Memory Examples**:
+- "Store this function analysis in vector memory for semantic search"
+- "Find similar code patterns using vector retrieval"
+
+**Cache Memory Examples**:  
+- "Cache this API response for 1 hour"
+- "Store this computation result temporarily"
+
+**Event Logging Examples**:
+- "Log this deployment event with info severity"
+- "Record this error event for debugging"
+
+**Codebase Analysis Examples**:
+- "Store analysis for this Python file with dependencies"
+- "Find all files that depend on this module"
+
+**DevOps Operations Examples**:
+- "Log this deployment operation with pending status"
+- "Update operation status to completed with results"
+
+### Development Workflows
+The isolated MCP servers enable:
+- **Context Preservation**: Store and retrieve development context per domain
+- **Code Analysis**: Track file changes and dependencies systematically  
+- **Event Tracking**: Monitor development operations across domains
+- **Performance Optimization**: Cache frequently accessed data with TTL
+- **Infrastructure Monitoring**: Track DevOps operations and their status
+
+## 🗄️ Shared Database Architecture
+
+All servers share the same database but operate on different domains:
+
+### Database Tables
+- **mcp_records** - Base table for all MCP operations
+- **vector_memory** - Text and embeddings for semantic search
+- **cache_memory** - TTL-based caching with expiration
+- **event_log** - Structured events with severity levels
+- **codebase_analysis** - File analysis with dependency tracking
+- **devops_operations** - Uses event log with specialized metadata
+
+### Connection Management
+- SQLite database with connection pooling (10 connections)
+- Async operations with proper resource management
+- Background cleanup workers for expired cache entries
+- Query performance tracking per server
+
+## 🔍 Debugging Individual Servers
+
+### Health Monitoring
+Each server provides health and statistics endpoints:
+```json
+{"method": "health", "params": {}}
+{"method": "stats", "params": {}}
+```
+
+### Server Status
+- **Vector Memory**: Tracks embedding operations and vector similarities
+- **Cache Memory**: Monitors TTL expiration and cleanup operations  
+- **Event Logging**: Tracks event creation and query performance
+- **Codebase Analysis**: Monitors file analysis and dependency tracking
+- **DevOps Operations**: Tracks infrastructure operations and status updates
+
+### Log Isolation
+Each server logs independently:
+- Vector operations logged to vector memory server logs
+- Cache operations logged to cache memory server logs
+- Event operations logged to event logging server logs
+- Analysis operations logged to codebase analysis server logs
+- DevOps operations logged to devops operations server logs
+
+## 🎯 Benefits of Isolated Architecture
+
+### ✅ Debugging Excellence
+- Test each server independently in isolation
+- Isolate issues to specific domains quickly
+- Clear error boundaries between services
+- Individual server health monitoring
+
+### ✅ Enhanced Maintainability  
+- Single responsibility per server
+- Independent deployments possible
+- Focused, smaller codebases
+- Clear separation of concerns
+
+### ✅ Superior Scalability
+- Scale individual services based on load
+- Add new specialized servers easily
+- Remove unused servers without impact
+- Independent performance optimization
+
+### ✅ Improved Reliability
+- Failure isolation between domains
+- Independent health monitoring per server
+- Graceful degradation of functionality
+- Reduced blast radius for issues
+
+## 🚨 Troubleshooting
+
+### Server Startup Issues
+1. **Script Permissions**: Ensure all scripts are executable (`chmod +x .MCP/*/server.py`)
+2. **Virtual Environment**: Verify Python environment path in configuration
+3. **Dependencies**: Check that core dependencies are available
+4. **Database Access**: Ensure `memory/db/` directory exists and is writable
+
+### Cursor Integration Issues  
+1. **Configuration**: Restart Cursor IDE after configuration changes
+2. **Logs**: Check Cursor's developer console for MCP server logs
+3. **Config File**: Verify configuration exists at `~/.cursor/mcp.json`
+4. **Server Communication**: Test individual servers using JSON-RPC
+
+### Database Issues
+1. **Connection Pool**: Check SQLite connection pooling status
+2. **Disk Space**: Ensure adequate disk space for database operations
+3. **Permissions**: Verify database file permissions and directory access
+4. **Schema**: Confirm database schema matches expected structure
+
+### Performance Issues
+1. **Individual Monitoring**: Check stats endpoint for each server individually
+2. **Resource Usage**: Monitor connection pool usage per server
+3. **Query Performance**: Review query execution times in server logs
+4. **Cache Efficiency**: Monitor cache hit/miss ratios in cache server
+
+## 📊 Integration with Legion Agents
+
+Legion agents can leverage isolated MCP tools for:
+
+### 🧠 Memory Management (Vector Server)
+- Store contextual information with semantic indexing
+- Retrieve relevant context using similarity search
+- Build knowledge bases with vector embeddings
+
+### 💾 State Persistence (Cache Server)  
+- Cache agent state between sessions with TTL
+- Store computation results temporarily
+- Implement short-term memory with expiration
+
+### 📊 Operation Logging (Event Server)
+- Track agent activities and decisions systematically
+- Log errors and debugging information with severity
+- Create audit trails for agent operations
+
+### 🔍 Code Understanding (Codebase Server)
+- Analyze files and track dependencies automatically
+- Store code analysis results for reuse
+- Map codebase relationships and impacts
+
+### 🚀 Infrastructure Operations (DevOps Server)  
+- Monitor agent-triggered infrastructure changes
+- Track deployment and scaling operations
+- Log system health and performance metrics
+
+---
+
+**The isolated MCP architecture provides superior debugging capabilities, better maintainability, and clearer separation of concerns compared to unified approaches. Each server is focused, testable, and independently reliable.**

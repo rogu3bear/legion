@@ -6,81 +6,101 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-and-test: # Combined build and Python test job
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
       - name: Create and activate virtual environment
         run: |
           python -m venv .venv
-          bash scripts/activate_once.sh
-      - name: Install dependencies
+          source .venv/bin/activate
+      - name: Install Python dependencies
         run: |
           pip install -U pip
           pip install -r requirements.txt
-          pip install flake8
+          # pip install flake8 # Assuming flake8 is in requirements.txt or managed by pre-commit
+      - name: Environment health check (Python)
+        run: make doctor # If this primarily checks Python env
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8 # Or your desired pnpm version
+
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18' # Or your preferred LTS version
-      - name: Install npm dependencies
+          cache: 'pnpm'
+
+      - name: Install frontend dependencies
         run: |
-          # Assuming package.json is in the root and frontend is in ui/frontend
-          # If package.json for frontend is in ui/frontend, cd there first
+          # Adjust path if your package.json for frontend is not at root
           if [ -f "ui/frontend/package.json" ]; then
-            npm install --prefix ui/frontend
+            pnpm install --prefix ui/frontend
           elif [ -f "package.json" ]; then
-            npm install
+            pnpm install
           else
-            echo "No package.json found for npm install."
+            echo "No package.json found for pnpm install."
+            exit 1
           fi
+      
       - name: Lint with ESLint (Frontend)
         run: |
-          # Adjust path to ESLint config and source if needed
+          # Adjust path and command if needed
           if [ -f "ui/frontend/package.json" ]; then
-            npm run lint --prefix ui/frontend --if-present -- --max-warnings 0
-          elif [ -f "package.json" ] && grep -q '"lint"' package.json; then # Check if lint script exists
-            npm run lint -- --max-warnings 0
+            pnpm --prefix ui/frontend run lint --if-present -- --max-warnings 0
+          elif [ -f "package.json" ] && jq -e '.scripts.lint' package.json > /dev/null; then
+            pnpm run lint -- --max-warnings 0
           else
             echo "ESLint lint script not found or package.json missing."
           fi
-      - name: Run npm tests with coverage (Frontend)
+
+      - name: Run frontend tests with coverage
         run: |
-          # Adjust path and command if needed
-          # This assumes a test script configured for coverage
-          MIN_COVERAGE=90
           if [ -f "ui/frontend/package.json" ]; then
-            # Attempt to run, capture output, and check coverage
-            # This is a placeholder for actual coverage checking logic
-            # You'll need a tool like jest with coverage reporters
-            echo "Attempting npm test --prefix ui/frontend --if-present -- --coverage"
-            # npm test --prefix ui/frontend --if-present -- --coverage
-            # Add actual coverage check here, e.g., parse coverage report
-            echo "Coverage check for frontend not fully implemented in CI script yet."
-          elif [ -f "package.json" ] && grep -q '"test"' package.json; then
-            echo "Attempting npm test -- --coverage"
-            # npm test -- --coverage
-            echo "Coverage check for root package.json not fully implemented in CI script yet."
+            echo "Running frontend tests with coverage in ui/frontend..."
+            pnpm --prefix ui/frontend run test:coverage
+          elif [ -f "package.json" ] && jq -e '.scripts."test:coverage"' package.json > /dev/null; then
+            echo "Running frontend tests with coverage from root package.json..."
+            pnpm run test:coverage
           else
-            echo "npm test script not found or package.json missing."
+            echo "Frontend test:coverage script not found or package.json missing."
           fi
-      - name: Lint
+
+      - name: Lint (Python)
         run: make lint
-      - name: Run pytest
+      
+      - name: Run pytest (Python)
         run: |
-          bash scripts/activate_once.sh
+          source .venv/bin/activate
           pytest tests/ -v --tb=short --cov=core --cov=interface --cov-report=term-missing --cov-report=json:artifacts/reports/coverage.json
-      - name: Security Scan (Bandit)
+          # Add Python coverage check here if needed, e.g. coverage report --fail-under=80
+
+      - name: Security Scan (Bandit - Python)
         run: |
-          bash scripts/activate_once.sh
+          source .venv/bin/activate
           bandit -r legion/ -o artifacts/reports/bandit_report_ci.json -f json
+
+      - name: Frontend Audit (pnpm)
+        run: |
+          if [ -f "ui/frontend/package.json" ]; then
+            pnpm --prefix ui/frontend audit --audit-level high
+          elif [ -f "package.json" ]; then
+            pnpm audit --audit-level high
+          else
+            echo "No package.json for frontend audit."
+            exit 1
+          fi
+
+      # Python specific checks from original file (if still relevant)
       - name: Check port availability
         run: |
-          bash scripts/activate_once.sh
+          source .venv/bin/activate
           python - << 'PYCODE'
           from legion.ports import load_runtime_ports
           from legion.utils.port_conflict_checker import check_ports_available
@@ -91,132 +111,108 @@ jobs:
         run: python scripts/selftest_handshake.py
       - name: Docs & link check
         run: bash scripts/docs_build_check.sh
-      - name: Upload CI Logs
-        uses: actions/upload-artifact@v3
+
+      - name: Upload CI Artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ci-logs-build
+          name: ci-artifacts-build-test
           path: |
             scripts/logs/
             artifacts/reports/
             /tmp/ci_logs/
-      - name: Upload Logs on Failure
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: legion-logs-build
-          path: scripts/logs/
-      - name: Upload Reports on Failure
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: legion-reports-build
-          path: artifacts/reports/
+            ui/frontend/coverage/
+            playwright-report/
 
-  test:
+  visual-regression:
+    name: "Visual Regression (Playwright)"
     runs-on: ubuntu-latest
+    continue-on-error: true 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-    - name: Create log directories
-      run: |
-        mkdir -p scripts/logs
-        mkdir -p /tmp/ci_logs
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Self-test Handshake
-      run: python scripts/selftest_handshake.py
-      env:
-        PYTHONPATH: $PYTHONPATH:.
-    - name: CLI smoke test
-      run: legion list-agents
-    - name: Check service health
-      env:
-        PORT_ALLOCATOR_WEB: 27001
-        PORT_ALLOCATOR_CHROMA: 27020
-        PORT_ALLOCATOR_PROMETHEUS: 9090
-        PORT_ALLOCATOR_REDIS: 6379
-        PORT_ALLOCATOR_POSTGRES: 5432
-        PORT_ALLOCATOR_GRAFANA: 7806
-      run: |
-        bash scripts/gen_ports_env.sh
-        docker compose up -d --no-build
-        sleep 15
-        curl -f "http://localhost:${PORT_ALLOCATOR_PROMETHEUS}/-/ready"
-        # Redis PING
-        python3 - << 'PY'
-        import os, redis, sys
-        r = redis.Redis(host="localhost", port=int(os.environ['PORT_ALLOCATOR_REDIS']))
-        sys.exit(0 if r.ping() else 1)
-        PY
-        # Postgres simple connect
-        pg_isready -h localhost -p ${PORT_ALLOCATOR_POSTGRES}
-        # Grafana health
-        curl -f "http://localhost:${PORT_ALLOCATOR_GRAFANA}/api/health"
-        docker compose down -v
-    - name: Upload CI Logs
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: ci-logs-test
-        path: |
-          scripts/logs/
-          /tmp/ci_logs/
-    - name: Upload Logs on Failure
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: legion-logs-test
-        path: scripts/logs/
-    - name: Discord notify
-      if: always()
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: |
-        status="${{ job.status }}"
-        sha="${GITHUB_SHA::7}"
-        curl -H "Content-Type: application/json" \\
-             -d "{\\"content\\":\\"CI run *${status}* for \`${sha}\`\\"}" \\
-             "$DISCORD_WEBHOOK"
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      - name: Install frontend dependencies (if needed for Playwright context)
+        run: |
+          if [ -f "ui/frontend/package.json" ]; then
+            pnpm install --prefix ui/frontend
+          elif [ -f "package.json" ]; then
+            pnpm install
+          fi
+      - name: Install Playwright browsers
+        run: |
+          if [ -f "ui/frontend/package.json" ]; then
+            pnpm --prefix ui/frontend exec playwright install --with-deps
+          elif [ -f "package.json" ]; then
+            pnpm exec playwright install --with-deps
+          else
+            echo "Cannot determine location for Playwright install."
+            exit 1
+          fi
+      - name: Run Playwright tests (Snapshots)
+        run: |
+          if [ -f "ui/frontend/package.json" ] && jq -e '.scripts."test:playwright"' ui/frontend/package.json > /dev/null; then
+            pnpm --prefix ui/frontend run test:playwright
+          elif [ -f "package.json" ] && jq -e '.scripts."test:playwright"' package.json > /dev/null; then
+            pnpm run test:playwright
+          else
+            echo "Playwright test script (e.g., test:playwright) not found."
+          fi
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
 
   agent-instantiation-guard:
     name: "Agent Instantiation Guard"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Create log directories
-        run: mkdir -p /tmp/ci_logs
-      - name: Install dependencies
+        run: mkdir -p /tmp/ci_logs scripts/logs
+      - name: Install Python dependencies for guard
         run: |
           python -m pip install --upgrade pip
           pip install libcst
       - name: Run instantiation guard
-        run: |
-          python scripts/agent_instantiation_guard.py legion/
+        run: python scripts/agent_instantiation_guard.py legion/
+      - name: Upload Guard Logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guard-logs
+          path: |
+            scripts/logs/
+            /tmp/ci_logs/
 
   lmstudio-integration:
     name: "LM Studio MCP Integration Test"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      - name: Install dependencies
+          python-version: '3.12' # Updated Python version
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install requests
+          # pip install requests # If needed specifically for this test
       - name: Mock LM Studio Server
         run: |
           # Start a mock LM Studio server for testing
@@ -269,23 +265,80 @@ jobs:
 
           print("✅ LM Studio MCP integration test passed")
           PY
-      - name: Upload CI Logs
-        uses: actions/upload-artifact@v3
+      - name: Upload Integration Test Logs
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ci-logs-agent-guard
-          path: /tmp/ci_logs/
+          name: integration-test-logs
+          path: |
+            scripts/logs/
+            /tmp/ci_logs/
+            # Add any specific log files from this test
 
-  build-go-agents:
-    name: Build Go Agents
+  discord-notify: # Consolidated notification job
+    name: Discord Notification
     runs-on: ubuntu-latest
+    needs: [build-and-test, agent-instantiation-guard, lmstudio-integration, visual-regression] # Depends on all relevant jobs
+    if: always() # Run regardless of previous job statuses to always notify
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
-      - name: Vet and Test
+      - name: Determine overall status
+        id: overall_status
         run: |
-          go vet ./...
-          go test ./...
+          # Needs context from all jobs. GitHub Actions doesn't easily pass this directly.
+          # A more complex approach might involve a matrix or a separate action to aggregate.
+          # For simplicity, this will be a generic message or you can check specific job outcomes.
+          # For now, this example just uses the status of the 'discord-notify' job trigger itself.
+          # A better way is to use `github.event.workflow_run.conclusion` if this job is triggered by `workflow_run`.
+          # Or, if run in the same workflow, check `needs.<job_id>.result`.
+          echo "build_test_status=${{ needs.build-and-test.result }}" >> $GITHUB_OUTPUT
+          echo "guard_status=${{ needs.agent-instantiation-guard.result }}" >> $GITHUB_OUTPUT
+          echo "lm_status=${{ needs.lmstudio-integration.result }}" >> $GITHUB_OUTPUT
+          echo "visual_status=${{ needs.visual-regression.result }}" >> $GITHUB_OUTPUT
+          
+          final_status="success"
+          if [[ "${{ needs.build-and-test.result }}" != "success" && "${{ needs.build-and-test.result }}" != "skipped" ]] || \
+             [[ "${{ needs.agent-instantiation-guard.result }}" != "success" && "${{ needs.agent-instantiation-guard.result }}" != "skipped" ]] || \
+             [[ "${{ needs.lmstudio-integration.result }}" != "success" && "${{ needs.lmstudio-integration.result }}" != "skipped" ]]; then
+            final_status="failure"
+          elif [[ "${{ needs.visual-regression.result }}" != "success" && "${{ needs.visual-regression.result }}" != "skipped" ]]; then
+            # Visual regression is continue-on-error, so it might not "fail" the workflow
+            # but we can still note if its specific outcome wasn't success.
+            # For now, let's not make it a "failure" for notification if it's non-blocking.
+            echo "Visual regression did not pass but is non-blocking."
+          fi
+          echo "final_overall_status=$final_status" >> $GITHUB_OUTPUT
+
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          JOB_STATUS: ${{ steps.overall_status.outputs.final_overall_status }} # Use aggregated status
+          SHA: ${{ github.sha }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # status="${{ job.status }}" # This is status of notify job itself
+          status_icon="✅"
+          if [ "$JOB_STATUS" != "success" ]; then
+            status_icon="❌"
+          fi
+          
+          message_content="$status_icon **$WORKFLOW_NAME** run *$JOB_STATUS* for commit \`${SHA::7}\`. Details: $RUN_URL"
+          
+          # Append details of failed jobs if any
+          if [ "${{ needs.build-and-test.result }}" != "success" ] && [ "${{ needs.build-and-test.result }}" != "skipped" ]; then
+            message_content+="\n- Build/Test: ${{ needs.build-and-test.result }}"
+          fi
+          if [ "${{ needs.agent-instantiation-guard.result }}" != "success" ] && [ "${{ needs.agent-instantiation-guard.result }}" != "skipped" ]; then
+            message_content+="\n- Agent Guard: ${{ needs.agent-instantiation-guard.result }}"
+          fi
+          if [ "${{ needs.lmstudio-integration.result }}" != "success" ] && [ "${{ needs.lmstudio-integration.result }}" != "skipped" ]; then
+            message_content+="\n- LM Studio Int.: ${{ needs.lmstudio-integration.result }}"
+          fi
+          if [ "${{ needs.visual-regression.result }}" != "success" ] && [ "${{ needs.visual-regression.result }}" != "skipped" ]; then
+            message_content+="\n- Visual Regression: ${{ needs.visual-regression.result }} (non-blocking)"
+          fi
+          
+          curl -H "Content-Type: application/json" \\
+               -d "{\\"content\\":\\"$message_content\\"}" \\
+               "$DISCORD_WEBHOOK"

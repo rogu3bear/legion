@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Using npm as pnpm uses npm registry and package.json
+    directory: "/" # Assuming package.json is in the root
+    schedule:
+      interval: "daily"
+    target-branch: "main"
+    # Specify pnpm as the package manager
+    package-manager: "pnpm"
+    # Optionally, add reviewers or assignees for Dependabot PRs
+    # reviewers:
+    #   - "your-github-username"
+    # assignees:
+    #   - "your-github-username"
+    # Limit the number of open PRs for version updates
+    open-pull-requests-limit: 5
+    # Versioning strategy (e.g., increase-if-necessary, lockfile-only)
+    versioning-strategy: "increase-if-necessary"
+
+  # If you have a separate frontend package.json in ui/frontend
+  - package-ecosystem: "npm"
+    directory: "/ui/frontend" # Adjust if your path is different
+    schedule:
+      interval: "daily"
+    target-branch: "main"
+    package-manager: "pnpm"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase-if-necessary"
+    # Condition to only run if package.json exists in ui/frontend
+    # This condition is not directly supported by dependabot.yml syntax in this way.
+    # Dependabot will simply not find a manifest if the path is wrong.
+    # Ensure the directory path is correct. 

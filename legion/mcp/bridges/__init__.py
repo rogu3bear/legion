@@ -1,15 +1,9 @@
 """MCP Bridges for Legion."""
 
-from .lmstudio_bridge import (
-    LMStudioAdapter,
-    LMStudioMCP,
-    create_lmstudio_adapter,
-    create_lmstudio_mcp,
-)
+# Legion MCP Bridges Package
+# 
+# This package previously contained MCP bridge implementations.
+# The LM Studio bridge has been removed as it doesn't fit the MCP architecture pattern.
+# MCP servers should provide tools TO AI models, not call other AI models.
 
-__all__ = [
-    "LMStudioAdapter",
-    "LMStudioMCP",
-    "create_lmstudio_adapter",
-    "create_lmstudio_mcp",
-]
+__all__ = []

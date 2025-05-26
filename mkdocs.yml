@@ -23,5 +23,4 @@ nav:
       - CI/CD: docs/ops/ci_cd.md
   - Guides:
       - Local Dev: docs/guides/local_dev.md
-      - Docker Dev: docs/guides/docker_dev.md
       - Contributing: docs/guides/contributing.md

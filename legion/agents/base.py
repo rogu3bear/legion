@@ -13,6 +13,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import openai
+import asyncio
+import json
+import redis
+import html # For unescaping
 
 from core.di_container import ILLMClient, container
 from core.logging_config import setup_logging
@@ -43,6 +47,7 @@ class BaseAgent:
         config: dict,
         llm_client: "ILLMClient" = None,
         state_manager: "IStateManager" = None,
+        orchestrator_ref: Optional[Any] = None,
     ):
         """Initialize the Base Agent with dependency injection for LLM client and state manager."""
         self.name = name
@@ -50,19 +55,96 @@ class BaseAgent:
         self.logger = logging.getLogger(f"agent.{name}")
         setup_logging()  # Ensure logging is configured
         self.logger.info(f"Agent {name} initialized", extra={"agent_name": name})
-        self.orchestrator = None
+        self.orchestrator = orchestrator_ref
         self.client = None
-        self.channel_id = getattr(self.orchestrator, "agent_channel_ids", {}).get(
-            self.name, 0
-        )
+        if self.orchestrator and hasattr(self.orchestrator, "agent_channel_ids"):
+            self.channel_id = self.orchestrator.agent_channel_ids.get(self.name, 0)
+        else:
+            self.channel_id = 0
         self.dynamic_rules = {}
         self.memory = LegionAgentMemory(self.name)
-        # Track if agent has introduced itself
         self.introduced = False
         self._self_assessment_running = False
         self._self_assessment_lock = threading.Lock()
-        # Use injected LLM client if provided, otherwise resolve from DI container
         self.llm = llm_client or container.get(ILLMClient)
+
+        if not hasattr(self, 'system_prompt'):
+            self.system_prompt = "You are a helpful assistant."
+        if not hasattr(self, 'skills'):
+            self.skills = []
+
+        if orchestrator_ref is not None:
+            try:
+                loop = asyncio.get_running_loop()
+                if loop and loop.is_running():
+                    asyncio.create_task(self._listen_for_prompt_updates())
+                    self.logger.info(f"Started prompt update listener for {self.name}")
+                else:
+                    self.logger.warning(f"No running asyncio loop for {self.name}, prompt listener not started.")
+            except RuntimeError:
+                self.logger.warning(f"No running asyncio loop for {self.name} (RuntimeError), prompt listener not started.")
+            except Exception as e:
+                self.logger.error(f"Error starting prompt listener for {self.name}: {e}")
+        else:
+            self.logger.info(f"Prompt listener not started for {self.name} (no orchestrator_ref or not live)")
+
+    async def _listen_for_prompt_updates(self):
+        """Listens to Redis pub/sub for prompt_updated events and hot-swaps."""
+        r_client = None
+        pubsub = None
+        redis_host = os.getenv("LEGION_REDIS_HOST", "localhost")
+        redis_port = int(os.getenv("LEGION_REDIS_PORT", 7600))
+        prompts_events_channel = "prompts:events"
+
+        while True:
+            try:
+                self.logger.info(f"[{self.name}] Prompt listener: Connecting to Redis...")
+                r_client = redis.asyncio.Redis(host=redis_host, port=redis_port, decode_responses=True, socket_connect_timeout=5)
+                await r_client.ping()
+                pubsub = r_client.pubsub()
+                await pubsub.subscribe(prompts_events_channel)
+                self.logger.info(f"[{self.name}] Prompt listener: Subscribed to {prompts_events_channel}")
+
+                async for message in pubsub.listen():
+                    if message and message["type"] == "message":
+                        try:
+                            data = json.loads(message["data"])
+                            if data.get("agent") == self.name and data.get("event") == "prompt_updated":
+                                payload = data.get("payload", {})
+                                new_system_prompt = payload.get("system")
+                                new_skills = payload.get("skills")
+
+                                if new_system_prompt is not None:
+                                    self.system_prompt = html.unescape(new_system_prompt)
+                                    self.logger.info(f"[{self.name}] Hot-reloaded system_prompt.")
+                                
+                                if new_skills is not None:
+                                    self.skills = new_skills
+                                    self.logger.info(f"[{self.name}] Hot-reloaded skills: {self.skills}")
+
+                        except json.JSONDecodeError as e:
+                            self.logger.error(f"[{self.name}] Prompt listener: Error decoding JSON: {e} - Data: {message['data']}")
+                        except Exception as e:
+                            self.logger.error(f"[{self.name}] Prompt listener: Error processing message: {e}")
+            except redis.exceptions.ConnectionError as e:
+                self.logger.error(f"[{self.name}] Prompt listener: Redis connection error: {e}. Retrying in 10s...")
+            except Exception as e:
+                self.logger.error(f"[{self.name}] Prompt listener: Unexpected error: {e}. Retrying in 10s...")
+            finally:
+                if pubsub:
+                    try:
+                        await pubsub.unsubscribe(prompts_events_channel)
+                        self.logger.info(f"[{self.name}] Prompt listener: Unsubscribed from {prompts_events_channel}")
+                    except Exception as e_unsub:
+                        self.logger.error(f"[{self.name}] Prompt listener: Error unsubscribing: {e_unsub}")
+                if r_client:
+                    try:
+                        await r_client.close()
+                        self.logger.info(f"[{self.name}] Prompt listener: Redis client closed.")
+                    except Exception as e_close:
+                        self.logger.error(f"[{self.name}] Prompt listener: Error closing Redis client: {e_close}")
+            
+            await asyncio.sleep(10)
 
     async def post_to_discord(self, message):
         """Post a message to the agent's Discord channel, splitting if too long."""
@@ -198,6 +280,37 @@ class BaseAgent:
             )
         except Exception as e:
             logging.error(f"[BaseAgent] Error sending success notification: {e}")
+
+    async def log_to_feed(self, skill_name: str, status: str, input_summary: Any, output_summary: Any, message_type=None):
+        """Helper to send structured logs to the agent-feed channel."""
+        try:
+            from legion.utils.discord_bridge import MessageType, send_discord_embed
+            
+            # Default message type if not provided
+            if message_type is None:
+                message_type = MessageType.INFO
+            
+            timestamp = datetime.now(timezone.utc).isoformat()
+            details = [
+                ("Timestamp", timestamp),
+                ("Skill Name", skill_name),
+                ("Input Summary", str(input_summary)[:1000]),
+                ("Output/Result", str(output_summary)[:1000]),
+                ("Status", status)
+            ]
+            
+            # Use agent feed channel ID from environment
+            agent_feed_channel_id = int(os.getenv("AGENT_FEED_CHANNEL_ID", 1362902052279291904))
+            
+            await send_discord_embed(
+                agent_name=self.name,
+                message=f"{skill_name} Executed",
+                msg_type=message_type,
+                channel_id=agent_feed_channel_id,
+                fields=details
+            )
+        except Exception as e:
+            logging.error(f"[BaseAgent] Error in log_to_feed for {self.name}: {e}")
 
     async def self_assess(self):
         """Run a self-assessment and post the result to Discord."""
