@@ -15,14 +15,25 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from core.mcp_unified import (
-    CacheRecord,
-    CodebaseRecord,
-    EventRecord,
-    MCPUnifiedDB,
-    VectorRecord,
-    get_mcp_db,
-)
+try:
+    from core.mcp_unified import (
+        CacheRecord,
+        CodebaseRecord,
+        EventRecord,
+        MCPUnifiedDB,
+        VectorRecord,
+        get_mcp_db,
+    )
+except ImportError:
+    # Fallback for direct execution
+    from mcp_unified import (
+        CacheRecord,
+        CodebaseRecord,
+        EventRecord,
+        MCPUnifiedDB,
+        VectorRecord,
+        get_mcp_db,
+    )
 
 logger = logging.getLogger(__name__)
 

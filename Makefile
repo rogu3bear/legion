@@ -18,6 +18,8 @@ dev:
 lint:
 	@echo "Running linters..."
 	bash scripts/activate_once.sh
+	python -m ruff check . || echo "⚠️ Ruff found style issues (non-blocking)"
+	python -m black --check . || echo "⚠️ Black found formatting issues (non-blocking)"
 	if command -v flake8 >/dev/null; then \
 	flake8 legion/ interface/ scripts/ || true; \
 	else \

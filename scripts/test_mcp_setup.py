@@ -24,7 +24,17 @@ async def test_unified_mcp():
     logger.info("Testing Legion Unified MCP Server...")
 
     try:
-        from core.mcp_server import get_mcp_server
+        # Import directly from the mcp_server.py file
+        import importlib.util
+        mcp_server_path = project_root / "core" / "mcp_server.py"
+        spec = importlib.util.spec_from_file_location("mcp_server_module", mcp_server_path)
+        mcp_server_module = importlib.util.module_from_spec(spec)
+
+        # Add core to path for dependencies
+        sys.path.insert(0, str(project_root / "core"))
+        spec.loader.exec_module(mcp_server_module)
+
+        get_mcp_server = mcp_server_module.get_mcp_server
 
         # Initialize MCP server
         mcp_server = await get_mcp_server()
@@ -116,7 +126,7 @@ def test_cursor_config():
         return False
 
     try:
-        with open(cursor_config_path, "r") as f:
+        with open(cursor_config_path) as f:
             config = json.load(f)
 
         servers = config.get("mcpServers", {})

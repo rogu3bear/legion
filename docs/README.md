@@ -34,6 +34,38 @@ python create_test_user.py
 
 Or use the registration API endpoint at `/api/v1/auth/register`.
 
+## Deployment Profiles & Port Map
+
+Legion supports multiple deployment environments with different configurations:
+
+### Development Profile (`.env.development`)
+- **DEBUG**: `true` (enabled)
+- **Ports**: 8000-8080 range
+- **Features**: Hot reload, detailed logging, development middleware
+
+### Staging Profile (`.env`)
+- **DEBUG**: `false` (disabled)
+- **Ports**: Dynamic allocation
+- **Features**: Production-like configuration with debug disabled
+
+### Production Profile (`.env.production`)
+- **DEBUG**: `false` (disabled)
+- **Ports**: 31000-31999 cluster range
+- **Features**: Optimized for production deployment, cluster-safe ports
+
+### Port Allocation Map
+
+| Service | Dev | Staging | Production |
+|---------|-----|---------|------------|
+| Web UI | 8000-8080 | Dynamic | 31001 |
+| Orchestrator | 8000-8080 | Dynamic | 31000 |
+| ChromaDB | 8000-8080 | Dynamic | 31020 |
+| Prometheus | 8000-8080 | Dynamic | 31030 |
+| Redis | 8000-8080 | Dynamic | 31040 |
+| PostgreSQL | 8000-8080 | Dynamic | 31050 |
+
+See [Port Map](architecture/ports.md) for detailed port configuration.
+
 ## Documentation Index
 
 - [Architecture Overview](architecture/overview.md)

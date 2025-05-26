@@ -38,4 +38,4 @@ echo "Database: $MCP_DB_PATH" >&2
 echo "Log Level: $MCP_LOG_LEVEL" >&2
 
 # Run the unified MCP server
-exec python -m core.mcp_server
+exec python scripts/mcp_server_wrapper.py

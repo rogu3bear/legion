@@ -4,6 +4,7 @@ Command-line interface for Legion Unified MCP Server
 """
 
 import asyncio
+import importlib.util
 import json
 import logging
 import os
@@ -15,14 +16,13 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-# Import from the parent core directory
-import sys
-from pathlib import Path
-core_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(core_dir))
+# Import the mcp_server module from the core directory
+core_mcp_server_path = project_root / "core" / "mcp_server.py"
+spec = importlib.util.spec_from_file_location("core_mcp_server", core_mcp_server_path)
+core_mcp_server = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(core_mcp_server)
 
-import mcp_server
-get_mcp_server = mcp_server.get_mcp_server
+get_mcp_server = core_mcp_server.get_mcp_server
 
 
 def setup_logging():

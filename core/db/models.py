@@ -57,7 +57,7 @@ class Agent(Base):
     config: Dict[str, Any] = Column(JSON, default=lambda: {})
     agent_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
     is_active: bool = Column(Boolean, default=True)
-    last_heartbeat: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
+    last_heartbeat: Mapped[datetime | None] = Column(DateTime, nullable=True)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at: datetime = Column(
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -121,13 +121,13 @@ class Task(Base):
         Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM
     )
     title: str = Column(String, nullable=False)
-    description: Mapped[Optional[str]] = Column(String, nullable=True)
+    description: Mapped[str | None] = Column(String, nullable=True)
     task_metadata: Dict[str, Any] = Column(JSON, default=lambda: {})
     result: Optional[Dict[str, Any]] = Column(JSON, nullable=True)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow)
-    started_at: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
-    completed_at: Mapped[Optional[datetime]] = Column(DateTime, nullable=True)
-    error: Mapped[Optional[str]] = Column(String, nullable=True)
+    started_at: Mapped[datetime | None] = Column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = Column(DateTime, nullable=True)
+    error: Mapped[str | None] = Column(String, nullable=True)
 
     # Relationships
     agent: Mapped["Agent"] = relationship("Agent", back_populates="tasks")

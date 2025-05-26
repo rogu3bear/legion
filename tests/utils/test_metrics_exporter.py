@@ -1,4 +1,5 @@
 import multiprocessing
+import socket
 import time
 from unittest.mock import patch
 
@@ -6,6 +7,13 @@ from prometheus_client import generate_latest
 
 from legion.ports import get_port
 from metrics.exporter import dispatch_counter, dispatch_latency, start_metrics_server
+
+
+def is_port_in_use(port: int) -> bool:
+    """Check if a port is currently in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        result = sock.connect_ex(("localhost", port))
+        return result == 0
 
 
 def test_metrics_definitions():
