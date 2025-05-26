@@ -64,7 +64,9 @@ class Agent(Base):
     )
 
     # Relationships
-    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="agent", cascade="all, delete-orphan")
+    tasks: Mapped[List["Task"]] = relationship(
+        "Task", back_populates="agent", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Agent {self.name}: {self.type} ({self.status})>"

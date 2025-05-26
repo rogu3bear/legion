@@ -15,7 +15,14 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from core.mcp_server import get_mcp_server
+# Import from the parent core directory
+import sys
+from pathlib import Path
+core_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(core_dir))
+
+import mcp_server
+get_mcp_server = mcp_server.get_mcp_server
 
 
 def setup_logging():
