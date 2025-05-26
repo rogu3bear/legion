@@ -34,16 +34,16 @@ class MCPDatabaseOptimizer:
         logger.info("Starting MCP database optimization...")
 
         results = {
-            'optimizations_applied': [],
-            'performance_before': None,
-            'performance_after': None,
-            'recommendations': []
+            "optimizations_applied": [],
+            "performance_before": None,
+            "performance_after": None,
+            "recommendations": [],
         }
 
         db = await get_mcp_db()
 
         # Get baseline performance
-        results['performance_before'] = await db.get_performance_stats()
+        results["performance_before"] = await db.get_performance_stats()
 
         # Run optimizations
         await self._optimize_pragma_settings(db, results)
@@ -53,10 +53,10 @@ class MCPDatabaseOptimizer:
         await self._optimize_indexes(db, results)
 
         # Get post-optimization performance
-        results['performance_after'] = await db.get_performance_stats()
+        results["performance_after"] = await db.get_performance_stats()
 
         # Generate recommendations
-        results['recommendations'] = await self._generate_recommendations(db)
+        results["recommendations"] = await self._generate_recommendations(db)
 
         await self._print_optimization_report(results)
 
@@ -78,7 +78,7 @@ class MCPDatabaseOptimizer:
         async with db.get_connection() as conn:
             for pragma, description in optimizations:
                 await conn.execute(pragma)
-                results['optimizations_applied'].append(f"{pragma} - {description}")
+                results["optimizations_applied"].append(f"{pragma} - {description}")
                 logger.info(f"Applied: {pragma}")
             await conn.commit()
 
@@ -100,7 +100,7 @@ class MCPDatabaseOptimizer:
                 pages_after = (await cursor.fetchone())[0]
 
                 space_saved = pages_before - pages_after
-                results['optimizations_applied'].append(
+                results["optimizations_applied"].append(
                     f"VACUUM completed - Reclaimed {space_saved} pages"
                 )
                 logger.info(f"VACUUM completed - Reclaimed {space_saved} pages")
@@ -115,7 +115,9 @@ class MCPDatabaseOptimizer:
         try:
             async with db.get_connection() as conn:
                 await conn.execute("ANALYZE")
-                results['optimizations_applied'].append("ANALYZE - Updated table statistics")
+                results["optimizations_applied"].append(
+                    "ANALYZE - Updated table statistics"
+                )
                 logger.info("Table statistics updated")
 
         except Exception as e:
@@ -132,22 +134,25 @@ class MCPDatabaseOptimizer:
                 # Clean up old performance tracking data (keep last 7 days)
                 week_ago = time.time() - (7 * 24 * 3600)
                 cursor = await conn.execute(
-                    "DELETE FROM query_performance WHERE timestamp < ?",
-                    (week_ago,)
+                    "DELETE FROM query_performance WHERE timestamp < ?", (week_ago,)
                 )
                 deleted_perf = cursor.rowcount
-                cleanup_operations.append(f"Deleted {deleted_perf} old performance records")
+                cleanup_operations.append(
+                    f"Deleted {deleted_perf} old performance records"
+                )
 
                 # Clean up expired cache entries
                 expired_count = await db.cleanup_expired_cache()
-                cleanup_operations.append(f"Cleaned up {expired_count} expired cache entries")
+                cleanup_operations.append(
+                    f"Cleaned up {expired_count} expired cache entries"
+                )
 
                 await conn.commit()
 
         except Exception as e:
             logger.warning(f"Cleanup operation failed: {e}")
 
-        results['optimizations_applied'].extend(cleanup_operations)
+        results["optimizations_applied"].extend(cleanup_operations)
 
     async def _optimize_indexes(self, db, results: Dict) -> None:
         """Check and optimize database indexes."""
@@ -156,14 +161,16 @@ class MCPDatabaseOptimizer:
         try:
             async with db.get_connection() as conn:
                 # Check for unused indexes
-                cursor = await conn.execute("""
+                cursor = await conn.execute(
+                    """
                     SELECT name, sql FROM sqlite_master
                     WHERE type='index' AND name NOT LIKE 'sqlite_%'
-                """)
+                """
+                )
                 indexes = await cursor.fetchall()
 
                 index_count = len(indexes)
-                results['optimizations_applied'].append(
+                results["optimizations_applied"].append(
                     f"Index check completed - {index_count} custom indexes found"
                 )
 
@@ -171,7 +178,7 @@ class MCPDatabaseOptimizer:
                 await conn.execute("REINDEX idx_mcp_records_composite")
                 await conn.execute("REINDEX idx_cache_memory_expires")
 
-                results['optimizations_applied'].append("Critical indexes rebuilt")
+                results["optimizations_applied"].append("Critical indexes rebuilt")
                 logger.info("Critical indexes rebuilt")
 
         except Exception as e:
@@ -183,7 +190,7 @@ class MCPDatabaseOptimizer:
 
         try:
             stats = await db.get_performance_stats()
-            table_stats = stats.get('table_stats', {})
+            table_stats = stats.get("table_stats", {})
             total_records = sum(table_stats.values())
 
             # Size-based recommendations
@@ -198,21 +205,21 @@ class MCPDatabaseOptimizer:
                 )
 
             # Performance-based recommendations
-            avg_query_time = stats.get('avg_query_time', 0)
+            avg_query_time = stats.get("avg_query_time", 0)
             if avg_query_time > 0.1:
                 recommendations.append(
                     "Average query time is high - consider adding more specific indexes"
                 )
 
-            slow_queries = stats.get('slow_queries', 0)
-            total_queries = stats.get('total_queries', 1)
+            slow_queries = stats.get("slow_queries", 0)
+            total_queries = stats.get("total_queries", 1)
             if slow_queries / total_queries > 0.05:  # More than 5% slow queries
                 recommendations.append(
                     "High percentage of slow queries - enable query logging for analysis"
                 )
 
             # Connection pool recommendations
-            pool_size = stats.get('connection_pool_size', 0)
+            pool_size = stats.get("connection_pool_size", 0)
             if pool_size < 15:
                 recommendations.append(
                     "Consider increasing connection pool size for better concurrency"
@@ -225,17 +232,17 @@ class MCPDatabaseOptimizer:
 
     async def _print_optimization_report(self, results: Dict) -> None:
         """Print comprehensive optimization report."""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("📊 MCP DATABASE OPTIMIZATION REPORT")
-        print("="*70)
+        print("=" * 70)
 
         print(f"\n✅ OPTIMIZATIONS APPLIED ({len(results['optimizations_applied'])}):")
-        for opt in results['optimizations_applied']:
+        for opt in results["optimizations_applied"]:
             print(f"• {opt}")
 
         # Performance comparison
-        before = results['performance_before']
-        after = results['performance_after']
+        before = results["performance_before"]
+        after = results["performance_after"]
 
         if before and after:
             print("\n📈 PERFORMANCE COMPARISON:")
@@ -249,16 +256,16 @@ class MCPDatabaseOptimizer:
             print(f"  After:  {after.get('avg_query_time', 0):.3f}s")
 
             # Calculate improvement
-            before_time = before.get('avg_query_time', 0)
-            after_time = after.get('avg_query_time', 0)
+            before_time = before.get("avg_query_time", 0)
+            after_time = after.get("avg_query_time", 0)
             if before_time > 0:
                 improvement = ((before_time - after_time) / before_time) * 100
                 print(f"  Improvement: {improvement:.1f}%")
 
         # Recommendations
-        if results['recommendations']:
+        if results["recommendations"]:
             print(f"\n💡 RECOMMENDATIONS ({len(results['recommendations'])}):")
-            for rec in results['recommendations']:
+            for rec in results["recommendations"]:
                 print(f"• {rec}")
 
         print("\n🔧 MAINTENANCE SCHEDULE:")
@@ -267,7 +274,7 @@ class MCPDatabaseOptimizer:
         print("• Archive old data monthly")
         print("• Review recommendations after major changes")
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
 
 
 async def main():
@@ -275,8 +282,14 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Optimize Legion MCP database")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be done without applying changes")
-    parser.add_argument("--aggressive", action="store_true", help="Apply aggressive optimizations")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be done without applying changes",
+    )
+    parser.add_argument(
+        "--aggressive", action="store_true", help="Apply aggressive optimizations"
+    )
 
     args = parser.parse_args()
 
@@ -292,9 +305,11 @@ async def main():
     print()
 
     if args.aggressive:
-        print("⚠️  AGGRESSIVE MODE - This may take longer but provides maximum optimization")
+        print(
+            "⚠️  AGGRESSIVE MODE - This may take longer but provides maximum optimization"
+        )
         response = input("Continue with aggressive optimization? (y/N): ")
-        if response.lower() not in ['y', 'yes']:
+        if response.lower() not in ["y", "yes"]:
             print("Optimization cancelled.")
             return
 

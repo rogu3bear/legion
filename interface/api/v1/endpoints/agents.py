@@ -545,7 +545,9 @@ def list_agent_capabilities(
     return get_capabilities()
 
 
-@router.post("/register", response_model=AgentRegisterResponse, summary="Register Agent")
+@router.post(
+    "/register", response_model=AgentRegisterResponse, summary="Register Agent"
+)
 def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
     """Register an agent and obtain an auth token."""
     command = {

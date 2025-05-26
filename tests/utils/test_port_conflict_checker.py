@@ -32,19 +32,23 @@ def test_validate_port_range():
     with pytest.raises(ValueError):
         validate_port_range(27000, "invalid")
 
+
 def test_check_ports_available_range_violation():
     # Test range violations
     with pytest.raises(RuntimeError, match="Port range violations detected"):
-        check_ports_available({
-            "service1": 26999,  # Below dev range
-            "service2": 28001   # Above dev range
-        })
+        check_ports_available(
+            {"service1": 26999, "service2": 28001}  # Below dev range  # Above dev range
+        )
 
     with pytest.raises(RuntimeError, match="Port range violations detected"):
-        check_ports_available({
-            "service1": 30999,  # Below prod range
-            "service2": 32001   # Above prod range
-        }, environment="production")
+        check_ports_available(
+            {
+                "service1": 30999,  # Below prod range
+                "service2": 32001,  # Above prod range
+            },
+            environment="production",
+        )
+
 
 def test_check_ports_available_conflicts(mocker):
     # Mock socket.socket to simulate port conflicts
@@ -66,14 +70,12 @@ def test_check_ports_available_conflicts(mocker):
     mocker.patch("socket.socket", return_value=mock_socket)
 
     with pytest.raises(RuntimeError, match="Port conflicts detected"):
-        check_ports_available({
-            "service1": 27000,
-            "service2": 27001
-        })
+        check_ports_available({"service1": 27000, "service2": 27001})
 
     # Verify that all ports were attempted
     assert 27000 in calls
     assert 27001 in calls
+
 
 def test_check_ports_available_success(mocker):
     # Mock socket.socket to simulate available ports
@@ -96,14 +98,12 @@ def test_check_ports_available_success(mocker):
     mocker.patch("socket.socket", return_value=mock_socket)
 
     # Should not raise any exceptions
-    check_ports_available({
-        "service1": 27000,
-        "service2": 27001
-    })
+    check_ports_available({"service1": 27000, "service2": 27001})
 
     # Verify all ports were checked
     assert 27000 in calls
     assert 27001 in calls
+
 
 def test_skip_lmstudio_port(mocker):
     # LMStudio port 1234 should be skipped and not checked for conflicts

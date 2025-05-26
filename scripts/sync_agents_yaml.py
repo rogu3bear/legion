@@ -133,9 +133,9 @@ def main():
             final_config[agent_key] = existing_config[
                 agent_key
             ]  # Preserve existing entry structure and comments
-            final_config[agent_key]["class"] = (
-                discovered_class_name  # Update class name
-            )
+            final_config[agent_key][
+                "class"
+            ] = discovered_class_name  # Update class name
 
             # Ensure 'name' field matches the agent_key for consistency
             if final_config[agent_key].get("name") != agent_key:

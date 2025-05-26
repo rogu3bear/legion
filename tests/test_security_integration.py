@@ -26,15 +26,15 @@ class TestSecurityIntegration:
         # Test that the main app respects the DEBUG setting
         # We can't easily test the route inclusion without reloading modules,
         # but we can verify the logic works by checking route counts
-        original_debug = os.environ.get('DEBUG')
+        original_debug = os.environ.get("DEBUG")
 
         try:
             # Set DEBUG=false and check that demo routes are excluded
-            os.environ['DEBUG'] = 'false'
+            os.environ["DEBUG"] = "false"
             # The route count test we did earlier confirms this works
 
             # Set DEBUG=true and check that demo routes are included
-            os.environ['DEBUG'] = 'true'
+            os.environ["DEBUG"] = "true"
             # The route count test we did earlier confirms this works
 
             # This test verifies the configuration system works
@@ -42,9 +42,9 @@ class TestSecurityIntegration:
         finally:
             # Restore original environment
             if original_debug is not None:
-                os.environ['DEBUG'] = original_debug
-            elif 'DEBUG' in os.environ:
-                del os.environ['DEBUG']
+                os.environ["DEBUG"] = original_debug
+            elif "DEBUG" in os.environ:
+                del os.environ["DEBUG"]
 
     def test_file_locking_and_rate_limiting_coexist(self):
         """Test that file locking and rate limiting work together."""
@@ -67,6 +67,7 @@ class TestSecurityIntegration:
     def test_security_headers_present(self):
         """Test that security headers are properly set."""
         from interface.main import app
+
         client = TestClient(app)
 
         response = client.get("/health")
@@ -87,6 +88,7 @@ class TestSecurityIntegration:
     def test_openapi_documentation_accessible(self):
         """Test that OpenAPI documentation is accessible and includes security info."""
         from interface.main import app
+
         client = TestClient(app)
 
         # OpenAPI docs should be accessible

@@ -14,6 +14,7 @@ def lmstudio_available():
     """Check if LM Studio is available on the default port."""
     try:
         import httpx
+
         with httpx.Client() as client:
             response = client.get("http://127.0.0.1:1234/v1/models", timeout=2.0)
             return response.status_code == 200
@@ -38,7 +39,7 @@ async def test_lmstudio_adapter_discover_models_mock():
     mock_response = {
         "data": [
             {"id": "meta-llama-3.1-8b-instruct", "object": "model"},
-            {"id": "gpt-4", "object": "model"}
+            {"id": "gpt-4", "object": "model"},
         ]
     }
 
@@ -47,7 +48,7 @@ async def test_lmstudio_adapter_discover_models_mock():
             return_value=AsyncMock(
                 status_code=200,
                 json=lambda: mock_response,
-                raise_for_status=lambda: None
+                raise_for_status=lambda: None,
             )
         )
 
@@ -62,13 +63,7 @@ async def test_lmstudio_adapter_chat_complete_mock():
     adapter = LMStudioAdapter()
 
     mock_response = {
-        "choices": [
-            {
-                "message": {
-                    "content": "Hello! How can I help you today?"
-                }
-            }
-        ]
+        "choices": [{"message": {"content": "Hello! How can I help you today?"}}]
     }
 
     messages = [{"role": "user", "content": "Hello"}]
@@ -78,13 +73,16 @@ async def test_lmstudio_adapter_chat_complete_mock():
             return_value=AsyncMock(
                 status_code=200,
                 json=lambda: mock_response,
-                raise_for_status=lambda: None
+                raise_for_status=lambda: None,
             )
         )
 
         result = await adapter.chat_complete(messages)
         assert "choices" in result
-        assert result["choices"][0]["message"]["content"] == "Hello! How can I help you today?"
+        assert (
+            result["choices"][0]["message"]["content"]
+            == "Hello! How can I help you today?"
+        )
 
 
 @pytest.mark.asyncio
@@ -106,7 +104,9 @@ async def test_lmstudio_adapter_stats_unhealthy():
     """Test stats method when service is unhealthy."""
     adapter = LMStudioAdapter()
 
-    with patch.object(adapter, "discover_model", side_effect=Exception("Connection failed")):
+    with patch.object(
+        adapter, "discover_model", side_effect=Exception("Connection failed")
+    ):
         stats = await adapter.stats()
         assert stats["status"] == "unhealthy"
         assert "error" in stats
@@ -144,11 +144,11 @@ async def test_mode_switching_client_call_local():
     with patch.dict(os.environ, {"LLM_MODE": "local"}):
         client = ModeSwitchingLLMClient()
 
-        mock_response = {
-            "choices": [{"message": {"content": "Test response"}}]
-        }
+        mock_response = {"choices": [{"message": {"content": "Test response"}}]}
 
-        with patch.object(client.lmstudio_adapter, "chat_complete", return_value=mock_response):
+        with patch.object(
+            client.lmstudio_adapter, "chat_complete", return_value=mock_response
+        ):
             messages = [{"role": "user", "content": "test"}]
             result = await client.call(messages)
             assert result == "Test response"
@@ -191,15 +191,17 @@ async def test_mode_switching_client_generate_legacy():
     with patch.dict(os.environ, {"LLM_MODE": "local"}):
         client = ModeSwitchingLLMClient()
 
-        mock_response = {
-            "choices": [{"message": {"content": "Legacy response"}}]
-        }
+        mock_response = {"choices": [{"message": {"content": "Legacy response"}}]}
 
-        with patch.object(client.lmstudio_adapter, "chat_complete", return_value=mock_response):
+        with patch.object(
+            client.lmstudio_adapter, "chat_complete", return_value=mock_response
+        ):
             result = client.generate(
                 agent_name="test",
                 thread_id="default",
-                dynamic_rules={"default": [{"role": "system", "content": "You are helpful"}]},
-                history=[{"role": "user", "content": "test"}]
+                dynamic_rules={
+                    "default": [{"role": "system", "content": "You are helpful"}]
+                },
+                history=[{"role": "user", "content": "test"}],
             )
             assert result == "Legacy response"

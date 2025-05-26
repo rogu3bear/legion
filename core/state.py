@@ -128,12 +128,12 @@ def save_agent_state_to_redis(redis_conn: Any) -> None:
                 "max_tokens": agent.max_tokens,
                 "is_active": agent.is_active,
                 "config": agent.config,
-                "created_at": agent.created_at.isoformat()
-                if agent.created_at
-                else None,
-                "last_active": agent.last_active.isoformat()
-                if agent.last_active
-                else None,
+                "created_at": (
+                    agent.created_at.isoformat() if agent.created_at else None
+                ),
+                "last_active": (
+                    agent.last_active.isoformat() if agent.last_active else None
+                ),
             }
             redis_conn.set(
                 f"legion:agents:{agent.id}",

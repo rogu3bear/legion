@@ -146,9 +146,7 @@ async def test_feedback_slash_command(bot, guild):
         bot.get_channel = lambda cid: (
             feedback_chan
             if cid == 456
-            else logs_chan
-            if cid == 42
-            else invoking_channel
+            else logs_chan if cid == 42 else invoking_channel
         )
 
         # Patch ctx to use AsyncMock for send

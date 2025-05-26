@@ -14,11 +14,11 @@ class CodemodBatch:
 
     def __init__(self):
         self.import_map = {
-            'legion.core.logging_config': 'core.logging_config',
-            'legion.core.state': 'core.state',
-            'legion.core.db.models': 'core.db.models',
-            'legion.core.middleware.directive_definitions': 'core.middleware.directive_definitions',
-            'legion.core.di_container': 'core.di_container',
+            "legion.core.logging_config": "core.logging_config",
+            "legion.core.state": "core.state",
+            "legion.core.db.models": "core.db.models",
+            "legion.core.middleware.directive_definitions": "core.middleware.directive_definitions",
+            "legion.core.di_container": "core.di_container",
         }
         self.files_updated = []
         self.total_replacements = 0
@@ -26,7 +26,7 @@ class CodemodBatch:
     def rewrite_file(self, file_path: Path) -> int:
         """Rewrite imports in a single file."""
         try:
-            with open(file_path, encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             original_content = content
@@ -35,25 +35,29 @@ class CodemodBatch:
             # Apply each mapping
             for old_import, new_import in self.import_map.items():
                 # Handle "from module import ..." patterns
-                pattern_from = rf'from {re.escape(old_import)}\b'
-                replacement_from = f'from {new_import}'
+                pattern_from = rf"from {re.escape(old_import)}\b"
+                replacement_from = f"from {new_import}"
 
                 content, count_from = re.subn(pattern_from, replacement_from, content)
                 replacements_made += count_from
 
                 # Handle "import module" patterns
-                pattern_import = rf'\bimport {re.escape(old_import)}\b'
-                replacement_import = f'import {new_import}'
+                pattern_import = rf"\bimport {re.escape(old_import)}\b"
+                replacement_import = f"import {new_import}"
 
-                content, count_import = re.subn(pattern_import, replacement_import, content)
+                content, count_import = re.subn(
+                    pattern_import, replacement_import, content
+                )
                 replacements_made += count_import
 
                 if count_from > 0 or count_import > 0:
-                    print(f"    {old_import} → {new_import} ({count_from + count_import} replacements)")
+                    print(
+                        f"    {old_import} → {new_import} ({count_from + count_import} replacements)"
+                    )
 
             # Write back if changes were made
             if content != original_content:
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
                 self.files_updated.append(file_path)
@@ -83,6 +87,7 @@ class CodemodBatch:
                 print("  ⏭️  No changes needed")
 
         return results
+
 
 def main():
     """Main codemod application function."""
@@ -127,6 +132,9 @@ def main():
 
     return len(codemod.files_updated), codemod.total_replacements
 
+
 if __name__ == "__main__":
     files_updated, replacements = main()
-    print(f"\n✅ Codemod complete: {files_updated} files updated, {replacements} replacements")
+    print(
+        f"\n✅ Codemod complete: {files_updated} files updated, {replacements} replacements"
+    )

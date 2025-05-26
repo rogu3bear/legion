@@ -5,6 +5,7 @@ from legion.task_queue import queue
 
 bp = Blueprint("handshake", __name__)
 
+
 @bp.post("/agent/register")
 def register_agent():
     payload = request.get_json(force=True)
@@ -15,9 +16,11 @@ def register_agent():
         return jsonify(result), 400
     return jsonify(result)
 
+
 @bp.get("/queue/summary")
 def queue_summary():
     return jsonify(queue.summary())
+
 
 @bp.get("/queue/task/<task_id>")
 def queue_task_detail(task_id):

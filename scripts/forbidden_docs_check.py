@@ -11,8 +11,13 @@ def check_forbidden_docs():
 
     violations = []
     allowed_root_files = {
-        'README.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'changelog.md',
-        'LICENSE.md', 'SECURITY.md', 'CODE_OF_CONDUCT.md'
+        "README.md",
+        "CONTRIBUTING.md",
+        "CHANGELOG.md",
+        "changelog.md",
+        "LICENSE.md",
+        "SECURITY.md",
+        "CODE_OF_CONDUCT.md",
     }
 
     # Find all .md files
@@ -26,16 +31,18 @@ def check_forbidden_docs():
             continue
 
         # Skip hidden directories and node_modules
-        if any(part.startswith('.') or part == 'node_modules' for part in md_file.parts):
+        if any(
+            part.startswith(".") or part == "node_modules" for part in md_file.parts
+        ):
             continue
 
         # Skip specific directories
-        skip_dirs = {'ui', 'artifacts', 'legion/prompts', 'research'}
+        skip_dirs = {"ui", "artifacts", "legion/prompts", "research"}
         if any(skip_dir in str(md_file) for skip_dir in skip_dirs):
             continue
 
         # Allow README.md in skills subdirectories
-        if md_file.name == 'README.md' and 'skills/' in str(md_file):
+        if md_file.name == "README.md" and "skills/" in str(md_file):
             continue
 
         violations.append(str(md_file))
@@ -51,6 +58,7 @@ def check_forbidden_docs():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     if not check_forbidden_docs():

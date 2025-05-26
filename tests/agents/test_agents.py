@@ -210,9 +210,9 @@ async def test_base_agent_empty_input():
     )
     response = await agent.handle_message(content="")
     assert response is not None, "Agent should handle empty input gracefully"
-    assert "error" not in response.lower(), (
-        "Response should not contain error for empty input"
-    )
+    assert (
+        "error" not in response.lower()
+    ), "Response should not contain error for empty input"
 
 
 @unittest.skip("legacy failure – deferred")

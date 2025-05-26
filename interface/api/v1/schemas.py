@@ -14,15 +14,19 @@ from interface.schemas.task import Task, TaskCreate, TaskCreatedResponse, TaskLi
 
 class ChatMessage(BaseModel):
     """Chat message model for structured communication."""
+
     role: str = Field(..., description="Message role: 'user', 'assistant', or 'system'")
     content: str = Field(..., description="Message content")
 
 
 class ChatRequest(BaseModel):
     """Structured chat request for LM Studio."""
+
     messages: List[ChatMessage] = Field(..., description="List of chat messages")
     temperature: float = Field(0.7, ge=0.0, le=2.0, description="Sampling temperature")
-    max_tokens: int = Field(256, ge=1, le=4096, description="Maximum tokens to generate")
+    max_tokens: int = Field(
+        256, ge=1, le=4096, description="Maximum tokens to generate"
+    )
     stream: bool = Field(False, description="Return streaming SSE/NDJSON response")
 
 

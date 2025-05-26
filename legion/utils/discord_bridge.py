@@ -33,7 +33,9 @@ class DiscordBridge:
         self.intents = discord.Intents.default()
         self.intents.message_content = True
 
-    async def send_message(self, message: str, channel_id: Optional[int] = None) -> bool:
+    async def send_message(
+        self, message: str, channel_id: Optional[int] = None
+    ) -> bool:
         """Send a simple text message to Discord.
 
         Args:
@@ -43,10 +45,9 @@ class DiscordBridge:
         Returns:
             bool: True if message was sent successfully
         """
-        return await self.send_action({
-            "type": "message",
-            "content": message
-        }, channel_id)
+        return await self.send_action(
+            {"type": "message", "content": message}, channel_id
+        )
 
     async def send_embed(
         self,
@@ -54,7 +55,7 @@ class DiscordBridge:
         message: str,
         msg_type: MessageType = MessageType.INFO,
         fields: Optional[list] = None,
-        channel_id: Optional[int] = None
+        channel_id: Optional[int] = None,
     ) -> bool:
         """Send a formatted embed message to Discord.
 
@@ -97,7 +98,9 @@ class DiscordBridge:
             print(f"Error running embed bot: {e}")
             return False
 
-    async def send_action(self, action: Dict[str, Any], channel_id: Optional[int] = None) -> bool:
+    async def send_action(
+        self, action: Dict[str, Any], channel_id: Optional[int] = None
+    ) -> bool:
         """Send a JSON action to Discord.
 
         Args:
@@ -107,6 +110,7 @@ class DiscordBridge:
         Returns:
             bool: True if action was sent successfully
         """
+
         class ActionBot(discord.Client):
             def __init__(self, action_data, target_channel_id, *args, **kwargs):
                 super().__init__(*args, **kwargs)
@@ -159,7 +163,9 @@ async def send_discord_message(message: str, channel_id: Optional[int] = None) -
     return await bridge.send_message(message, channel_id)
 
 
-async def send_discord_action(action: Dict[str, Any], channel_id: Optional[int] = None) -> bool:
+async def send_discord_action(
+    action: Dict[str, Any], channel_id: Optional[int] = None
+) -> bool:
     """Send a JSON action to Discord."""
     bridge = get_discord_bridge()
     return await bridge.send_action(action, channel_id)
@@ -170,7 +176,7 @@ async def send_discord_embed(
     message: str,
     msg_type: MessageType = MessageType.INFO,
     fields: Optional[list] = None,
-    channel_id: Optional[int] = None
+    channel_id: Optional[int] = None,
 ) -> bool:
     """Send a formatted embed to Discord."""
     bridge = get_discord_bridge()
@@ -194,6 +200,7 @@ def create_orchestrator_callback(bridge: Optional[DiscordBridge] = None):
         """Post a message from an agent to Discord."""
         # If payload is already an embed, send it directly
         if isinstance(payload, discord.Embed):
+
             class EmbedBot(discord.Client):
                 def __init__(self, embed, channel_id, *args, **kwargs):
                     super().__init__(*args, **kwargs)
@@ -210,7 +217,9 @@ def create_orchestrator_callback(bridge: Optional[DiscordBridge] = None):
                     await self.close()
 
             # Try to get agent-specific channel or use default
-            channel_id = int(os.getenv(f"{agent_name.upper()}_CHANNEL_ID", bridge.channel_id))
+            channel_id = int(
+                os.getenv(f"{agent_name.upper()}_CHANNEL_ID", bridge.channel_id)
+            )
             client = EmbedBot(payload, channel_id, intents=bridge.intents)
 
             try:
@@ -226,23 +235,26 @@ def create_orchestrator_callback(bridge: Optional[DiscordBridge] = None):
 
 # Example usage
 if __name__ == "__main__":
+
     async def test():
         # Test simple message
         await send_discord_message("Test message from discord_bridge.py")
 
         # Test action
-        await send_discord_action({
-            "type": "test",
-            "detail": "bridge operational",
-            "source": "discord_bridge.py"
-        })
+        await send_discord_action(
+            {
+                "type": "test",
+                "detail": "bridge operational",
+                "source": "discord_bridge.py",
+            }
+        )
 
         # Test embed
         await send_discord_embed(
             "TestAgent",
             "This is a test embed message",
             MessageType.SUCCESS,
-            fields=[("Status", "Operational"), ("Version", "1.0.0")]
+            fields=[("Status", "Operational"), ("Version", "1.0.0")],
         )
 
     asyncio.run(test())

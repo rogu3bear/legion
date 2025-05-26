@@ -69,7 +69,9 @@ class MetricsAgent(BaseAgent):
         # Dead letter queue length
         if task_queue.client:
             try:
-                dead_len = task_queue.client.llen(getattr(task_queue, "dead_letter_key", "dead_tasks"))
+                dead_len = task_queue.client.llen(
+                    getattr(task_queue, "dead_letter_key", "dead_tasks")
+                )
             except Exception:
                 dead_len = 0
         else:
@@ -153,8 +155,8 @@ class MetricsAgent(BaseAgent):
                     "Total Messages": len(all_messages),
                     "Active Channels": len(channels),
                     "Avg per Channel": f"{avg_per_channel:.2f}",
-                    "Top Agent": report_lines[0] if report_lines else "None"
-                }
+                    "Top Agent": report_lines[0] if report_lines else "None",
+                },
             )
         except Exception:
             # Fallback to old method

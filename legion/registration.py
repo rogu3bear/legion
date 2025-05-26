@@ -17,7 +17,9 @@ except Exception:  # pragma: no cover
 class RegistrationService:
     """Handle agent registration handshake using Redis."""
 
-    def __init__(self, host: str = "localhost", port: int = 7810, secret: str = "secret") -> None:
+    def __init__(
+        self, host: str = "localhost", port: int = 7810, secret: str = "secret"
+    ) -> None:
         self.secret = secret
         if redis is None:
             self.client = None
@@ -52,9 +54,13 @@ class RegistrationService:
                 challenge = self.client.get(f"agent:{agent_id}:challenge")
             if not challenge:
                 return {"error": "no challenge"}
-            expected = hmac.new(self.secret.encode(), challenge.encode(), "sha256").hexdigest()
+            expected = hmac.new(
+                self.secret.encode(), challenge.encode(), "sha256"
+            ).hexdigest()
             if signed != expected:
-                self._log({"phase": "AUTH_RESPONSE", "status": "failed", "agent_id": agent_id})
+                self._log(
+                    {"phase": "AUTH_RESPONSE", "status": "failed", "agent_id": agent_id}
+                )
                 return {"error": "unauthorized"}
             if self.client:
                 self.client.set(f"agent:{agent_id}:state", "ready")

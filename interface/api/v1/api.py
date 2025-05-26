@@ -22,6 +22,8 @@ api_router.include_router(memory.router, prefix="/memory", tags=["memory"])
 api_router.include_router(system.router, prefix="/system", tags=["system"])
 api_router.include_router(lmstudio_health.router, prefix="/health", tags=["lmstudio"])
 api_router.include_router(prompts.router, prefix="/prompts", tags=["prompts"])
-api_router.include_router(lmstudio_proxy.router, prefix="/lmstudio", tags=["lmstudio-proxy"])
+api_router.include_router(
+    lmstudio_proxy.router, prefix="/lmstudio", tags=["lmstudio-proxy"]
+)
 # api_router.include_router(users.router, prefix="/users", tags=["users"])
 # api_router.include_router(items.router, prefix="/items", tags=["items"])

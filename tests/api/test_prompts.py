@@ -19,7 +19,7 @@ def mock_current_user():
         email="test@example.com",
         is_active=True,
         is_superuser=False,
-        role="admin"
+        role="admin",
     )
 
 
@@ -39,7 +39,9 @@ class TestPromptsAPI:
         """Test successful prompt retrieval."""
         mock_content = "# Test Agent Prompt\nThis is a test prompt."
 
-        with patch("interface.api.v1.endpoints.prompts.load_prompt", return_value=mock_content):
+        with patch(
+            "interface.api.v1.endpoints.prompts.load_prompt", return_value=mock_content
+        ):
             response = test_client.get("/api/v1/prompts/test_agent")
 
         assert response.status_code == 200
@@ -71,7 +73,9 @@ class TestPromptsAPI:
         """Test prompt update failure."""
         update_data = {"content": "# Updated Prompt\nThis is updated content."}
 
-        with patch("interface.api.v1.endpoints.prompts.save_prompt", return_value=False):
+        with patch(
+            "interface.api.v1.endpoints.prompts.save_prompt", return_value=False
+        ):
             response = test_client.put("/api/v1/prompts/test_agent", json=update_data)
 
         assert response.status_code == 500
@@ -81,11 +85,12 @@ class TestPromptsAPI:
         """Test successful prompt creation."""
         create_data = {
             "agent_name": "new_agent",
-            "content": "# New Agent Prompt\nThis is a new prompt."
+            "content": "# New Agent Prompt\nThis is a new prompt.",
         }
 
-        with patch("interface.api.v1.endpoints.prompts.load_prompt", return_value=None), \
-             patch("interface.api.v1.endpoints.prompts.save_prompt", return_value=True):
+        with patch(
+            "interface.api.v1.endpoints.prompts.load_prompt", return_value=None
+        ), patch("interface.api.v1.endpoints.prompts.save_prompt", return_value=True):
             response = test_client.post("/api/v1/prompts/", json=create_data)
 
         assert response.status_code == 201
@@ -97,10 +102,13 @@ class TestPromptsAPI:
         """Test prompt creation when prompt already exists."""
         create_data = {
             "agent_name": "existing_agent",
-            "content": "# Existing Agent Prompt"
+            "content": "# Existing Agent Prompt",
         }
 
-        with patch("interface.api.v1.endpoints.prompts.load_prompt", return_value="existing content"):
+        with patch(
+            "interface.api.v1.endpoints.prompts.load_prompt",
+            return_value="existing content",
+        ):
             response = test_client.post("/api/v1/prompts/", json=create_data)
 
         assert response.status_code == 409
@@ -110,7 +118,10 @@ class TestPromptsAPI:
         """Test listing all available prompts."""
         mock_agents = ["agent1", "agent2", "agent3"]
 
-        with patch("interface.api.v1.endpoints.prompts.list_available_agents", return_value=mock_agents):
+        with patch(
+            "interface.api.v1.endpoints.prompts.list_available_agents",
+            return_value=mock_agents,
+        ):
             response = test_client.get("/api/v1/prompts/")
 
         assert response.status_code == 200
@@ -120,12 +131,12 @@ class TestPromptsAPI:
 
     def test_get_all_prompts(self, test_client):
         """Test getting all prompts content."""
-        mock_prompts = {
-            "agent1": "# Agent 1 Prompt",
-            "agent2": "# Agent 2 Prompt"
-        }
+        mock_prompts = {"agent1": "# Agent 1 Prompt", "agent2": "# Agent 2 Prompt"}
 
-        with patch("interface.api.v1.endpoints.prompts.get_all_prompts", return_value=mock_prompts):
+        with patch(
+            "interface.api.v1.endpoints.prompts.get_all_prompts",
+            return_value=mock_prompts,
+        ):
             response = test_client.get("/api/v1/prompts/all")
 
         assert response.status_code == 200

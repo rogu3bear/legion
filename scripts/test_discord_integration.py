@@ -22,16 +22,20 @@ async def test_basic_messaging():
     print("Testing basic Discord messaging...")
 
     # Test simple message
-    success = await send_discord_message("🔧 Testing basic message from integration script")
+    success = await send_discord_message(
+        "🔧 Testing basic message from integration script"
+    )
     print(f"Simple message sent: {success}")
 
     # Test action message
-    success = await send_discord_action({
-        "type": "test_action",
-        "source": "test_discord_integration.py",
-        "status": "operational",
-        "timestamp": "2025-01-24T06:00:00Z"
-    })
+    success = await send_discord_action(
+        {
+            "type": "test_action",
+            "source": "test_discord_integration.py",
+            "status": "operational",
+            "timestamp": "2025-01-24T06:00:00Z",
+        }
+    )
     print(f"Action message sent: {success}")
 
     # Test different message types
@@ -39,7 +43,7 @@ async def test_basic_messaging():
         (MessageType.INFO, "This is an informational message"),
         (MessageType.SUCCESS, "This is a success message"),
         (MessageType.WARNING, "This is a warning message"),
-        (MessageType.ERROR, "This is an error message (test only)")
+        (MessageType.ERROR, "This is an error message (test only)"),
     ]:
         success = await send_discord_embed(
             "TestBot",
@@ -48,8 +52,8 @@ async def test_basic_messaging():
             fields=[
                 ("Message Type", msg_type.value),
                 ("Test Status", "Active"),
-                ("Timestamp", "2025-01-24")
-            ]
+                ("Timestamp", "2025-01-24"),
+            ],
         )
         print(f"{msg_type.value.title()} message sent: {success}")
         await asyncio.sleep(1)  # Avoid rate limiting
@@ -69,8 +73,8 @@ async def test_agent_simulation():
             ("Memory Usage", "2.1 GB"),
             ("Active Agents", "5"),
             ("Messages Processed", "127"),
-            ("Uptime", "4h 23m")
-        ]
+            ("Uptime", "4h 23m"),
+        ],
     )
 
     # Simulate architect agent status
@@ -82,8 +86,8 @@ async def test_agent_simulation():
             ("Files Analyzed", "42"),
             ("Issues Found", "3"),
             ("Suggestions", "7"),
-            ("Code Quality", "Good")
-        ]
+            ("Code Quality", "Good"),
+        ],
     )
 
     # Simulate healthcheck agent
@@ -95,8 +99,8 @@ async def test_agent_simulation():
             ("Database", "✅ Connected"),
             ("API Endpoints", "✅ Responding"),
             ("Discord Bot", "✅ Online"),
-            ("Memory Usage", "✅ Normal")
-        ]
+            ("Memory Usage", "✅ Normal"),
+        ],
     )
 
     # Simulate error scenario
@@ -108,8 +112,8 @@ async def test_agent_simulation():
             ("Error Code", "VAL_001"),
             ("Affected Component", "Message Processor"),
             ("Retry Attempt", "3/3"),
-            ("Action Required", "Manual Review")
-        ]
+            ("Action Required", "Manual Review"),
+        ],
     )
 
 
@@ -125,7 +129,7 @@ async def test_orchestrator_integration():
         ("doctor_agent", "Completed health assessment of agent cluster"),
         ("researcher_agent", "Finished data collection and analysis"),
         ("ping_agent", "Network connectivity verified across all nodes"),
-        ("echo_agent", "Message relay system functioning normally")
+        ("echo_agent", "Message relay system functioning normally"),
     ]
 
     for agent_name, message in test_messages:
@@ -152,6 +156,7 @@ async def main():
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
 
 

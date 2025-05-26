@@ -9,7 +9,10 @@ import requests
 
 class HTTPClient:
     def __init__(
-        self, max_retries: Optional[int] = None, backoff_factor: Optional[float] = None, timeout: float = 10
+        self,
+        max_retries: Optional[int] = None,
+        backoff_factor: Optional[float] = None,
+        timeout: float = 10,
     ):
         self.base_url = os.getenv("MIDDLEWARE_URL")
         if not self.base_url:
@@ -21,7 +24,9 @@ class HTTPClient:
         self.timeout = timeout
         self.session = requests.Session()
 
-    def post(self, path: str, json: Optional[dict] = None, headers: Optional[dict] = None) -> dict:
+    def post(
+        self, path: str, json: Optional[dict] = None, headers: Optional[dict] = None
+    ) -> dict:
         url = self.base_url.rstrip("/") + path
         hdrs = headers.copy() if headers else {}
         hdrs["X-Agent-Name"] = os.getenv("AGENT_NAME", "unknown")

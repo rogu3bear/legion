@@ -16,7 +16,10 @@ class LMStudioAdapter:
 
     def __init__(self, base_url: Optional[str] = None):
         """Initialize the LM Studio adapter."""
-        self.base_url = base_url or os.getenv("LMSTUDIO_BASE_URL", os.getenv("LMSTUDIO_API_URL", "http://127.0.0.1:1234/v1"))
+        self.base_url = base_url or os.getenv(
+            "LMSTUDIO_BASE_URL",
+            os.getenv("LMSTUDIO_API_URL", "http://127.0.0.1:1234/v1"),
+        )
         if not self.base_url.endswith("/v1"):
             self.base_url = self.base_url.rstrip("/") + "/v1"
 
@@ -36,43 +39,51 @@ class LMStudioAdapter:
                 logger.error(f"Failed to discover models: {e}")
                 return {"error": str(e), "models": []}
 
-    async def chat_complete(self, messages: List[Dict[str, str]], **kwargs) -> Dict[str, Any]:
+    async def chat_complete(
+        self, messages: List[Dict[str, str]], **kwargs
+    ) -> Dict[str, Any]:
         """Send chat completion request to LM Studio."""
         payload = {
-            "model": kwargs.get("model", os.getenv("OPENAI_MODEL", "meta-llama-3.1-8b-instruct")),
+            "model": kwargs.get(
+                "model", os.getenv("OPENAI_MODEL", "meta-llama-3.1-8b-instruct")
+            ),
             "messages": messages,
             "max_tokens": kwargs.get("max_tokens", 1024),
             "temperature": kwargs.get("temperature", 0.7),
-            **{k: v for k, v in kwargs.items() if k not in ("model", "messages", "max_tokens", "temperature")}
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k not in ("model", "messages", "max_tokens", "temperature")
+            },
         }
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    self.completions_endpoint,
-                    json=payload,
-                    timeout=60.0
+                    self.completions_endpoint, json=payload, timeout=60.0
                 )
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 logger.error(f"Chat completion failed: {e}")
-                raise HTTPException(status_code=503, detail=f"LM Studio request failed: {e}")
+                raise HTTPException(
+                    status_code=503, detail=f"LM Studio request failed: {e}"
+                )
 
     async def raw_generate(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Send raw generation request to LM Studio."""
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    self.completions_endpoint,
-                    json=payload,
-                    timeout=60.0
+                    self.completions_endpoint, json=payload, timeout=60.0
                 )
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 logger.error(f"Raw generation failed: {e}")
-                raise HTTPException(status_code=503, detail=f"LM Studio request failed: {e}")
+                raise HTTPException(
+                    status_code=503, detail=f"LM Studio request failed: {e}"
+                )
 
     async def stats(self) -> Dict[str, Any]:
         """Get LM Studio health and statistics."""
@@ -82,14 +93,10 @@ class LMStudioAdapter:
                 "status": "healthy",
                 "base_url": self.base_url,
                 "models_available": len(models.get("data", [])),
-                "models": models
+                "models": models,
             }
         except Exception as e:
-            return {
-                "status": "unhealthy",
-                "base_url": self.base_url,
-                "error": str(e)
-            }
+            return {"status": "unhealthy", "base_url": self.base_url, "error": str(e)}
 
 
 class LMStudioMCP:

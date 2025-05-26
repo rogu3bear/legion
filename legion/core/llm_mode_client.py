@@ -41,6 +41,7 @@ class ModeSwitchingLLMClient(ILLMClient):
         if self.mode.lower() == "local":
             try:
                 from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter
+
                 self.lmstudio_adapter = LMStudioAdapter(api_base)
                 logger.info("Local LM Studio adapter initialized")
             except ImportError as e:
@@ -55,6 +56,7 @@ class ModeSwitchingLLMClient(ILLMClient):
         """Initialize remote OpenAI client."""
         try:
             import openai
+
             if api_base:
                 openai.api_base = api_base
             elif os.getenv("OPENAI_API_BASE"):
@@ -65,7 +67,9 @@ class ModeSwitchingLLMClient(ILLMClient):
             logger.info("Remote OpenAI client initialized")
         except ImportError as e:
             logger.error(f"Failed to import OpenAI client: {e}")
-            raise RuntimeError("Neither local nor remote LLM client could be initialized")
+            raise RuntimeError(
+                "Neither local nor remote LLM client could be initialized"
+            )
 
     def call(self, messages: List[Dict[str, str]], **kwargs) -> str:
         """Call the LLM with a list of messages and return the response."""
@@ -128,14 +132,15 @@ class ModeSwitchingLLMClient(ILLMClient):
         if self.mode.lower() == "local":
             # For local mode, we might need to implement embedding endpoint
             # For now, return a placeholder or use a different service
-            logger.warning("Embedding not implemented for local mode, returning placeholder")
+            logger.warning(
+                "Embedding not implemented for local mode, returning placeholder"
+            )
             return [0.0] * 384  # Common embedding dimension
         else:
             # Use OpenAI embeddings
             try:
                 response = self.openai.Embedding.create(
-                    input=text,
-                    model="text-embedding-ada-002"
+                    input=text, model="text-embedding-ada-002"
                 )
                 return response["data"][0]["embedding"]
             except Exception as e:
@@ -175,26 +180,20 @@ class ModeSwitchingLLMClient(ILLMClient):
             try:
                 return await self.lmstudio_adapter.stats()
             except Exception as e:
-                return {
-                    "status": "unhealthy",
-                    "mode": "local",
-                    "error": str(e)
-                }
+                return {"status": "unhealthy", "mode": "local", "error": str(e)}
         else:
             # For remote, try a simple API call
             try:
-                test_response = self.call([{"role": "user", "content": "test"}], max_tokens=1)
+                test_response = self.call(
+                    [{"role": "user", "content": "test"}], max_tokens=1
+                )
                 return {
                     "status": "healthy",
                     "mode": "remote",
-                    "test_response_length": len(test_response)
+                    "test_response_length": len(test_response),
                 }
             except Exception as e:
-                return {
-                    "status": "unhealthy",
-                    "mode": "remote",
-                    "error": str(e)
-                }
+                return {"status": "unhealthy", "mode": "remote", "error": str(e)}
 
 
 # Factory function for DI container

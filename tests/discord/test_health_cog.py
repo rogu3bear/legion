@@ -129,9 +129,7 @@ async def test_ping_command(health_cog):
     assert len(ctx.sent_messages) == 1
     assert "Pinging..." in ctx.sent_messages[0]["args"]
     # Access the mock message returned by send to check if edit was called
-    (
-        ctx.sent_messages[0]["args"][0] if ctx.sent_messages[0]["args"] else None
-    )
+    (ctx.sent_messages[0]["args"][0] if ctx.sent_messages[0]["args"] else None)
     # This assertion is tricky due to timing, better to mock time.monotonic if precision needed
     # For now, just ensure send was called.
 

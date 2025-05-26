@@ -13,4 +13,6 @@ def post_agent_feed(message: str) -> None:
     try:
         subprocess.run([str(script_path), message], check=True)
     except Exception as exc:
-        logging.getLogger(__name__).error("Failed to post agent-feed message", exc_info=exc)
+        logging.getLogger(__name__).error(
+            "Failed to post agent-feed message", exc_info=exc
+        )

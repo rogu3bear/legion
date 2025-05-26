@@ -27,7 +27,9 @@ class TestPromptOperations:
         self.test_prompts_dir.mkdir(exist_ok=True)
 
         # Patch PROMPTS_DIR to use test directory
-        self.prompts_dir_patcher = patch('core.utils.file_operations.PROMPTS_DIR', self.test_prompts_dir)
+        self.prompts_dir_patcher = patch(
+            "core.utils.file_operations.PROMPTS_DIR", self.test_prompts_dir
+        )
         self.prompts_dir_patcher.start()
 
     def teardown_method(self):
@@ -85,7 +87,7 @@ class TestPromptOperations:
         agent_name = "concurrent_test_agent"
 
         # Mock portalocker to simulate lock conflict
-        with patch('core.utils.file_operations.portalocker') as mock_portalocker:
+        with patch("core.utils.file_operations.portalocker") as mock_portalocker:
             # Create a proper LockException class
             class MockLockException(Exception):
                 pass
@@ -119,8 +121,12 @@ class TestPromptOperations:
                 exception_list.append(e)
 
         # Start two threads attempting to write simultaneously
-        thread1 = threading.Thread(target=write_prompt, args=(content1, results, exceptions))
-        thread2 = threading.Thread(target=write_prompt, args=(content2, results, exceptions))
+        thread1 = threading.Thread(
+            target=write_prompt, args=(content1, results, exceptions)
+        )
+        thread2 = threading.Thread(
+            target=write_prompt, args=(content2, results, exceptions)
+        )
 
         thread1.start()
         thread2.start()
@@ -151,7 +157,7 @@ class TestPromptOperations:
 
     def test_save_prompt_file_error(self):
         """Test save_prompt handles file system errors gracefully."""
-        with patch('builtins.open', side_effect=PermissionError("Permission denied")):
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
             result = save_prompt("test_agent", "test content")
             assert result is False
 
@@ -161,6 +167,8 @@ class TestPromptOperations:
         save_prompt("test_agent", "test content")
 
         # Mock read_text to raise an exception
-        with patch.object(Path, 'read_text', side_effect=PermissionError("Permission denied")):
+        with patch.object(
+            Path, "read_text", side_effect=PermissionError("Permission denied")
+        ):
             result = load_prompt("test_agent")
             assert result is None

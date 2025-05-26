@@ -140,9 +140,9 @@ def test_orchestrator_startup_logs_banner(mock_logger, tmp_path):
         if all(sub in log_message for sub in expected_substrings):
             banner_found = True
             break
-    assert banner_found, (
-        f"Port banner not found or incorrect in logs. Logs: {mock_logger.info.call_args_list}"
-    )
+    assert (
+        banner_found
+    ), f"Port banner not found or incorrect in logs. Logs: {mock_logger.info.call_args_list}"
 
 
 @patch.dict(os.environ, {"LEGION_DEBUG_PORTS": "false"})
@@ -160,6 +160,6 @@ def test_orchestrator_startup_no_banner_if_debug_false(mock_logger, tmp_path):
 
     for call_args in mock_logger.info.call_args_list:
         log_message = call_args[0][0]
-        assert "[orchestrator] dynamic ports ->" not in log_message, (
-            "Port banner logged when LEGION_DEBUG_PORTS was false"
-        )
+        assert (
+            "[orchestrator] dynamic ports ->" not in log_message
+        ), "Port banner logged when LEGION_DEBUG_PORTS was false"

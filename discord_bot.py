@@ -10,7 +10,9 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = int(os.getenv("AGENT_FEED_CHANNEL_ID"))  # Use the exact channel ID from env vars
+CHANNEL_ID = int(
+    os.getenv("AGENT_FEED_CHANNEL_ID")
+)  # Use the exact channel ID from env vars
 
 print(f"[DEBUG] Using token starting with: {TOKEN[:12]}...")
 print(f"[DEBUG] Using channel ID: {CHANNEL_ID}")

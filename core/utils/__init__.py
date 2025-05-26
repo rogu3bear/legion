@@ -46,15 +46,17 @@ except ImportError:
 
     class ChromaClient:
         """Placeholder during reorganization."""
+
         def __init__(self, *args, **kwargs):
             raise NotImplementedError("Core utilities not yet moved")
 
+
 __all__ = [
-    'ChromaClient',
-    'fetch_with_retries',
-    'get_all_prompts',
-    'list_available_agents',
-    'load_prompt',
-    'placeholder_indexing',
-    'save_prompt',
+    "ChromaClient",
+    "fetch_with_retries",
+    "get_all_prompts",
+    "list_available_agents",
+    "load_prompt",
+    "placeholder_indexing",
+    "save_prompt",
 ]

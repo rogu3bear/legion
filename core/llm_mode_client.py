@@ -44,6 +44,7 @@ class ModeSwitchingLLMClient(ILLMClient):
         else:
             # For remote mode, use the existing OpenAI client pattern
             import openai
+
             if api_base:
                 openai.api_base = api_base
             elif os.getenv("OPENAI_API_BASE"):
@@ -107,14 +108,15 @@ class ModeSwitchingLLMClient(ILLMClient):
         if self.mode.lower() == "local":
             # For local mode, we might need to implement embedding endpoint
             # For now, return a placeholder or use a different service
-            logger.warning("Embedding not implemented for local mode, returning placeholder")
+            logger.warning(
+                "Embedding not implemented for local mode, returning placeholder"
+            )
             return [0.0] * 384  # Common embedding dimension
         else:
             # Use OpenAI embeddings
             try:
                 response = self.openai.Embedding.create(
-                    input=text,
-                    model="text-embedding-ada-002"
+                    input=text, model="text-embedding-ada-002"
                 )
                 return response["data"][0]["embedding"]
             except Exception as e:
@@ -147,6 +149,7 @@ class ModeSwitchingLLMClient(ILLMClient):
 
         # Call the async method synchronously (for backward compatibility)
         import asyncio
+
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
@@ -162,18 +165,16 @@ class ModeSwitchingLLMClient(ILLMClient):
         else:
             # For remote, try a simple API call
             try:
-                test_response = await self.call([{"role": "user", "content": "test"}], max_tokens=1)
+                test_response = await self.call(
+                    [{"role": "user", "content": "test"}], max_tokens=1
+                )
                 return {
                     "status": "healthy",
                     "mode": "remote",
-                    "test_response_length": len(test_response)
+                    "test_response_length": len(test_response),
                 }
             except Exception as e:
-                return {
-                    "status": "unhealthy",
-                    "mode": "remote",
-                    "error": str(e)
-                }
+                return {"status": "unhealthy", "mode": "remote", "error": str(e)}
 
 
 # Factory function for DI container

@@ -455,9 +455,7 @@ class Orchestrator:
             # Schedule the shutdown coroutine to be run by the loop.
             # asyncio.create_task is generally preferred over ensure_future directly.
             # If self.shutdown() is async:
-            asyncio.create_task(
-                self.shutdown(signal_name=signal.Signals(signum).name)
-            )
+            asyncio.create_task(self.shutdown(signal_name=signal.Signals(signum).name))
             # Track the task if needed
             # self._background_tasks.add(task)
             # task.add_done_callback(self._background_tasks.discard)
@@ -502,7 +500,9 @@ class Orchestrator:
         # This method MUST be synchronous as atexit handlers are.
         if self._pid_file and self._lock_acquired:
             with contextlib.suppress(Exception):
-                logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
+                logger.info(
+                    f"atexit: Releasing process lock for PID file {self._pid_file}"
+                )
             try:
                 if self._lock_fd is not None:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
@@ -1217,7 +1217,9 @@ class Orchestrator:
                 response_content = await agent.handle_task(
                     processed_payload
                 )  # Assuming handle_task is async
-            except AttributeError as e:  # E.g. agent does not have handle_task or it's not async as expected
+            except (
+                AttributeError
+            ) as e:  # E.g. agent does not have handle_task or it's not async as expected
                 logger.error(
                     f"Attribute error with agent '{agent_name}' for message ID {message_id}: {e}",
                     exc_info=True,
@@ -2002,13 +2004,17 @@ class Orchestrator:
         )
         if hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
-                self._zmq_pub_socket.send_json({"type": "agent_registered", "agent_id": agent_id})
+                self._zmq_pub_socket.send_json(
+                    {"type": "agent_registered", "agent_id": agent_id}
+                )
             except Exception as e:
                 logger.error(f"Failed to publish agent_registered event: {e}")
         task = self.queue.dequeue(agent_id)
         if task and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
-                self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task.id, "agent_id": agent_id})
+                self._zmq_pub_socket.send_json(
+                    {"type": "task_assigned", "task_id": task.id, "agent_id": agent_id}
+                )
             except Exception as e:
                 logger.error(f"Failed to publish task_assigned event: {e}")
         if task:
@@ -2219,7 +2225,9 @@ if __name__ == "__main__":
             mcp_port = int(os.getenv("LMSTUDIO_MCP_PORT", "8009"))
 
             def run_mcp_server():
-                uvicorn.run(lmstudio_mcp.app, host="127.0.0.1", port=mcp_port, log_level="info")
+                uvicorn.run(
+                    lmstudio_mcp.app, host="127.0.0.1", port=mcp_port, log_level="info"
+                )
 
             mcp_thread = threading.Thread(target=run_mcp_server, daemon=True)
             mcp_thread.start()

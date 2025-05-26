@@ -57,7 +57,7 @@ class MCPMigrationManager:
             await self._initialize_unified_database()
 
             # Step 4: Migrate data if possible
-            if analysis['has_data']:
+            if analysis["has_data"]:
                 await self._migrate_data(analysis)
 
             # Step 5: Create new configuration
@@ -105,34 +105,34 @@ class MCPMigrationManager:
         logger.info("Analyzing existing MCP servers...")
 
         analysis = {
-            'servers_found': [],
-            'has_data': False,
-            'estimated_data_size': 0,
-            'server_analysis': {}
+            "servers_found": [],
+            "has_data": False,
+            "estimated_data_size": 0,
+            "server_analysis": {},
         }
 
         for server_name, server_path in self.old_servers.items():
             server_dir = Path(server_path)
             if server_dir.exists():
-                analysis['servers_found'].append(server_name)
+                analysis["servers_found"].append(server_name)
 
                 # Look for potential data files
                 data_files = []
-                for pattern in ['*.db', '*.sqlite', '*.sqlite3', '*.json', '*.jsonl']:
+                for pattern in ["*.db", "*.sqlite", "*.sqlite3", "*.json", "*.jsonl"]:
                     data_files.extend(server_dir.glob(pattern))
 
                 if data_files:
-                    analysis['has_data'] = True
+                    analysis["has_data"] = True
                     size = sum(f.stat().st_size for f in data_files if f.exists())
-                    analysis['estimated_data_size'] += size
-                    analysis['server_analysis'][server_name] = {
-                        'data_files': [str(f) for f in data_files],
-                        'size_bytes': size
+                    analysis["estimated_data_size"] += size
+                    analysis["server_analysis"][server_name] = {
+                        "data_files": [str(f) for f in data_files],
+                        "size_bytes": size,
                     }
 
         logger.info(f"Found {len(analysis['servers_found'])} existing MCP servers")
-        if analysis['has_data']:
-            size_mb = analysis['estimated_data_size'] / (1024 * 1024)
+        if analysis["has_data"]:
+            size_mb = analysis["estimated_data_size"] / (1024 * 1024)
             logger.info(f"Estimated data size: {size_mb:.2f} MB")
 
         return analysis
@@ -146,7 +146,9 @@ class MCPMigrationManager:
 
         # Verify the database is properly initialized
         stats = await db.get_performance_stats()
-        logger.info(f"Unified database initialized with {stats['connection_pool_size']} connections")
+        logger.info(
+            f"Unified database initialized with {stats['connection_pool_size']} connections"
+        )
 
     async def _migrate_data(self, analysis: Dict[str, Any]) -> None:
         """Migrate data from old MCP servers to unified database."""
@@ -158,19 +160,19 @@ class MCPMigrationManager:
         # 2. Transform it to the new unified format
         # 3. Insert it into the unified database
 
-        for server_name, server_info in analysis['server_analysis'].items():
+        for server_name, server_info in analysis["server_analysis"].items():
             logger.info(f"Processing {server_name}...")
 
             # Example migration logic (would need to be customized based on actual data format)
-            if 'vector' in server_name:
+            if "vector" in server_name:
                 await self._migrate_vector_data(server_info)
-            elif 'cache' in server_name:
+            elif "cache" in server_name:
                 await self._migrate_cache_data(server_info)
-            elif 'event' in server_name:
+            elif "event" in server_name:
                 await self._migrate_event_data(server_info)
-            elif 'codebase' in server_name:
+            elif "codebase" in server_name:
                 await self._migrate_codebase_data(server_info)
-            elif 'devops' in server_name:
+            elif "devops" in server_name:
                 await self._migrate_devops_data(server_info)
 
     async def _migrate_vector_data(self, server_info: Dict[str, Any]) -> None:
@@ -229,7 +231,7 @@ class MCPMigrationManager:
 
             # Test basic operations
             health = await server.health_check()
-            if health['status'] != 'healthy':
+            if health["status"] != "healthy":
                 logger.error(f"Health check failed: {health}")
                 return False
 
@@ -262,52 +264,52 @@ class MCPMigrationManager:
                 agent_name="test_migration",
                 text="Test migration vector",
                 embedding=[0.1] * 1536,
-                metadata={"test": True}
+                metadata={"test": True},
             )
-            test_results['vector_store'] = bool(vector_id)
+            test_results["vector_store"] = bool(vector_id)
 
             # Test cache
             cache_id = await server.store_cache(
                 agent_name="test_migration",
                 key="test_migration_key",
                 value={"test": "migration_value"},
-                ttl_seconds=300
+                ttl_seconds=300,
             )
-            test_results['cache_store'] = bool(cache_id)
+            test_results["cache_store"] = bool(cache_id)
 
             cache_value = await server.get_cache("test_migration_key")
-            test_results['cache_retrieve'] = cache_value is not None
+            test_results["cache_retrieve"] = cache_value is not None
 
             # Test event logging
             event_id = await server.log_event(
                 agent_name="test_migration",
                 event_type="migration_test",
                 event_data={"test": True},
-                severity="info"
+                severity="info",
             )
-            test_results['event_log'] = bool(event_id)
+            test_results["event_log"] = bool(event_id)
 
             # Test codebase analysis
             codebase_id = await server.store_codebase_analysis(
                 agent_name="test_migration",
                 file_path="test_file.py",
                 analysis_data={"test": True},
-                dependencies=["test_dependency"]
+                dependencies=["test_dependency"],
             )
-            test_results['codebase_store'] = bool(codebase_id)
+            test_results["codebase_store"] = bool(codebase_id)
 
             # Test DevOps operations
             devops_id = await server.log_devops_operation(
                 agent_name="test_migration",
                 operation_type="test_migration",
                 operation_data={"test": True},
-                status="completed"
+                status="completed",
             )
-            test_results['devops_log'] = bool(devops_id)
+            test_results["devops_log"] = bool(devops_id)
 
         except Exception as e:
             logger.error(f"Operation test failed: {e}")
-            test_results['error'] = str(e)
+            test_results["error"] = str(e)
 
         return test_results
 
@@ -330,9 +332,9 @@ class MCPMigrationManager:
 
     async def _print_migration_summary(self) -> None:
         """Print migration summary and next steps."""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("🎉 LEGION MCP UNIFIED DATABASE MIGRATION COMPLETE!")
-        print("="*80)
+        print("=" * 80)
 
         print("\n📋 MIGRATION SUMMARY:")
         print("• ✅ Unified MCP database initialized")
@@ -380,7 +382,7 @@ class MCPMigrationManager:
         print("• Test thoroughly before removing old MCP servers")
         print("• Monitor performance after migration")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
 
 async def main():
@@ -388,11 +390,13 @@ async def main():
     migration_manager = MCPMigrationManager()
 
     print("🔄 Legion MCP Unified Database Migration")
-    print("This script will migrate from separate MCP servers to a unified database system.")
+    print(
+        "This script will migrate from separate MCP servers to a unified database system."
+    )
     print()
 
     response = input("Do you want to proceed with the migration? (y/N): ")
-    if response.lower() not in ['y', 'yes']:
+    if response.lower() not in ["y", "yes"]:
         print("Migration cancelled.")
         return
 

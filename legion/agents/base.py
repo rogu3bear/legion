@@ -84,7 +84,7 @@ class BaseAgent:
             channel_id = int(os.getenv(agent_channel_var, 0))
 
             # Fallback to orchestrator's channel mapping if no env var
-            if not channel_id and hasattr(self, 'orchestrator'):
+            if not channel_id and hasattr(self, "orchestrator"):
                 channel_id = self.orchestrator.agent_channel_ids.get(self.name, 0)
 
             # Final fallback to agent feed channel
@@ -94,13 +94,12 @@ class BaseAgent:
             if channel_id:
                 # Use the new discord bridge for better formatting
                 success = await send_discord_embed(
-                    self.name,
-                    message,
-                    msg_type,
-                    channel_id=channel_id
+                    self.name, message, msg_type, channel_id=channel_id
                 )
                 if not success:
-                    logging.warning(f"[BaseAgent] Failed to send Discord message for {self.name}")
+                    logging.warning(
+                        f"[BaseAgent] Failed to send Discord message for {self.name}"
+                    )
             else:
                 logging.error(f"[BaseAgent] No channel ID found for agent {self.name}")
 
@@ -111,7 +110,11 @@ class BaseAgent:
 
     async def _post_to_discord_fallback(self, message):
         """Fallback Discord posting method using the old approach."""
-        channel_id = self.orchestrator.agent_channel_ids.get(self.name) if hasattr(self, 'orchestrator') else None
+        channel_id = (
+            self.orchestrator.agent_channel_ids.get(self.name)
+            if hasattr(self, "orchestrator")
+            else None
+        )
         if not channel_id:
             logging.error(f"[BaseAgent] No channel_id found for agent {self.name}")
             return
@@ -147,7 +150,9 @@ class BaseAgent:
         else:
             await channel.send(f"{prefix}{message}")
 
-    async def send_status_update(self, status: str, details: Optional[Dict[str, Any]] = None):
+    async def send_status_update(
+        self, status: str, details: Optional[Dict[str, Any]] = None
+    ):
         """Send a formatted status update to Discord."""
         try:
             from legion.utils.discord_bridge import MessageType, send_discord_embed
@@ -157,12 +162,7 @@ class BaseAgent:
                 for key, value in details.items():
                     fields.append((key.title(), str(value)))
 
-            await send_discord_embed(
-                self.name,
-                status,
-                MessageType.INFO,
-                fields=fields
-            )
+            await send_discord_embed(self.name, status, MessageType.INFO, fields=fields)
         except Exception as e:
             logging.error(f"[BaseAgent] Error sending status update: {e}")
 
@@ -176,15 +176,14 @@ class BaseAgent:
                 fields.append(("Context", context))
 
             await send_discord_embed(
-                self.name,
-                f"Error: {error}",
-                MessageType.ERROR,
-                fields=fields
+                self.name, f"Error: {error}", MessageType.ERROR, fields=fields
             )
         except Exception as e:
             logging.error(f"[BaseAgent] Error sending error notification: {e}")
 
-    async def send_success_notification(self, message: str, metrics: Optional[Dict[str, Any]] = None):
+    async def send_success_notification(
+        self, message: str, metrics: Optional[Dict[str, Any]] = None
+    ):
         """Send a formatted success notification to Discord."""
         try:
             from legion.utils.discord_bridge import MessageType, send_discord_embed
@@ -195,10 +194,7 @@ class BaseAgent:
                     fields.append((key.title(), str(value)))
 
             await send_discord_embed(
-                self.name,
-                message,
-                MessageType.SUCCESS,
-                fields=fields
+                self.name, message, MessageType.SUCCESS, fields=fields
             )
         except Exception as e:
             logging.error(f"[BaseAgent] Error sending success notification: {e}")

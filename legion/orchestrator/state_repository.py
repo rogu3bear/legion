@@ -24,7 +24,9 @@ def _default_registry() -> Dict[str, TaskRecord]:
 _TASK_REGISTRY: Dict[str, TaskRecord] = _default_registry()
 
 
-def add_task(task_id: str, tags: List[str], owner: str, agent: Optional[str] = None) -> None:
+def add_task(
+    task_id: str, tags: List[str], owner: str, agent: Optional[str] = None
+) -> None:
     """Register a new task with default status PENDING."""
 
     _TASK_REGISTRY[task_id] = TaskRecord(

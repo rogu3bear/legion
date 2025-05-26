@@ -10,15 +10,13 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def placeholder_network(
-    url: Optional[str] = None, timeout: float = 2.0
-) -> dict:
+def placeholder_network(url: Optional[str] = None, timeout: float = 2.0) -> dict:
     """
     Perform a basic HTTP GET health check and return status and response time.
     """
     if url is None:
         # Use environment variable or default port
-        port = os.getenv('WEB_API_PORT', '8000')
+        port = os.getenv("WEB_API_PORT", "8000")
         url = f"http://localhost:{port}/"
 
     try:

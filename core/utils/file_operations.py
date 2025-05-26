@@ -22,7 +22,7 @@ def load_prompt(agent_name: str) -> Optional[str]:
 
     try:
         if prompt_file.exists():
-            return prompt_file.read_text(encoding='utf-8')
+            return prompt_file.read_text(encoding="utf-8")
         else:
             logger.warning(f"Prompt file not found: {prompt_file}")
             return None
@@ -40,7 +40,7 @@ def save_prompt(agent_name: str, content: str) -> bool:
         PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
 
         # Open file with exclusive lock
-        with open(prompt_file, 'w', encoding='utf-8') as f:
+        with open(prompt_file, "w", encoding="utf-8") as f:
             try:
                 # Acquire exclusive lock with timeout
                 portalocker.lock(f, portalocker.LOCK_EX | portalocker.LOCK_NB)
@@ -51,7 +51,7 @@ def save_prompt(agent_name: str, content: str) -> bool:
                 logger.error(f"Could not acquire lock for prompt file: {agent_name}")
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Prompt file is currently being modified by another process: {agent_name}"
+                    detail=f"Prompt file is currently being modified by another process: {agent_name}",
                 )
             finally:
                 # Lock is automatically released when file is closed

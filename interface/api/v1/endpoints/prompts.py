@@ -21,17 +21,20 @@ router = APIRouter()
 
 class PromptResponse(BaseModel):
     """Response model for prompt data."""
+
     agent_name: str
     content: str
 
 
 class PromptUpdate(BaseModel):
     """Request model for updating prompt content."""
+
     content: str
 
 
 class PromptCreate(BaseModel):
     """Request model for creating new prompt."""
+
     agent_name: str
     content: str
 
@@ -48,7 +51,7 @@ def list_prompts(
         logger.error(f"Error listing prompts: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list prompts"
+            detail="Failed to list prompts",
         )
 
 
@@ -63,11 +66,13 @@ def get_all_prompts_endpoint(
         logger.error(f"Error getting all prompts: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve prompts"
+            detail="Failed to retrieve prompts",
         )
 
 
-@router.get("/{agent_name}", response_model=PromptResponse, summary="Get specific agent prompt")
+@router.get(
+    "/{agent_name}", response_model=PromptResponse, summary="Get specific agent prompt"
+)
 def get_prompt(
     agent_name: str,
     current_user: User = Depends(get_current_active_user),
@@ -78,7 +83,7 @@ def get_prompt(
     if content is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt not found for agent: {agent_name}"
+            detail=f"Prompt not found for agent: {agent_name}",
         )
 
     return PromptResponse(agent_name=agent_name, content=content)
@@ -96,16 +101,18 @@ def update_prompt(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save prompt for agent: {agent_name}"
+            detail=f"Failed to save prompt for agent: {agent_name}",
         )
 
     return {
         "message": f"Prompt updated successfully for agent: {agent_name}",
-        "agent_name": agent_name
+        "agent_name": agent_name,
     }
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, summary="Create new agent prompt")
+@router.post(
+    "/", status_code=status.HTTP_201_CREATED, summary="Create new agent prompt"
+)
 def create_prompt(
     prompt_data: PromptCreate,
     current_user: User = Depends(get_current_active_user),
@@ -116,7 +123,7 @@ def create_prompt(
     if existing_content is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Prompt already exists for agent: {prompt_data.agent_name}"
+            detail=f"Prompt already exists for agent: {prompt_data.agent_name}",
         )
 
     success = save_prompt(prompt_data.agent_name, prompt_data.content)
@@ -124,10 +131,10 @@ def create_prompt(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create prompt for agent: {prompt_data.agent_name}"
+            detail=f"Failed to create prompt for agent: {prompt_data.agent_name}",
         )
 
     return {
         "message": f"Prompt created successfully for agent: {prompt_data.agent_name}",
-        "agent_name": prompt_data.agent_name
+        "agent_name": prompt_data.agent_name,
     }

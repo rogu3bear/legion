@@ -4,7 +4,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-spec = importlib.util.spec_from_file_location("legion.orchestrator.directives", Path(__file__).resolve().parents[2]/"legion"/"orchestrator"/"directives.py")
+spec = importlib.util.spec_from_file_location(
+    "legion.orchestrator.directives",
+    Path(__file__).resolve().parents[2] / "legion" / "orchestrator" / "directives.py",
+)
 
 directives = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(directives)

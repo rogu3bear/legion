@@ -65,9 +65,9 @@ async def test_create_task_success_direct_call(bot_and_cog):
         "Confidence": "0.9",
     }
     present_fields = {f.name: f.value for f in embed.fields}
-    assert present_fields == expected_fields, (
-        f"Embed fields mismatch. Got: {present_fields}, Expected: {expected_fields}"
-    )
+    assert (
+        present_fields == expected_fields
+    ), f"Embed fields mismatch. Got: {present_fields}, Expected: {expected_fields}"
 
     orchestrator.dispatch_command.assert_called_once_with(
         {

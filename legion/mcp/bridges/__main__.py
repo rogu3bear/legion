@@ -24,9 +24,7 @@ def setup_logging():
     logging.basicConfig(
         level=getattr(logging, log_level),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stderr)
-        ]
+        handlers=[logging.StreamHandler(sys.stderr)],
     )
 
 
@@ -76,30 +74,28 @@ async def run_lmstudio_bridge():
             else:
                 response["error"] = {
                     "code": -32601,
-                    "message": f"Method not found: {method}"
+                    "message": f"Method not found: {method}",
                 }
 
             return json.dumps(response)
 
         except json.JSONDecodeError as e:
-            return json.dumps({
-                "jsonrpc": "2.0",
-                "id": None,
-                "error": {
-                    "code": -32700,
-                    "message": f"Parse error: {e}"
+            return json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {"code": -32700, "message": f"Parse error: {e}"},
                 }
-            })
+            )
         except Exception as e:
             logger.error(f"Request handling error: {e}")
-            return json.dumps({
-                "jsonrpc": "2.0",
-                "id": request.get("id") if 'request' in locals() else None,
-                "error": {
-                    "code": -32603,
-                    "message": f"Internal error: {e}"
+            return json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request.get("id") if "request" in locals() else None,
+                    "error": {"code": -32603, "message": f"Internal error: {e}"},
                 }
-            })
+            )
 
     # Main event loop for stdio communication
     try:

@@ -13,7 +13,9 @@ from tests.stubs.fakeredis_stub import StrictRedis
 class EchoAgentTests(unittest.TestCase):
     def test_log_inserts_db_and_returns_uuid(self):
         tmp_db = Path("memory/db/test_echo.db")
-        engine = create_engine(f"sqlite:///{tmp_db}", connect_args={"check_same_thread": False})
+        engine = create_engine(
+            f"sqlite:///{tmp_db}", connect_args={"check_same_thread": False}
+        )
         Base.metadata.create_all(engine)
         agent = EchoAgent(db_url=f"sqlite:///{tmp_db}")
         event = EventSchema(payload={"msg": "hi"})
@@ -28,7 +30,9 @@ class EchoAgentTests(unittest.TestCase):
 
     def test_log_with_redis_cache(self):
         tmp_db = Path("memory/db/test_echo2.db")
-        engine = create_engine(f"sqlite:///{tmp_db}", connect_args={"check_same_thread": False})
+        engine = create_engine(
+            f"sqlite:///{tmp_db}", connect_args={"check_same_thread": False}
+        )
         Base.metadata.create_all(engine)
         fake = StrictRedis()
         agent = EchoAgent(db_url=f"sqlite:///{tmp_db}", redis_url="redis://localhost")

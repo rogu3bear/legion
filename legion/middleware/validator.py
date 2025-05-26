@@ -29,7 +29,9 @@ def _load_directives_config() -> dict:
                 logger.warning("%s did not load as a dictionary", DIRECTIVES_PATH)
                 _loaded_directives = {}
         except FileNotFoundError:
-            logger.warning("%s not found. Directive validation permissive", DIRECTIVES_PATH)
+            logger.warning(
+                "%s not found. Directive validation permissive", DIRECTIVES_PATH
+            )
             _loaded_directives = {}
         except yaml.YAMLError as e:
             logger.warning("Error parsing %s: %s", DIRECTIVES_PATH, e)
@@ -69,12 +71,17 @@ def validate_directive(payload: dict) -> dict:
 
     if directive_name in allowed_directives:
         result = {"is_valid": True}
-        logger.info("Directive valid", extra={"agent": agent_name, "directive": directive_name})
+        logger.info(
+            "Directive valid", extra={"agent": agent_name, "directive": directive_name}
+        )
         return result
     else:
         result = {
             "is_valid": False,
             "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'.",
         }
-        logger.info("Directive invalid", extra={"agent": agent_name, "directive": directive_name})
+        logger.info(
+            "Directive invalid",
+            extra={"agent": agent_name, "directive": directive_name},
+        )
         return result

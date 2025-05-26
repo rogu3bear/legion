@@ -7,12 +7,14 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 
+
 def load_module(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules[name] = module
     return module
+
 
 # Import modules dynamically to avoid import errors
 try:
@@ -44,7 +46,7 @@ class MemoryRedis:
         return self.values.get(key)
 
     def keys(self, pattern):
-        prefix = pattern.rstrip('*')
+        prefix = pattern.rstrip("*")
         return [k for k in self.values if k.startswith(prefix)]
 
 

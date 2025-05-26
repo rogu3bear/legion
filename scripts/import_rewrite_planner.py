@@ -17,16 +17,16 @@ class ImportRewritePlanner(ast.NodeVisitor):
         self.files_to_update: Set[Path] = set()
         self.import_map = {
             # Map legion.core → core (main reorganization)
-            'legion.core.utils.network': 'core.utils.network',
-            'legion.core.utils.indexing': 'core.utils.indexing',
-            'legion.core.utils.chroma_client': 'core.utils.chroma_client',
-            'legion.core.utils': 'core.utils',
-            'legion.core.logging_config': 'core.logging_config',
-            'legion.core.state': 'core.state',
-            'legion.core.db.models': 'core.db.models',
-            'legion.core.di_container': 'core.di_container',
-            'legion.core.middleware.directive_definitions': 'core.middleware.directive_definitions',
-            'legion.core': 'core',
+            "legion.core.utils.network": "core.utils.network",
+            "legion.core.utils.indexing": "core.utils.indexing",
+            "legion.core.utils.chroma_client": "core.utils.chroma_client",
+            "legion.core.utils": "core.utils",
+            "legion.core.logging_config": "core.logging_config",
+            "legion.core.state": "core.state",
+            "legion.core.db.models": "core.db.models",
+            "legion.core.di_container": "core.di_container",
+            "legion.core.middleware.directive_definitions": "core.middleware.directive_definitions",
+            "legion.core": "core",
         }
 
     def visit_Import(self, node):
@@ -48,21 +48,23 @@ class ImportRewritePlanner(ast.NodeVisitor):
             print(f"  Found from-import: {old_import} → {new_import}")
         self.generic_visit(node)
 
+
 def scan_python_files(root_path: Path) -> List[Path]:
     """Find all Python files to scan."""
     python_files = []
     for py_file in root_path.rglob("*.py"):
         # Skip certain directories
-        skip_dirs = {'.venv', '__pycache__', '.git', 'node_modules'}
+        skip_dirs = {".venv", "__pycache__", ".git", "node_modules"}
         if any(skip_dir in str(py_file) for skip_dir in skip_dirs):
             continue
         python_files.append(py_file)
     return python_files
 
+
 def analyze_imports(file_path: Path) -> Tuple[Dict[str, str], bool]:
     """Analyze imports in a single file."""
     try:
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         tree = ast.parse(content, filename=str(file_path))
@@ -75,6 +77,7 @@ def analyze_imports(file_path: Path) -> Tuple[Dict[str, str], bool]:
     except (SyntaxError, UnicodeDecodeError) as e:
         print(f"⚠️  Skipping {file_path}: {e}")
         return {}, False
+
 
 def main():
     """Main planning function."""
@@ -109,6 +112,7 @@ def main():
             print(f"  - {file_path}")
 
     return len(files_needing_updates), len(total_rewrites)
+
 
 if __name__ == "__main__":
     files_count, mappings_count = main()

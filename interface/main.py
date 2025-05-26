@@ -56,7 +56,9 @@ app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(prompts_router, prefix="/api/v1/prompts", tags=["prompts"])
 app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
-app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"])
+app.include_router(
+    task_registry_router, prefix="/api/v1/registry/tasks", tags=["registry_tasks"]
+)
 app.include_router(queue_router, prefix="/api/v1", tags=["queue"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
@@ -90,9 +92,7 @@ def on_startup():
         try:
             r = redis.Redis(host="localhost", port=7810, decode_responses=True)
             recovered = restore_agent_state_from_redis(r)
-            logger.info(
-                "Recovered %d agent(s) from Redis", len(recovered)
-            )
+            logger.info("Recovered %d agent(s) from Redis", len(recovered))
         except Exception as exc:  # pragma: no cover - startup logging only
             logger.error("Failed to restore agents from Redis: %s", exc)
 
@@ -168,7 +168,6 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(2)
     except WebSocketDisconnect:
         pass
-
 
 
 @app.get("/health")

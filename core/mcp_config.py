@@ -102,41 +102,36 @@ class MCPConfigManager:
             # Database configuration
             "MCP_DB_PATH": "db_path",
             "MCP_CONNECTION_POOL_SIZE": ("connection_pool_size", int),
-
             # Cache configuration
             "MCP_DEFAULT_CACHE_TTL": ("default_cache_ttl", int),
             "MCP_CACHE_CLEANUP_INTERVAL": ("cache_cleanup_interval", int),
             "MCP_MAX_CACHE_SIZE": ("max_cache_size", int),
-
             # Vector memory configuration
             "MCP_MAX_VECTOR_RESULTS": ("max_vector_results", int),
             "MCP_DEFAULT_SIMILARITY_THRESHOLD": ("default_similarity_threshold", float),
             "MCP_VECTOR_EMBEDDING_DIMENSION": ("vector_embedding_dimension", int),
-
             # Event logging configuration
             "MCP_MAX_EVENT_BATCH_SIZE": ("max_event_batch_size", int),
             "MCP_EVENT_RETENTION_DAYS": ("event_retention_days", int),
-
             # Codebase analysis configuration
             "MCP_CODEBASE_CACHE_TTL": ("codebase_cache_ttl", int),
             "MCP_MAX_FILE_SIZE_MB": ("max_file_size_mb", int),
-
             # DevOps operations configuration
             "MCP_DEVOPS_OPERATION_TTL": ("devops_operation_ttl", int),
             "MCP_MAX_OPERATION_HISTORY": ("max_operation_history", int),
-
             # Performance configuration
             "MCP_QUERY_TIMEOUT_SECONDS": ("query_timeout_seconds", int),
             "MCP_SLOW_QUERY_THRESHOLD": ("slow_query_threshold", float),
-
             # Monitoring configuration
             "MCP_STATS_REPORT_INTERVAL": ("stats_report_interval", int),
             "MCP_HEALTH_CHECK_INTERVAL": ("health_check_interval", int),
-
             # Security configuration
-            "MCP_ENABLE_AUTH": ("enable_auth", lambda x: x.lower() in ['true', '1', 'yes']),
+            "MCP_ENABLE_AUTH": (
+                "enable_auth",
+                lambda x: x.lower() in ["true", "1", "yes"],
+            ),
             "MCP_AUTH_TOKEN": "auth_token",
-            "MCP_ALLOWED_AGENTS": ("allowed_agents", lambda x: x.split(',')),
+            "MCP_ALLOWED_AGENTS": ("allowed_agents", lambda x: x.split(",")),
         }
 
         env_config = {}
@@ -148,7 +143,9 @@ class MCPConfigManager:
                     try:
                         env_config[key] = converter(value)
                     except (ValueError, TypeError) as e:
-                        logger.warning(f"Invalid value for {env_var}: {value}, error: {e}")
+                        logger.warning(
+                            f"Invalid value for {env_var}: {value}, error: {e}"
+                        )
                 else:
                     env_config[config_key] = value
 
@@ -204,7 +201,7 @@ class MCPConfigManager:
         config_data = asdict(config)
 
         try:
-            with open(self.config_file, 'w') as f:
+            with open(self.config_file, "w") as f:
                 json.dump(config_data, f, indent=2)
             logger.info(f"Saved MCP config to {self.config_file}")
         except Exception as e:
@@ -265,7 +262,7 @@ def create_example_config() -> Dict[str, Any]:
             "enable_auth": config.enable_auth,
             "auth_token": config.auth_token,
             "allowed_agents": config.allowed_agents,
-        }
+        },
     }
 
 

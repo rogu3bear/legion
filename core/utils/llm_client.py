@@ -128,15 +128,14 @@ class LLMClient(ILLMClient):
             thread_id="default",
             dynamic_rules={"default": []},
             history=messages,
-            **kwargs
+            **kwargs,
         )
 
     def get_embedding(self, text: str) -> List[float]:
         """Generate an embedding for the given text."""
         try:
             response = openai.Embedding.create(
-                input=text,
-                model="text-embedding-ada-002"
+                input=text, model="text-embedding-ada-002"
             )
             return response["data"][0]["embedding"]
         except Exception as e:

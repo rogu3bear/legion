@@ -1,4 +1,5 @@
 """SQLAlchemy models for memory-related tables."""
+
 from __future__ import annotations
 
 import uuid

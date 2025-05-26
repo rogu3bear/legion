@@ -11,9 +11,19 @@ def check_docs_file_types():
         return True
 
     violations = []
-    allowed_extensions = {'.md', '.markdown', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.puml', '.plantuml'}
+    allowed_extensions = {
+        ".md",
+        ".markdown",
+        ".svg",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".puml",
+        ".plantuml",
+    }
 
-    for file_path in docs_dir.rglob('*'):
+    for file_path in docs_dir.rglob("*"):
         if file_path.is_file():
             if file_path.suffix.lower() not in allowed_extensions:
                 violations.append(str(file_path))
@@ -28,6 +38,7 @@ def check_docs_file_types():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     if not check_docs_file_types():

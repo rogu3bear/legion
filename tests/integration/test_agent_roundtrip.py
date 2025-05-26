@@ -19,16 +19,16 @@ async def test_agent_roundtrip(orchestrator, agent_keys, tmp_path):
     config = orchestrator.config
 
     for key in agent_keys:
-        assert key in config, (
-            f"Agent key '{key}' not found in orchestrator.config provided by fixture."
-        )
+        assert (
+            key in config
+        ), f"Agent key '{key}' not found in orchestrator.config provided by fixture."
         agent_config_data = config[key]
         agent_class_name = agent_config_data["class"]
 
         # Load and cache
-        assert key in orchestrator.agents, (
-            f"Agent '{key}' not found in orchestrator.agents."
-        )
+        assert (
+            key in orchestrator.agents
+        ), f"Agent '{key}' not found in orchestrator.agents."
         a1 = orchestrator.agents[key]
         assert a1.__class__.__name__ == agent_class_name
 

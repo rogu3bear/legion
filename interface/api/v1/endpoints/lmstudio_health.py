@@ -22,7 +22,7 @@ async def lmstudio_health() -> JSONResponse:
     health_status = {
         "mcp_bridge": {"status": "unknown"},
         "lmstudio_server": {"status": "unknown"},
-        "overall": {"status": "unknown"}
+        "overall": {"status": "unknown"},
     }
 
     try:
@@ -33,8 +33,7 @@ async def lmstudio_health() -> JSONResponse:
             try:
                 # Check MCP bridge health endpoint
                 mcp_response = await client.get(
-                    f"http://localhost:{mcp_port}/health",
-                    timeout=5.0
+                    f"http://localhost:{mcp_port}/health", timeout=5.0
                 )
 
                 if mcp_response.status_code == 200:
@@ -42,7 +41,7 @@ async def lmstudio_health() -> JSONResponse:
                     health_status["mcp_bridge"] = {
                         "status": "healthy",
                         "port": mcp_port,
-                        "response": mcp_data
+                        "response": mcp_data,
                     }
 
                     # If MCP bridge is healthy, it should have info about LM Studio
@@ -50,34 +49,31 @@ async def lmstudio_health() -> JSONResponse:
                         health_status["lmstudio_server"] = {
                             "status": mcp_data.get("status", "unknown"),
                             "base_url": mcp_data.get("base_url"),
-                            "models_available": mcp_data.get("models_available", 0)
+                            "models_available": mcp_data.get("models_available", 0),
                         }
                 else:
                     health_status["mcp_bridge"] = {
                         "status": "unhealthy",
                         "port": mcp_port,
-                        "error": f"HTTP {mcp_response.status_code}"
+                        "error": f"HTTP {mcp_response.status_code}",
                     }
 
             except httpx.ConnectError:
                 health_status["mcp_bridge"] = {
                     "status": "unreachable",
                     "port": mcp_port,
-                    "error": "Connection refused - MCP bridge not running"
+                    "error": "Connection refused - MCP bridge not running",
                 }
             except httpx.TimeoutException:
                 health_status["mcp_bridge"] = {
                     "status": "timeout",
                     "port": mcp_port,
-                    "error": "Health check timed out"
+                    "error": "Health check timed out",
                 }
 
     except Exception as e:
         logger.error(f"Error checking LM Studio MCP health: {e}")
-        health_status["mcp_bridge"] = {
-            "status": "error",
-            "error": str(e)
-        }
+        health_status["mcp_bridge"] = {"status": "error", "error": str(e)}
 
     # If MCP bridge status is unknown, try direct LM Studio check
     if health_status["lmstudio_server"]["status"] == "unknown":
@@ -91,25 +87,22 @@ async def lmstudio_health() -> JSONResponse:
                     health_status["lmstudio_server"] = {
                         "status": "healthy",
                         "base_url": lmstudio_url,
-                        "models_available": len(models_data.get("data", []))
+                        "models_available": len(models_data.get("data", [])),
                     }
                 else:
                     health_status["lmstudio_server"] = {
                         "status": "unhealthy",
                         "base_url": lmstudio_url,
-                        "error": f"HTTP {response.status_code}"
+                        "error": f"HTTP {response.status_code}",
                     }
 
         except httpx.ConnectError:
             health_status["lmstudio_server"] = {
                 "status": "unreachable",
-                "error": "LM Studio server not running"
+                "error": "LM Studio server not running",
             }
         except Exception as e:
-            health_status["lmstudio_server"] = {
-                "status": "error",
-                "error": str(e)
-            }
+            health_status["lmstudio_server"] = {"status": "error", "error": str(e)}
 
     # Determine overall status
     mcp_healthy = health_status["mcp_bridge"]["status"] == "healthy"
@@ -130,7 +123,7 @@ async def lmstudio_health() -> JSONResponse:
         "llm_mode": os.getenv("LLM_MODE", "not_set"),
         "mcp_port": int(os.getenv("LMSTUDIO_MCP_PORT", "8009")),
         "lmstudio_base_url": os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1"),
-        "model": os.getenv("OPENAI_MODEL", "meta-llama-3.1-8b-instruct")
+        "model": os.getenv("OPENAI_MODEL", "meta-llama-3.1-8b-instruct"),
     }
 
     return JSONResponse(content=health_status, status_code=status_code)
@@ -154,18 +147,9 @@ async def lmstudio_models() -> JSONResponse:
             return JSONResponse(content=response.json())
 
     except httpx.ConnectError:
-        raise HTTPException(
-            status_code=503,
-            detail="LM Studio server is not reachable"
-        )
+        raise HTTPException(status_code=503, detail="LM Studio server is not reachable")
     except httpx.TimeoutException:
-        raise HTTPException(
-            status_code=504,
-            detail="Request to LM Studio timed out"
-        )
+        raise HTTPException(status_code=504, detail="Request to LM Studio timed out")
     except Exception as e:
         logger.error(f"Error fetching LM Studio models: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch models: {e!s}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to fetch models: {e!s}")

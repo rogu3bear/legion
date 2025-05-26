@@ -11,9 +11,18 @@ DEPRECATED = [
 
 # Exclude common non-doc directories
 EXCLUDE_DIRS = {
-    ".venv", ".mypy_cache", ".git", "node_modules", "__pycache__",
-    ".pytest_cache", "dist", "build", ".tox", "venv"
+    ".venv",
+    ".mypy_cache",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+    "dist",
+    "build",
+    ".tox",
+    "venv",
 }
+
 
 def scan_file(path: Path) -> None:
     """Scan file for deprecated terms."""
@@ -36,10 +45,7 @@ def check_links() -> None:
     try:
         # Try to run lychee for link checking
         result = subprocess.run(
-            ["lychee", "--offline", "docs"],
-            capture_output=True,
-            text=True,
-            timeout=30
+            ["lychee", "--offline", "docs"], capture_output=True, text=True, timeout=30
         )
         if result.returncode == 0:
             print("✓ Link check passed")

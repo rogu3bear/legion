@@ -22,8 +22,9 @@ class TestPromptIO:
         """Test successful prompt loading."""
         mock_content = "# Test Agent Prompt\nThis is a test prompt."
 
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("pathlib.Path.read_text", return_value=mock_content):
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "pathlib.Path.read_text", return_value=mock_content
+        ):
 
             result = load_prompt("test_agent")
 
@@ -35,12 +36,15 @@ class TestPromptIO:
             with pytest.raises(FileNotFoundError) as exc_info:
                 load_prompt("nonexistent_agent")
 
-        assert "Prompt file not found for agent: nonexistent_agent" in str(exc_info.value)
+        assert "Prompt file not found for agent: nonexistent_agent" in str(
+            exc_info.value
+        )
 
     def test_load_prompt_read_error(self):
         """Test prompt loading when file read fails."""
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("pathlib.Path.read_text", side_effect=PermissionError("Access denied")):
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "pathlib.Path.read_text", side_effect=PermissionError("Access denied")
+        ):
 
             with pytest.raises(IOError) as exc_info:
                 load_prompt("test_agent")
@@ -51,20 +55,22 @@ class TestPromptIO:
         """Test successful prompt saving."""
         test_content = "# Updated Prompt\nThis is updated content."
 
-        with patch("pathlib.Path.mkdir") as mock_mkdir, \
-             patch("pathlib.Path.write_text") as mock_write:
+        with patch("pathlib.Path.mkdir") as mock_mkdir, patch(
+            "pathlib.Path.write_text"
+        ) as mock_write:
 
             save_prompt("test_agent", test_content)
 
             mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
-            mock_write.assert_called_once_with(test_content, encoding='utf-8')
+            mock_write.assert_called_once_with(test_content, encoding="utf-8")
 
     def test_save_prompt_write_error(self):
         """Test prompt saving when write fails."""
         test_content = "# Test Content"
 
-        with patch("pathlib.Path.mkdir"), \
-             patch("pathlib.Path.write_text", side_effect=PermissionError("Access denied")):
+        with patch("pathlib.Path.mkdir"), patch(
+            "pathlib.Path.write_text", side_effect=PermissionError("Access denied")
+        ):
 
             with pytest.raises(IOError) as exc_info:
                 save_prompt("test_agent", test_content)

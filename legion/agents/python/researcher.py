@@ -28,7 +28,9 @@ class ResearcherAgent(BaseAgent):
     def setup(self, orchestrator) -> None:
         """Prepare utilities and register with orchestrator."""
         self.orchestrator = orchestrator
-        cfg_path = os.path.join(os.path.dirname(__file__), "..", "..", "configs", "researcher.yaml")
+        cfg_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "configs", "researcher.yaml"
+        )
         try:
             with open(cfg_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
@@ -38,12 +40,16 @@ class ResearcherAgent(BaseAgent):
         if redis is not None:
             try:
                 port = int(os.getenv("REDIS_PORT", 7810))
-                self.redis = redis.Redis(host="localhost", port=port, decode_responses=True)
+                self.redis = redis.Redis(
+                    host="localhost", port=port, decode_responses=True
+                )
             except Exception:  # pragma: no cover - redis unavailable
                 self.redis = None
         if orchestrator:
             try:
-                orchestrator.register_agent(self.name, "researcher", ["conduct_research", "synthesize_findings"])
+                orchestrator.register_agent(
+                    self.name, "researcher", ["conduct_research", "synthesize_findings"]
+                )
             except Exception:  # pragma: no cover - registration failure
                 pass
 

@@ -1,4 +1,3 @@
-
 DEFAULT_PORTS = {
     "ui_backend": 7801,
     "ui_frontend": 7802,

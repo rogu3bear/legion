@@ -44,7 +44,9 @@ class LegionMCPServer:
         self._shutdown_event = asyncio.Event()
 
         # Configuration with sensible defaults
-        self.cache_cleanup_interval = self.config.get("cache_cleanup_interval", 300)  # 5 minutes
+        self.cache_cleanup_interval = self.config.get(
+            "cache_cleanup_interval", 300
+        )  # 5 minutes
         self.max_vector_results = self.config.get("max_vector_results", 100)
         self.default_cache_ttl = self.config.get("default_cache_ttl", 3600)  # 1 hour
         self.max_event_batch_size = self.config.get("max_event_batch_size", 1000)
@@ -95,7 +97,7 @@ class LegionMCPServer:
         text: str,
         embedding: List[float],
         metadata: Optional[Dict[str, Any]] = None,
-        similarity_threshold: float = 0.8
+        similarity_threshold: float = 0.8,
     ) -> str:
         """Store vector memory for an agent."""
         record_id = str(uuid4())
@@ -108,7 +110,7 @@ class LegionMCPServer:
             metadata=metadata or {},
             text=text,
             embedding=embedding,
-            similarity_threshold=similarity_threshold
+            similarity_threshold=similarity_threshold,
         )
 
         await self.db.store_vector_memory(record)
@@ -122,7 +124,7 @@ class LegionMCPServer:
         agent_name: str,
         query_embedding: List[float],
         top_k: int = 10,
-        similarity_threshold: float = 0.8
+        similarity_threshold: float = 0.8,
     ) -> List[Dict[str, Any]]:
         """Retrieve similar vector memories for an agent."""
         top_k = min(top_k, self.max_vector_results)
@@ -131,7 +133,7 @@ class LegionMCPServer:
             agent_name=agent_name,
             query_embedding=query_embedding,
             top_k=top_k,
-            similarity_threshold=similarity_threshold
+            similarity_threshold=similarity_threshold,
         )
 
         self._operation_stats["vector_operations"] += 1
@@ -139,13 +141,15 @@ class LegionMCPServer:
         # Convert to serializable format
         results = []
         for record in records:
-            results.append({
-                "id": record.id,
-                "text": record.text,
-                "metadata": record.metadata,
-                "timestamp": record.timestamp.isoformat(),
-                "similarity_threshold": record.similarity_threshold
-            })
+            results.append(
+                {
+                    "id": record.id,
+                    "text": record.text,
+                    "metadata": record.metadata,
+                    "timestamp": record.timestamp.isoformat(),
+                    "similarity_threshold": record.similarity_threshold,
+                }
+            )
 
         logger.debug(f"Retrieved {len(results)} vector memories for {agent_name}")
         return results
@@ -155,11 +159,7 @@ class LegionMCPServer:
     # ========================================================================
 
     async def store_cache(
-        self,
-        agent_name: str,
-        key: str,
-        value: Any,
-        ttl_seconds: Optional[int] = None
+        self, agent_name: str, key: str, value: Any, ttl_seconds: Optional[int] = None
     ) -> str:
         """Store cache entry with TTL."""
         record_id = str(uuid4())
@@ -175,7 +175,7 @@ class LegionMCPServer:
             key=key,
             value=value,
             ttl_seconds=ttl,
-            expires_at=expires_at
+            expires_at=expires_at,
         )
 
         await self.db.store_cache(record)
@@ -217,7 +217,7 @@ class LegionMCPServer:
         event_type: str,
         event_data: Dict[str, Any],
         severity: str = "info",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Log an event."""
         record_id = str(uuid4())
@@ -230,7 +230,7 @@ class LegionMCPServer:
             metadata=metadata or {},
             event_type=event_type,
             event_data=event_data,
-            severity=severity
+            severity=severity,
         )
 
         await self.db.log_event(record)
@@ -244,16 +244,13 @@ class LegionMCPServer:
         agent_name: Optional[str] = None,
         event_type: Optional[str] = None,
         severity: Optional[str] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """Retrieve events with filtering."""
         limit = min(limit, self.max_event_batch_size)
 
         records = await self.db.get_events(
-            agent_name=agent_name,
-            event_type=event_type,
-            severity=severity,
-            limit=limit
+            agent_name=agent_name, event_type=event_type, severity=severity, limit=limit
         )
 
         self._operation_stats["event_operations"] += 1
@@ -261,15 +258,17 @@ class LegionMCPServer:
         # Convert to serializable format
         results = []
         for record in records:
-            results.append({
-                "id": record.id,
-                "agent_name": record.agent_name,
-                "event_type": record.event_type,
-                "event_data": record.event_data,
-                "severity": record.severity,
-                "metadata": record.metadata,
-                "timestamp": record.timestamp.isoformat()
-            })
+            results.append(
+                {
+                    "id": record.id,
+                    "agent_name": record.agent_name,
+                    "event_type": record.event_type,
+                    "event_data": record.event_data,
+                    "severity": record.severity,
+                    "metadata": record.metadata,
+                    "timestamp": record.timestamp.isoformat(),
+                }
+            )
 
         logger.debug(f"Retrieved {len(results)} events")
         return results
@@ -284,7 +283,7 @@ class LegionMCPServer:
         file_path: str,
         analysis_data: Dict[str, Any],
         dependencies: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Store codebase analysis results."""
         record_id = str(uuid4())
@@ -292,7 +291,7 @@ class LegionMCPServer:
         # Calculate file hash for change detection
         try:
             if Path(file_path).exists():
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     file_hash = hashlib.sha256(f.read()).hexdigest()
             else:
                 file_hash = "file_not_found"
@@ -308,7 +307,7 @@ class LegionMCPServer:
             file_path=file_path,
             file_hash=file_hash,
             analysis_data=analysis_data,
-            dependencies=dependencies or []
+            dependencies=dependencies or [],
         )
 
         # Store using the base store_cache method with special handling
@@ -323,10 +322,10 @@ class LegionMCPServer:
                 "file_path": file_path,
                 "file_hash": file_hash,
                 "analysis_data": analysis_data,
-                "dependencies": dependencies or []
+                "dependencies": dependencies or [],
             },
             ttl_seconds=86400,  # 24 hours
-            expires_at=datetime.now(timezone.utc) + timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         )
 
         await self.db.store_cache(cache_record)
@@ -336,14 +335,12 @@ class LegionMCPServer:
         return record_id
 
     async def get_codebase_analysis(
-        self,
-        file_path: str,
-        file_hash: Optional[str] = None
+        self, file_path: str, file_hash: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """Retrieve codebase analysis for a file."""
         if file_hash is None and Path(file_path).exists():
             try:
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     file_hash = hashlib.sha256(f.read()).hexdigest()
             except Exception:
                 return None
@@ -366,7 +363,7 @@ class LegionMCPServer:
         operation_type: str,
         operation_data: Dict[str, Any],
         status: str = "pending",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Log a DevOps operation."""
         record_id = str(uuid4())
@@ -383,23 +380,22 @@ class LegionMCPServer:
                 "operation_type": operation_type,
                 "operation_data": operation_data,
                 "status": status,
-                "result": None
+                "result": None,
             },
             ttl_seconds=604800,  # 7 days
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
 
         await self.db.store_cache(cache_record)
         self._operation_stats["devops_operations"] += 1
 
-        logger.debug(f"Logged {operation_type} DevOps operation for {agent_name}: {status}")
+        logger.debug(
+            f"Logged {operation_type} DevOps operation for {agent_name}: {status}"
+        )
         return record_id
 
     async def update_devops_operation(
-        self,
-        operation_id: str,
-        status: str,
-        result: Optional[Dict[str, Any]] = None
+        self, operation_id: str, status: str, result: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Update a DevOps operation status and result."""
         # In a real implementation, you would query by operation_id and update
@@ -460,7 +456,7 @@ class LegionMCPServer:
                 "max_event_batch_size": self.max_event_batch_size,
             },
             "background_tasks": len(self._background_tasks),
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     async def health_check(self) -> Dict[str, Any]:
@@ -477,12 +473,16 @@ class LegionMCPServer:
         active_tasks = sum(1 for task in self._background_tasks if not task.done())
 
         return {
-            "status": "healthy" if db_healthy and active_tasks == len(self._background_tasks) else "unhealthy",
+            "status": (
+                "healthy"
+                if db_healthy and active_tasks == len(self._background_tasks)
+                else "unhealthy"
+            ),
             "database_healthy": db_healthy,
             "active_background_tasks": active_tasks,
             "expected_background_tasks": len(self._background_tasks),
             "total_operations": sum(self._operation_stats.values()),
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
 

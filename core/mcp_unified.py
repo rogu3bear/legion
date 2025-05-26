@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MCPRecord:
     """Base record for all MCP operations."""
+
     id: str
     server_type: str  # vector, cache, event, codebase, devops
     agent_name: str
@@ -34,6 +35,7 @@ class MCPRecord:
 @dataclass
 class VectorRecord(MCPRecord):
     """Vector memory record with embeddings."""
+
     text: str
     embedding: List[float]
     similarity_threshold: float = 0.8
@@ -42,6 +44,7 @@ class VectorRecord(MCPRecord):
 @dataclass
 class CacheRecord(MCPRecord):
     """Cache memory record with TTL."""
+
     key: str
     value: Any
     ttl_seconds: int
@@ -51,6 +54,7 @@ class CacheRecord(MCPRecord):
 @dataclass
 class EventRecord(MCPRecord):
     """Event log record with structured data."""
+
     event_type: str
     event_data: Dict[str, Any]
     severity: str  # debug, info, warning, error, critical
@@ -59,6 +63,7 @@ class EventRecord(MCPRecord):
 @dataclass
 class CodebaseRecord(MCPRecord):
     """Codebase analysis record."""
+
     file_path: str
     file_hash: str
     analysis_data: Dict[str, Any]
@@ -68,6 +73,7 @@ class CodebaseRecord(MCPRecord):
 @dataclass
 class DevopsRecord(MCPRecord):
     """DevOps operation record."""
+
     operation_type: str  # deploy, rollback, scale, monitor
     operation_data: Dict[str, Any]
     status: str  # pending, running, completed, failed
@@ -94,7 +100,7 @@ class MCPUnifiedDB:
         self._query_stats = {
             "total_queries": 0,
             "avg_query_time": 0.0,
-            "slow_queries": 0
+            "slow_queries": 0,
         }
 
     async def initialize(self) -> None:
@@ -246,22 +252,27 @@ class MCPUnifiedDB:
             async with self._pool_lock:
                 self._connection_pool.append(conn)
 
-    async def _track_query_performance(self, query_type: str, execution_time: float) -> None:
+    async def _track_query_performance(
+        self, query_type: str, execution_time: float
+    ) -> None:
         """Track query performance for optimization."""
         self._query_stats["total_queries"] += 1
         self._query_stats["avg_query_time"] = (
-            (self._query_stats["avg_query_time"] * (self._query_stats["total_queries"] - 1) + execution_time)
-            / self._query_stats["total_queries"]
-        )
+            self._query_stats["avg_query_time"]
+            * (self._query_stats["total_queries"] - 1)
+            + execution_time
+        ) / self._query_stats["total_queries"]
 
         if execution_time > 1.0:  # Slow query threshold
             self._query_stats["slow_queries"] += 1
-            logger.warning(f"Slow query detected: {query_type} took {execution_time:.2f}s")
+            logger.warning(
+                f"Slow query detected: {query_type} took {execution_time:.2f}s"
+            )
 
         async with self.get_connection() as conn:
             await conn.execute(
                 "INSERT INTO query_performance (query_type, execution_time, timestamp) VALUES (?, ?, ?)",
-                (query_type, execution_time, time.time())
+                (query_type, execution_time, time.time()),
             )
             await conn.commit()
 
@@ -273,14 +284,20 @@ class MCPUnifiedDB:
             # Store base record
             await conn.execute(
                 "INSERT OR REPLACE INTO mcp_records (id, server_type, agent_name, timestamp, metadata) VALUES (?, ?, ?, ?, ?)",
-                (record.id, record.server_type, record.agent_name, record.timestamp.timestamp(), json.dumps(record.metadata))
+                (
+                    record.id,
+                    record.server_type,
+                    record.agent_name,
+                    record.timestamp.timestamp(),
+                    json.dumps(record.metadata),
+                ),
             )
 
             # Store vector data with binary embedding
-            embedding_blob = json.dumps(record.embedding).encode('utf-8')
+            embedding_blob = json.dumps(record.embedding).encode("utf-8")
             await conn.execute(
                 "INSERT OR REPLACE INTO vector_memory (record_id, text, embedding, similarity_threshold) VALUES (?, ?, ?, ?)",
-                (record.id, record.text, embedding_blob, record.similarity_threshold)
+                (record.id, record.text, embedding_blob, record.similarity_threshold),
             )
 
             await conn.commit()
@@ -293,13 +310,14 @@ class MCPUnifiedDB:
         agent_name: str,
         query_embedding: List[float],
         top_k: int = 10,
-        similarity_threshold: float = 0.8
+        similarity_threshold: float = 0.8,
     ) -> List[VectorRecord]:
         """Retrieve similar vectors using optimized similarity search."""
         start_time = time.time()
 
         async with self.get_connection() as conn:
-            cursor = await conn.execute("""
+            cursor = await conn.execute(
+                """
                 SELECT r.id, r.agent_name, r.timestamp, r.metadata,
                        v.text, v.embedding, v.similarity_threshold
                 FROM mcp_records r
@@ -309,26 +327,30 @@ class MCPUnifiedDB:
                 AND v.similarity_threshold >= ?
                 ORDER BY r.timestamp DESC
                 LIMIT ?
-            """, (agent_name, similarity_threshold, top_k * 2))  # Get extra for similarity filtering
+            """,
+                (agent_name, similarity_threshold, top_k * 2),
+            )  # Get extra for similarity filtering
 
             rows = await cursor.fetchall()
 
             # Calculate similarities and filter
             results = []
             for row in rows:
-                stored_embedding = json.loads(row['embedding'].decode('utf-8'))
+                stored_embedding = json.loads(row["embedding"].decode("utf-8"))
                 similarity = self._cosine_similarity(query_embedding, stored_embedding)
 
                 if similarity >= similarity_threshold:
                     record = VectorRecord(
-                        id=row['id'],
-                        server_type='vector',
-                        agent_name=row['agent_name'],
-                        timestamp=datetime.fromtimestamp(row['timestamp'], tz=timezone.utc),
-                        metadata=json.loads(row['metadata']),
-                        text=row['text'],
+                        id=row["id"],
+                        server_type="vector",
+                        agent_name=row["agent_name"],
+                        timestamp=datetime.fromtimestamp(
+                            row["timestamp"], tz=timezone.utc
+                        ),
+                        metadata=json.loads(row["metadata"]),
+                        text=row["text"],
                         embedding=stored_embedding,
-                        similarity_threshold=row['similarity_threshold']
+                        similarity_threshold=row["similarity_threshold"],
                     )
                     results.append((similarity, record))
 
@@ -362,12 +384,24 @@ class MCPUnifiedDB:
         async with self.get_connection() as conn:
             await conn.execute(
                 "INSERT OR REPLACE INTO mcp_records (id, server_type, agent_name, timestamp, metadata) VALUES (?, ?, ?, ?, ?)",
-                (record.id, record.server_type, record.agent_name, record.timestamp.timestamp(), json.dumps(record.metadata))
+                (
+                    record.id,
+                    record.server_type,
+                    record.agent_name,
+                    record.timestamp.timestamp(),
+                    json.dumps(record.metadata),
+                ),
             )
 
             await conn.execute(
                 "INSERT OR REPLACE INTO cache_memory (record_id, cache_key, cache_value, ttl_seconds, expires_at) VALUES (?, ?, ?, ?, ?)",
-                (record.id, record.key, json.dumps(record.value), record.ttl_seconds, record.expires_at.timestamp())
+                (
+                    record.id,
+                    record.key,
+                    json.dumps(record.value),
+                    record.ttl_seconds,
+                    record.expires_at.timestamp(),
+                ),
             )
 
             await conn.commit()
@@ -380,11 +414,14 @@ class MCPUnifiedDB:
         start_time = time.time()
 
         async with self.get_connection() as conn:
-            cursor = await conn.execute("""
+            cursor = await conn.execute(
+                """
                 SELECT cache_value, expires_at
                 FROM cache_memory
                 WHERE cache_key = ? AND expires_at > ?
-            """, (key, time.time()))
+            """,
+                (key, time.time()),
+            )
 
             row = await cursor.fetchone()
 
@@ -392,7 +429,7 @@ class MCPUnifiedDB:
         await self._track_query_performance("get_cache", execution_time)
 
         if row:
-            return json.loads(row['cache_value'])
+            return json.loads(row["cache_value"])
         return None
 
     async def cleanup_expired_cache(self) -> int:
@@ -403,14 +440,19 @@ class MCPUnifiedDB:
             # Get expired record IDs
             cursor = await conn.execute(
                 "SELECT record_id FROM cache_memory WHERE expires_at <= ?",
-                (time.time(),)
+                (time.time(),),
             )
-            expired_ids = [row['record_id'] for row in await cursor.fetchall()]
+            expired_ids = [row["record_id"] for row in await cursor.fetchall()]
 
             if expired_ids:
-                placeholders = ','.join('?' * len(expired_ids))
-                await conn.execute(f"DELETE FROM cache_memory WHERE record_id IN ({placeholders})", expired_ids)
-                await conn.execute(f"DELETE FROM mcp_records WHERE id IN ({placeholders})", expired_ids)
+                placeholders = ",".join("?" * len(expired_ids))
+                await conn.execute(
+                    f"DELETE FROM cache_memory WHERE record_id IN ({placeholders})",
+                    expired_ids,
+                )
+                await conn.execute(
+                    f"DELETE FROM mcp_records WHERE id IN ({placeholders})", expired_ids
+                )
                 await conn.commit()
 
         execution_time = time.time() - start_time
@@ -425,12 +467,23 @@ class MCPUnifiedDB:
         async with self.get_connection() as conn:
             await conn.execute(
                 "INSERT INTO mcp_records (id, server_type, agent_name, timestamp, metadata) VALUES (?, ?, ?, ?, ?)",
-                (record.id, record.server_type, record.agent_name, record.timestamp.timestamp(), json.dumps(record.metadata))
+                (
+                    record.id,
+                    record.server_type,
+                    record.agent_name,
+                    record.timestamp.timestamp(),
+                    json.dumps(record.metadata),
+                ),
             )
 
             await conn.execute(
                 "INSERT INTO event_log (record_id, event_type, event_data, severity) VALUES (?, ?, ?, ?)",
-                (record.id, record.event_type, json.dumps(record.event_data), record.severity)
+                (
+                    record.id,
+                    record.event_type,
+                    json.dumps(record.event_data),
+                    record.severity,
+                ),
             )
 
             await conn.commit()
@@ -443,7 +496,7 @@ class MCPUnifiedDB:
         agent_name: Optional[str] = None,
         event_type: Optional[str] = None,
         severity: Optional[str] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[EventRecord]:
         """Retrieve events with filtering."""
         start_time = time.time()
@@ -480,14 +533,14 @@ class MCPUnifiedDB:
             results = []
             for row in rows:
                 record = EventRecord(
-                    id=row['id'],
-                    server_type='event',
-                    agent_name=row['agent_name'],
-                    timestamp=datetime.fromtimestamp(row['timestamp'], tz=timezone.utc),
-                    metadata=json.loads(row['metadata']),
-                    event_type=row['event_type'],
-                    event_data=json.loads(row['event_data']),
-                    severity=row['severity']
+                    id=row["id"],
+                    server_type="event",
+                    agent_name=row["agent_name"],
+                    timestamp=datetime.fromtimestamp(row["timestamp"], tz=timezone.utc),
+                    metadata=json.loads(row["metadata"]),
+                    event_type=row["event_type"],
+                    event_data=json.loads(row["event_data"]),
+                    severity=row["severity"],
                 )
                 results.append(record)
 
@@ -500,7 +553,8 @@ class MCPUnifiedDB:
         """Get database performance statistics."""
         async with self.get_connection() as conn:
             # Query performance stats
-            cursor = await conn.execute("""
+            cursor = await conn.execute(
+                """
                 SELECT query_type,
                        COUNT(*) as count,
                        AVG(execution_time) as avg_time,
@@ -509,28 +563,40 @@ class MCPUnifiedDB:
                 WHERE timestamp > ?
                 GROUP BY query_type
                 ORDER BY avg_time DESC
-            """, (time.time() - 3600,))  # Last hour
+            """,
+                (time.time() - 3600,),
+            )  # Last hour
 
-            query_stats = {row['query_type']: {
-                'count': row['count'],
-                'avg_time': row['avg_time'],
-                'max_time': row['max_time']
-            } for row in await cursor.fetchall()}
+            query_stats = {
+                row["query_type"]: {
+                    "count": row["count"],
+                    "avg_time": row["avg_time"],
+                    "max_time": row["max_time"],
+                }
+                for row in await cursor.fetchall()
+            }
 
             # Table sizes
             table_stats = {}
-            for table in ['mcp_records', 'vector_memory', 'cache_memory', 'event_log', 'codebase_analysis', 'devops_operations']:
+            for table in [
+                "mcp_records",
+                "vector_memory",
+                "cache_memory",
+                "event_log",
+                "codebase_analysis",
+                "devops_operations",
+            ]:
                 cursor = await conn.execute(f"SELECT COUNT(*) as count FROM {table}")
                 row = await cursor.fetchone()
-                table_stats[table] = row['count']
+                table_stats[table] = row["count"]
 
         return {
-            'connection_pool_size': len(self._connection_pool),
-            'total_queries': self._query_stats['total_queries'],
-            'avg_query_time': self._query_stats['avg_query_time'],
-            'slow_queries': self._query_stats['slow_queries'],
-            'query_stats': query_stats,
-            'table_stats': table_stats
+            "connection_pool_size": len(self._connection_pool),
+            "total_queries": self._query_stats["total_queries"],
+            "avg_query_time": self._query_stats["avg_query_time"],
+            "slow_queries": self._query_stats["slow_queries"],
+            "query_stats": query_stats,
+            "table_stats": table_stats,
         }
 
     async def close(self) -> None:

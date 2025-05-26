@@ -64,9 +64,7 @@ class Agent(Base):
     )
 
     # Relationships
-    tasks = relationship(
-        "Task", back_populates="agent", cascade="all, delete-orphan"
-    )
+    tasks = relationship("Task", back_populates="agent", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Agent {self.name}: {self.type} ({self.status})>"
@@ -82,9 +80,9 @@ class Agent(Base):
             "config": self.config,
             "metadata": self.agent_metadata,
             "is_active": self.is_active,
-            "last_heartbeat": self.last_heartbeat.isoformat()
-            if self.last_heartbeat
-            else None,
+            "last_heartbeat": (
+                self.last_heartbeat.isoformat() if self.last_heartbeat else None
+            ),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -149,9 +147,9 @@ class Task(Base):
             "result": self.result,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "error": self.error,
         }
 

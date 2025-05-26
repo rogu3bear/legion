@@ -65,9 +65,14 @@ def test_task_queue():
     print(f"✓ Third task: {task3}")
 
     # Verify priority order
-    if (task1 and task1.get("task") == "high_priority" and
-        task2 and task2.get("task") == "normal_priority" and
-        task3 and task3.get("task") == "low_priority"):
+    if (
+        task1
+        and task1.get("task") == "high_priority"
+        and task2
+        and task2.get("task") == "normal_priority"
+        and task3
+        and task3.get("task") == "low_priority"
+    ):
         print("✓ Priority ordering works correctly")
         return True
     else:

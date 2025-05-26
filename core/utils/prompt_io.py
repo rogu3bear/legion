@@ -35,7 +35,7 @@ def load_prompt(agent_name: str) -> str:
         raise FileNotFoundError(f"Prompt file not found for agent: {agent_name}")
 
     try:
-        content = prompt_file.read_text(encoding='utf-8')
+        content = prompt_file.read_text(encoding="utf-8")
         logger.debug(f"Successfully loaded prompt for agent: {agent_name}")
         return content
     except Exception as e:
@@ -60,7 +60,7 @@ def save_prompt(agent_name: str, content: str) -> None:
         # Ensure prompts directory exists
         PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
 
-        prompt_file.write_text(content, encoding='utf-8')
+        prompt_file.write_text(content, encoding="utf-8")
         logger.info(f"Successfully saved prompt for agent: {agent_name}")
 
     except Exception as e:

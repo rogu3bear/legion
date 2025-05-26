@@ -16,9 +16,13 @@ def upgrade() -> None:
         sa.Column("thread_id", sa.String(), nullable=False),
         sa.Column("agent_id", sa.Integer(), sa.ForeignKey("agents.id"), nullable=False),
         sa.Column("title", sa.String(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
     )
-    op.create_index("ix_conversations_thread_id", "conversations", ["thread_id"], unique=True)
+    op.create_index(
+        "ix_conversations_thread_id", "conversations", ["thread_id"], unique=True
+    )
 
     op.create_table(
         "directives",
@@ -26,7 +30,9 @@ def upgrade() -> None:
         sa.Column("agent_id", sa.Integer(), sa.ForeignKey("agents.id"), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="1"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
     )
 
 

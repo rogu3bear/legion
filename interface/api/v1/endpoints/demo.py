@@ -19,17 +19,20 @@ router = APIRouter()
 
 class PromptResponse(BaseModel):
     """Response model for prompt data."""
+
     agent_name: str
     content: str
 
 
 class PromptUpdate(BaseModel):
     """Request model for updating prompt content."""
+
     content: str
 
 
 class PromptCreate(BaseModel):
     """Request model for creating new prompt."""
+
     agent_name: str
     content: str
 
@@ -44,7 +47,7 @@ def list_agents_demo() -> Dict[str, List[str]]:
         logger.error(f"Error listing agents: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list agents"
+            detail="Failed to list agents",
         )
 
 
@@ -57,11 +60,15 @@ def get_all_prompts_demo() -> Dict[str, str]:
         logger.error(f"Error getting all prompts: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve prompts"
+            detail="Failed to retrieve prompts",
         )
 
 
-@router.get("/prompts/{agent_name}", response_model=PromptResponse, summary="Get specific agent prompt (demo)")
+@router.get(
+    "/prompts/{agent_name}",
+    response_model=PromptResponse,
+    summary="Get specific agent prompt (demo)",
+)
 def get_prompt_demo(agent_name: str) -> PromptResponse:
     """Get prompt content for a specific agent (demo mode - no auth)."""
     content = load_prompt(agent_name)
@@ -69,7 +76,7 @@ def get_prompt_demo(agent_name: str) -> PromptResponse:
     if content is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt not found for agent: {agent_name}"
+            detail=f"Prompt not found for agent: {agent_name}",
         )
 
     return PromptResponse(agent_name=agent_name, content=content)
@@ -86,16 +93,20 @@ def update_prompt_demo(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save prompt for agent: {agent_name}"
+            detail=f"Failed to save prompt for agent: {agent_name}",
         )
 
     return {
         "message": f"Prompt updated successfully for agent: {agent_name}",
-        "agent_name": agent_name
+        "agent_name": agent_name,
     }
 
 
-@router.post("/prompts", status_code=status.HTTP_201_CREATED, summary="Create new agent prompt (demo)")
+@router.post(
+    "/prompts",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create new agent prompt (demo)",
+)
 def create_prompt_demo(prompt_data: PromptCreate) -> Dict[str, str]:
     """Create a new prompt for an agent (demo mode - no auth)."""
     # Check if prompt already exists
@@ -103,7 +114,7 @@ def create_prompt_demo(prompt_data: PromptCreate) -> Dict[str, str]:
     if existing_content is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Prompt already exists for agent: {prompt_data.agent_name}"
+            detail=f"Prompt already exists for agent: {prompt_data.agent_name}",
         )
 
     success = save_prompt(prompt_data.agent_name, prompt_data.content)
@@ -111,10 +122,10 @@ def create_prompt_demo(prompt_data: PromptCreate) -> Dict[str, str]:
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create prompt for agent: {prompt_data.agent_name}"
+            detail=f"Failed to create prompt for agent: {prompt_data.agent_name}",
         )
 
     return {
         "message": f"Prompt created successfully for agent: {prompt_data.agent_name}",
-        "agent_name": prompt_data.agent_name
+        "agent_name": prompt_data.agent_name,
     }

@@ -57,9 +57,9 @@ def test_start_metrics_server_custom_port(prometheus_multiproc_fixture):
     process.start()
     time.sleep(0.5)  # Give time for the server to start
 
-    assert is_port_in_use(custom_port), (
-        f"Port {custom_port} should be in use by metrics server"
-    )
+    assert is_port_in_use(
+        custom_port
+    ), f"Port {custom_port} should be in use by metrics server"
 
 
 @patch("prometheus_client.start_http_server")

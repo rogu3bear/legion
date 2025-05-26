@@ -38,13 +38,15 @@ def guard_response(response: dict, threshold: float = 0.75) -> dict:
     # and notify the agent-feed for observability purposes.
     if confidence < threshold:
         logger.warning(
-            "Hallucination guard triggered", extra={"confidence": confidence, "threshold": threshold}
+            "Hallucination guard triggered",
+            extra={"confidence": confidence, "threshold": threshold},
         )
         post_agent_feed(f"Hallucination detected: {confidence:.2f}")
         return {"valid": False, "reason": "Low confidence (possible hallucination)"}
 
     logger.info(
-        "Hallucination guard passed", extra={"confidence": confidence, "threshold": threshold}
+        "Hallucination guard passed",
+        extra={"confidence": confidence, "threshold": threshold},
     )
 
     # Pass the original response through so downstream middleware can continue

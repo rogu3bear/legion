@@ -459,7 +459,9 @@ async def test_shutdown_cancels_background_tasks(orchestrator_instance):
     # Assert that tasks that were in _background_tasks are now cancelled or done
     for task in initial_bg_tasks:
         assert task.done(), f"Task {task} was not done after shutdown."
-        if not task.cancelled():  # If not cancelled, it should have completed without error or with logged error
+        if (
+            not task.cancelled()
+        ):  # If not cancelled, it should have completed without error or with logged error
             logging.info(
                 f"Task {task} completed with result: {task.result() if not task.exception() else task.exception()}"
             )

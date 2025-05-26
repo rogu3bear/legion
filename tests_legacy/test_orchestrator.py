@@ -13,9 +13,9 @@ def test_agent_channel_ids_not_empty():
     from legion.orchestrator import Orchestrator
 
     orchestrator = Orchestrator()
-    assert orchestrator.agent_channel_ids, (
-        "agent_channel_ids should not be empty after startup"
-    )
+    assert (
+        orchestrator.agent_channel_ids
+    ), "agent_channel_ids should not be empty after startup"
 
 
 def test_duplicate_startup_and_cleanup(monkeypatch, caplog):
@@ -118,8 +118,8 @@ async def test_orchestrator_error_handling():
 
     try:
         response = await orchestrator.dispatch_message("InvalidAgent", "Test message")
-        assert response is not None, (
-            "Orchestrator should handle invalid agent gracefully"
-        )
+        assert (
+            response is not None
+        ), "Orchestrator should handle invalid agent gracefully"
     except Exception as e:
         pytest.fail(f"Orchestrator failed to handle error: {e!s}")

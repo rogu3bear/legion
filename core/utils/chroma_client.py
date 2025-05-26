@@ -131,6 +131,7 @@ class AsyncChromaClient:
         if name == "client":
             client_obj = value
             if not hasattr(client_obj, "get_collection"):
+
                 def get_collection_stub(name_arg):
                     return None
 
@@ -180,7 +181,9 @@ class AsyncChromaClient:
             )
         await asyncio.gather(*tasks)
 
-    async def query_similar(self, agent_name: str, embedding: List[float], n_results: int = 5):
+    async def query_similar(
+        self, agent_name: str, embedding: List[float], n_results: int = 5
+    ):
         maybe_coll = self.client.get_collection(agent_name)
         coll = await maybe_coll if asyncio.iscoroutine(maybe_coll) else maybe_coll
         return await coll.query(query_embeddings=[embedding], n_results=n_results)

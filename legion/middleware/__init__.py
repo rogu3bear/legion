@@ -39,7 +39,10 @@ def run_middleware_pipeline(
     """
     # Step 1: Initial directive validation (e.g., using validator.py)
     # The 'request_payload' should contain 'agent' and 'directive'
-    logger.info("Starting middleware pipeline", extra={"payload_agent": request_payload.get("agent")})
+    logger.info(
+        "Starting middleware pipeline",
+        extra={"payload_agent": request_payload.get("agent")},
+    )
     directive_validation_result = validate_directive(request_payload)
     logger.info(
         "Directive validation result", extra={"result": directive_validation_result}
@@ -70,9 +73,7 @@ def run_middleware_pipeline(
         # Let's assume for a request flow, confidence is provided or defaulted.
         # For this example, we'll pass a default if not present to allow therapist to run.
         # In a real system, this would need careful consideration.
-        logger.warning(
-            "Confidence missing in payload; defaulting to 0.0"
-        )
+        logger.warning("Confidence missing in payload; defaulting to 0.0")
         post_agent_feed("middleware missing confidence")
         initial_confidence = 0.0
 

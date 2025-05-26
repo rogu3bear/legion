@@ -53,7 +53,7 @@ class TestRateLimiting:
         client_ip = "192.168.1.102"
 
         # Mock time to control window behavior
-        with patch('interface.api.v1.endpoints.lmstudio_proxy.time.time') as mock_time:
+        with patch("interface.api.v1.endpoints.lmstudio_proxy.time.time") as mock_time:
             start_time = 1000.0
             mock_time.return_value = start_time
 
@@ -89,7 +89,7 @@ class TestRateLimiting:
         """Test that old requests are cleaned up properly."""
         client_ip = "192.168.1.105"
 
-        with patch('interface.api.v1.endpoints.lmstudio_proxy.time.time') as mock_time:
+        with patch("interface.api.v1.endpoints.lmstudio_proxy.time.time") as mock_time:
             start_time = 1000.0
             mock_time.return_value = start_time
 
@@ -126,7 +126,7 @@ class TestLMStudioChatRateLimit:
         """Clear rate limiting tracker after each test."""
         request_tracker.clear()
 
-    @patch('interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient')
+    @patch("interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient")
     def test_chat_endpoint_rate_limit_success(self, mock_client):
         """Test chat endpoint allows requests within rate limit."""
         from fastapi import FastAPI
@@ -143,13 +143,15 @@ class TestLMStudioChatRateLimit:
         mock_response.status_code = 200
         mock_response.raise_for_status.return_value = None
 
-        mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value.post.return_value = (
+            mock_response
+        )
 
         # Test data
         chat_data = {
             "messages": [{"role": "user", "content": "Hello"}],
             "temperature": 0.7,
-            "max_tokens": 100
+            "max_tokens": 100,
         }
 
         # Should succeed within rate limit
@@ -157,7 +159,7 @@ class TestLMStudioChatRateLimit:
             response = client.post("/chat", json=chat_data)
             assert response.status_code == 200
 
-    @patch('interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient')
+    @patch("interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient")
     def test_chat_endpoint_rate_limit_exceeded(self, mock_client):
         """Test chat endpoint blocks requests when rate limit is exceeded."""
         from fastapi import FastAPI
@@ -174,13 +176,15 @@ class TestLMStudioChatRateLimit:
         mock_response.status_code = 200
         mock_response.raise_for_status.return_value = None
 
-        mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
+        mock_client.return_value.__aenter__.return_value.post.return_value = (
+            mock_response
+        )
 
         # Test data
         chat_data = {
             "messages": [{"role": "user", "content": "Hello"}],
             "temperature": 0.7,
-            "max_tokens": 100
+            "max_tokens": 100,
         }
 
         # Fill up the rate limit
@@ -209,17 +213,21 @@ class TestLMStudioChatRateLimit:
         client = TestClient(app)
 
         # Mock the request to have no client info
-        with patch('interface.api.v1.endpoints.lmstudio_proxy.check_rate_limit') as mock_check:
+        with patch(
+            "interface.api.v1.endpoints.lmstudio_proxy.check_rate_limit"
+        ) as mock_check:
             mock_check.return_value = False
 
             chat_data = {
                 "messages": [{"role": "user", "content": "Hello"}],
                 "temperature": 0.7,
-                "max_tokens": 100
+                "max_tokens": 100,
             }
 
             response = client.post("/chat", json=chat_data)
             assert response.status_code == 429
 
             # Verify unknown IP was used
-            mock_check.assert_called_with("testclient")  # TestClient uses this as default
+            mock_check.assert_called_with(
+                "testclient"
+            )  # TestClient uses this as default

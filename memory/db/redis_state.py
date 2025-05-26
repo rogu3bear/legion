@@ -1,4 +1,5 @@
 """Helper for conversation caching in Redis."""
+
 from __future__ import annotations
 
 import json
@@ -36,11 +37,15 @@ class ConversationCache:
             return None
 
 
-def get_conversation(conv_id: str, cache: ConversationCache | None = None) -> dict[str, Any] | None:
+def get_conversation(
+    conv_id: str, cache: ConversationCache | None = None
+) -> dict[str, Any] | None:
     cache = cache or ConversationCache()
     return cache.get(conv_id)
 
 
-def set_conversation(conv_id: str, data: dict[str, Any], cache: ConversationCache | None = None) -> None:
+def set_conversation(
+    conv_id: str, data: dict[str, Any], cache: ConversationCache | None = None
+) -> None:
     cache = cache or ConversationCache()
     cache.set(conv_id, data)

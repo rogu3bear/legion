@@ -58,7 +58,10 @@ def check_rate_limit(client_ip: str) -> bool:
     now = time.time()
 
     # Clean old requests outside the window
-    while request_tracker[client_ip] and request_tracker[client_ip][0] <= now - RATE_LIMIT_WINDOW:
+    while (
+        request_tracker[client_ip]
+        and request_tracker[client_ip][0] <= now - RATE_LIMIT_WINDOW
+    ):
         request_tracker[client_ip].popleft()
 
     # Check if within limit
@@ -132,9 +135,11 @@ async def lmstudio_echo(request: Request) -> JSONResponse:
             )
             # Forward the error response from LM Studio if possible
             return JSONResponse(
-                content=e.response.json()
-                if e.response.content
-                else {"detail": e.response.text},
+                content=(
+                    e.response.json()
+                    if e.response.content
+                    else {"detail": e.response.text}
+                ),
                 status_code=e.response.status_code,
             )
         except Exception as e:
@@ -161,15 +166,21 @@ async def lmstudio_chat(chat_request: ChatRequest, request: Request):
             detail={
                 "error": "Too Many Requests",
                 "message": f"Rate limit exceeded. Maximum {RATE_LIMIT_REQUESTS} requests per {RATE_LIMIT_WINDOW} seconds.",
-                "retry_after": RATE_LIMIT_WINDOW
-            }
+                "retry_after": RATE_LIMIT_WINDOW,
+            },
         )
 
     # Patch: Ensure sensible defaults and pass-through for model/stream/temperature
     payload = {
-        "messages": [{"role": msg.role, "content": msg.content} for msg in chat_request.messages],
+        "messages": [
+            {"role": msg.role, "content": msg.content} for msg in chat_request.messages
+        ],
         "temperature": chat_request.temperature,
-        "max_tokens": chat_request.max_tokens if chat_request.max_tokens and chat_request.max_tokens > 0 else 256,
+        "max_tokens": (
+            chat_request.max_tokens
+            if chat_request.max_tokens and chat_request.max_tokens > 0
+            else 256
+        ),
         "stream": chat_request.stream,
     }
 
@@ -181,7 +192,9 @@ async def lmstudio_chat(chat_request: ChatRequest, request: Request):
     except Exception:
         pass
 
-    logger.debug(f"Sending structured chat request to LM Studio: {redact_messages_for_logging(payload)}")
+    logger.debug(
+        f"Sending structured chat request to LM Studio: {redact_messages_for_logging(payload)}"
+    )
 
     request_completed = False
     try:
@@ -198,11 +211,16 @@ async def lmstudio_chat(chat_request: ChatRequest, request: Request):
                             )
                             upstream_response.raise_for_status()
                             request_completed = True
-                            return StreamingResponse(upstream_response.aiter_bytes(), media_type="application/x-ndjson")
+                            return StreamingResponse(
+                                upstream_response.aiter_bytes(),
+                                media_type="application/x-ndjson",
+                            )
                         except (httpx.ConnectError, httpx.TimeoutException) as e:
                             if attempt == RETRIES:
                                 raise
-                            logger.warning(f"Streaming retry {attempt + 1}/{RETRIES} after error: {e}")
+                            logger.warning(
+                                f"Streaming retry {attempt + 1}/{RETRIES} after error: {e}"
+                            )
                             await asyncio.sleep(0.5 * (attempt + 1))
                 else:
                     # Non-streaming mode
@@ -215,12 +233,15 @@ async def lmstudio_chat(chat_request: ChatRequest, request: Request):
                             response.raise_for_status()
                             request_completed = True
                             return JSONResponse(
-                                content=response.json(), status_code=response.status_code
+                                content=response.json(),
+                                status_code=response.status_code,
                             )
                         except (httpx.ConnectError, httpx.TimeoutException) as e:
                             if attempt == RETRIES:
                                 raise
-                            logger.warning(f"Non-streaming retry {attempt + 1}/{RETRIES} after error: {e}")
+                            logger.warning(
+                                f"Non-streaming retry {attempt + 1}/{RETRIES} after error: {e}"
+                            )
                             await asyncio.sleep(0.5 * (attempt + 1))
 
             except httpx.ConnectError as e:
@@ -237,7 +258,11 @@ async def lmstudio_chat(chat_request: ChatRequest, request: Request):
                 logger.error(f"LM Studio error: {e.response.status_code}")
                 request_completed = True  # Count HTTP errors as completed requests
                 return JSONResponse(
-                    content=e.response.json() if e.response.content else {"detail": e.response.text},
+                    content=(
+                        e.response.json()
+                        if e.response.content
+                        else {"detail": e.response.text}
+                    ),
                     status_code=e.response.status_code,
                 )
             except Exception as e:
