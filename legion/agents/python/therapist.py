@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Optional
 
 from legion.agents.base import BaseAgent
 from memory.legion_memory import LegionAgentMemory
@@ -43,7 +44,7 @@ class TherapistAgent(BaseAgent):
             summary_lines.append("No recent therapy log entries found.")
         return "\n".join(summary_lines)
 
-    def validate_request(self, content: str, context: dict = None) -> bool:
+    def validate_request(self, content: str, context: Optional[dict] = None) -> bool:
         """
         Validate incoming request against core directives:
         - Only allow self-assessment or well-being queries.

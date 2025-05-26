@@ -5,10 +5,9 @@ The script also scans Python, YAML, JS and TS files for hard-coded ports.
 
 from __future__ import annotations
 
-import os
+import re
 import sys
 from pathlib import Path
-import re
 
 RANGE_START = 7801
 RANGE_END = 7810
@@ -42,7 +41,7 @@ def main() -> int:
         for k, p in invalid:
             print(f"Port {k}={p} out of allowed range {RANGE_START}-{RANGE_END}")
         return 1
-    files = list(Path(".").rglob("*"))
+    files = list(Path().rglob("*"))
     pattern = re.compile(r"\b(\d{4,5})\b")
     for file in files:
         if file.suffix.lower() in {".py", ".yaml", ".yml", ".js", ".ts"}:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Send audit status to Discord."""
 
-import json
-import time
 import asyncio
+import json
 import sys
+import time
 from pathlib import Path
 
 # Add the project root to Python path

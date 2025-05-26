@@ -1,11 +1,11 @@
 """Module for interacting with ChromaDB for embedding storage and retrieval."""
 
+import asyncio
 import os
 from typing import Dict, List, Optional
 
 import numpy as np
 import openai
-import asyncio
 
 
 class ChromaClient:
@@ -142,6 +142,7 @@ class AsyncChromaClient:
     def __init__(self, api_url: str, api_key: str):
         from types import SimpleNamespace
         from urllib.parse import urlparse
+
         import chromadb
 
         parsed_url = urlparse(api_url)

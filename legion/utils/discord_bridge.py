@@ -8,12 +8,12 @@ This module provides Discord messaging capabilities that can be used:
 import asyncio
 import json
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import discord
 from dotenv import load_dotenv
 
-from integration.discord.cogs.ux_feed import render_feed_item, MessageType
+from integration.discord.cogs.ux_feed import MessageType, render_feed_item
 
 load_dotenv(override=True)
 

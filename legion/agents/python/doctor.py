@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """DoctorAgent implementation for diagnostics and remediation."""
 
 import json
 import os
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
 try:
     import redis  # type: ignore
@@ -19,7 +19,7 @@ from legion.agents.base import BaseAgent
 class DoctorAgent(BaseAgent):
     """Agent responsible for diagnosing issues and suggesting remedies."""
 
-    def __init__(self, name: str, config: Optional[dict] = None, llm_client=None) -> None:
+    def __init__(self, name: str, config: dict | None = None, llm_client=None) -> None:
         super().__init__(name, config or {}, llm_client)
         self.redis = None
 
@@ -45,7 +45,7 @@ class DoctorAgent(BaseAgent):
             except Exception:  # pragma: no cover - registration failure
                 pass
 
-    def _log_diagnosis(self, symptoms: Dict[str, str], diagnosis: Dict[str, str]) -> None:
+    def _log_diagnosis(self, symptoms: dict[str, str], diagnosis: dict[str, str]) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "symptoms": symptoms,
@@ -57,7 +57,7 @@ class DoctorAgent(BaseAgent):
             except Exception:  # pragma: no cover - redis errors
                 pass
 
-    def process_message(self, msg: Dict[str, any], ctx: Optional[dict] = None):
+    def process_message(self, msg: dict[str, any], ctx: dict | None = None):
         """Dispatch message based on requested action."""
         action = msg.get("action")
         if action == "diagnose":
@@ -68,7 +68,7 @@ class DoctorAgent(BaseAgent):
             return self.suggest_remedy(msg.get("diagnosis", {}))
         raise ValueError("Unknown action")
 
-    def diagnose_issue(self, symptoms: Dict[str, str]) -> Dict[str, str]:
+    def diagnose_issue(self, symptoms: dict[str, str]) -> dict[str, str]:
         """Return a structured diagnosis based on provided symptoms."""
         error = symptoms.get("error", "").lower()
         if error == "cpu_high":
@@ -77,7 +77,7 @@ class DoctorAgent(BaseAgent):
             return {"issue": "Memory Leak", "severity": "high"}
         return {"issue": "Unknown", "severity": "unknown"}
 
-    def suggest_remedy(self, diagnosis: Dict[str, str]) -> List[str]:
+    def suggest_remedy(self, diagnosis: dict[str, str]) -> list[str]:
         """Map a diagnosis to a list of remedies."""
         mapping = {
             "High CPU Usage": ["Scale service", "Optimize code"],

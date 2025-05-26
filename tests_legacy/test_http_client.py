@@ -2,9 +2,9 @@
 
 import unittest
 
+import pytest
 import requests
 
-import pytest
 from legion.utils.http_client import HTTPClient
 
 

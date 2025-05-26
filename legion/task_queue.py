@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
-from typing import Dict, Optional
-import time
-
 import logging
+import time
+from dataclasses import dataclass
 
 try:
     import redis  # type: ignore
@@ -37,8 +35,8 @@ class TaskQueue:
     ) -> None:
         if redis is None:
             self.client = None
-            self.store: Dict[str, Task] = {}
-            self.dead_letter: Dict[str, Task] = {}
+            self.store: dict[str, Task] = {}
+            self.dead_letter: dict[str, Task] = {}
         else:
             self.client = redis.Redis(host=host, port=port, decode_responses=True)
             self.dead_letter_key = "dead_tasks"
@@ -61,7 +59,7 @@ class TaskQueue:
             extra={"props": {"task_id": task.id, "agent": task.agent, "priority": task.priority}},
         )
 
-    def dequeue(self, agent: str) -> Optional[Task]:
+    def dequeue(self, agent: str) -> Task | None:
         if self.client:
             ids = self.client.zrange("task_queue", 0, -1)
             now = time.time()
@@ -93,8 +91,8 @@ class TaskQueue:
             task.state = "in_progress"
             return task
 
-    def summary(self) -> Dict[str, int]:
-        counts: Dict[str, int] = {}
+    def summary(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
         if self.client:
             keys = self.client.keys("task:*")
             items = [json.loads(self.client.get(k)) for k in keys]
@@ -150,7 +148,7 @@ class TaskQueue:
             if task_id in self.store:
                 self.store[task_id].state = state
 
-    def get(self, task_id: str) -> Optional[Task]:
+    def get(self, task_id: str) -> Task | None:
         if self.client:
             raw = self.client.get(f"task:{task_id}")
             if raw:

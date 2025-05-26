@@ -1,6 +1,7 @@
 import logging  # Import logging
 import socket
 from typing import Dict
+
 from legion.default_ports import DEFAULT_PORTS
 
 # Initialize logger

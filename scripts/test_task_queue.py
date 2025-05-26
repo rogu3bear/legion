@@ -28,7 +28,7 @@ class MockRedis:
         self.lists[key].append(value)
 
     def lpop(self, key):
-        if key in self.lists and self.lists[key]:
+        if self.lists.get(key):
             return self.lists[key].pop(0)
         return None
 

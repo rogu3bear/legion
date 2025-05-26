@@ -1,5 +1,7 @@
 import unittest
+
 import legion.queue.priority as pq
+
 
 class PriorityInterfaceTests(unittest.TestCase):
     def test_interface(self):

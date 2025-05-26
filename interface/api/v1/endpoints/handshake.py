@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, abort, jsonify, request
+
 from legion.registration import service
 from legion.task_queue import queue
 

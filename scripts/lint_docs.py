@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """Simple documentation linter."""
-import os
-import re
 import subprocess
 from pathlib import Path
 

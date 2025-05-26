@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pre-commit hook: prevent non-Markdown files in docs/ directory."""
 import sys
-import os
 from pathlib import Path
+
 
 def check_docs_file_types():
     """Check that only markdown files are in docs/ directory."""

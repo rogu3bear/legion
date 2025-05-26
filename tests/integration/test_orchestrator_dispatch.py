@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from legion.agents.python import EchoAgent
 from core.di_container import ILLMClient, IStateManager, container
 from core.state import StateManager
+from legion.agents.python import EchoAgent
 from legion.orchestrator import Orchestrator
 
 
@@ -41,7 +41,7 @@ def test_env(tmp_path):
 @pytest.mark.asyncio
 async def test_dispatch_message_integration(test_env, monkeypatch):
     """Tests the orchestrator dispatch flow, including state logging and telemetry."""
-    state_manager = test_env["state_manager"]
+    test_env["state_manager"]
     # Ensure EchoAgent is available for testing
     if "echo_agent" not in Orchestrator.CLASS_MAP:
         Orchestrator.CLASS_MAP["echo_agent"] = EchoAgent

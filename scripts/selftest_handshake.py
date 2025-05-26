@@ -1,4 +1,5 @@
 import hmac
+
 from legion.state_repo import StateRepo
 from tests.stubs.fakeredis_stub import StrictRedis
 

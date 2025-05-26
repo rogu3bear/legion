@@ -9,9 +9,9 @@ optimized instance.
 import json
 import logging
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class MCPConfigManager:
         # Load from file if it exists
         if Path(self.config_file).exists():
             try:
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file) as f:
                     config_data = json.load(f)
                 logger.info(f"Loaded MCP config from {self.config_file}")
             except Exception as e:

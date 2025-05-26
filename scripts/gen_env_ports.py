@@ -14,8 +14,8 @@ PORT_ALLOCATOR_SERVICE_KEY1=port1
 """
 
 import sys
+
 import yaml
-import re
 
 # Prefixes to remove from the keys
 PREFIXES_TO_STRIP = [
@@ -59,7 +59,7 @@ def main():
     input_yaml_file = sys.argv[1]
 
     try:
-        with open(input_yaml_file, 'r') as f:
+        with open(input_yaml_file) as f:
             data = yaml.safe_load(f)
     except FileNotFoundError:
         print(f"Error: Input YAML file not found: {input_yaml_file}", file=sys.stderr)
@@ -92,8 +92,7 @@ def main():
         # This might need more sophisticated logic if keys are like 'services_core_web_ui'
         # For now, simple prefix removal on the flattened key.
 
-        final_key_parts = []
-        for part in temp_key.split('_'):
+        for _part in temp_key.split('_'):
              # This logic might be too aggressive or not match the desired outcome.
              # The goal is to get `PORT_ALLOCATOR_CHROMA` from `PORT_ALLOCATOR_CORE_SERVICES_CHROMA`
              # or `PORT_ALLOCATOR_WEB_UI` from `PORT_ALLOCATOR_SERVICES_WEB_UI`

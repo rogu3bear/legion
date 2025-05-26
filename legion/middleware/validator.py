@@ -7,6 +7,7 @@ function is used by the middleware pipeline documented in
 """
 
 import logging
+
 import yaml
 
 # Assume directives.yaml is in legion/config/directives.yaml

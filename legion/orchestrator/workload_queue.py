@@ -12,9 +12,6 @@ Example payload::
 
 from __future__ import annotations
 
-import json
-from typing import Optional
-
 import zmq
 
 from legion.ports import LEGION_PORT_MAP
@@ -28,7 +25,7 @@ class WorkloadQueue:
         self.publisher = self.context.socket(zmq.PUB)
         self.publisher.bind(f"tcp://127.0.0.1:{LEGION_PORT_MAP['zmq_pub']}")
 
-    def publish(self, event: str, agent_id: str, task_id: Optional[str] = None) -> None:
+    def publish(self, event: str, agent_id: str, task_id: str | None = None) -> None:
         payload = {"event": event, "agent_id": agent_id}
         if task_id is not None:
             payload["task_id"] = task_id

@@ -5,9 +5,8 @@ Revises:
 Create Date: 2024-12-30 21:03:00.000000
 
 """
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import sqlite
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '001_initial_core'

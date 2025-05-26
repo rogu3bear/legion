@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:  # pragma: no cover - optional dependency
     import redis  # type: ignore
@@ -15,7 +15,7 @@ class ConversationCache:
 
     KEY_PREFIX = "conversation:"
 
-    def __init__(self, r: Optional[Any] = None) -> None:
+    def __init__(self, r: Any | None = None) -> None:
         if r is not None:
             self.r = r
         else:
@@ -23,10 +23,10 @@ class ConversationCache:
                 raise RuntimeError("Redis library not available")
             self.r = redis.StrictRedis(decode_responses=True)
 
-    def set(self, conv_id: str, data: Dict[str, Any]) -> None:
+    def set(self, conv_id: str, data: dict[str, Any]) -> None:
         self.r.set(f"{self.KEY_PREFIX}{conv_id}", json.dumps(data))
 
-    def get(self, conv_id: str) -> Optional[Dict[str, Any]]:
+    def get(self, conv_id: str) -> dict[str, Any] | None:
         raw = self.r.get(f"{self.KEY_PREFIX}{conv_id}")
         if raw is None:
             return None
@@ -36,11 +36,11 @@ class ConversationCache:
             return None
 
 
-def get_conversation(conv_id: str, cache: Optional[ConversationCache] = None) -> Optional[Dict[str, Any]]:
+def get_conversation(conv_id: str, cache: ConversationCache | None = None) -> dict[str, Any] | None:
     cache = cache or ConversationCache()
     return cache.get(conv_id)
 
 
-def set_conversation(conv_id: str, data: Dict[str, Any], cache: Optional[ConversationCache] = None) -> None:
+def set_conversation(conv_id: str, data: dict[str, Any], cache: ConversationCache | None = None) -> None:
     cache = cache or ConversationCache()
     cache.set(conv_id, data)

@@ -1,4 +1,3 @@
-import os
 
 DEFAULT_PORTS = {
     "ui_backend": 7801,

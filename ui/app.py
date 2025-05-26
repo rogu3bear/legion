@@ -1,8 +1,10 @@
+import os
+
+import yaml
 from flask import Flask, jsonify
 from flask_cors import CORS
-import os
-import yaml
-from legion.ports import get_port, LEGION_PORT_MAP
+
+from legion.ports import LEGION_PORT_MAP, get_port
 
 app = Flask(__name__)
 CORS(app)

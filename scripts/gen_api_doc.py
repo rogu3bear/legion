@@ -1,5 +1,4 @@
 """Generate simplified API reference from FastAPI app."""
-from pathlib import Path
 import importlib.util
 import sys
 from pathlib import Path

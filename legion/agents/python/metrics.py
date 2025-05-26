@@ -5,9 +5,9 @@ This module defines the MetricsAgent class, which is responsible for collecting
 and analyzing system metrics to provide insights and improve system performance.
 """
 
+import asyncio
 import json
 import os
-import asyncio
 from collections import defaultdict
 from typing import Dict
 
@@ -16,9 +16,8 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     redis = None
 
-from legion.task_queue import queue as task_queue
-
 from legion.agents.base import BaseAgent
+from legion.task_queue import queue as task_queue
 
 
 class MetricsAgent(BaseAgent):
@@ -157,7 +156,7 @@ class MetricsAgent(BaseAgent):
                     "Top Agent": report_lines[0] if report_lines else "None"
                 }
             )
-        except Exception as e:
+        except Exception:
             # Fallback to old method
             lines = ["| Agent | Messages |", "|-------|----------|"]
             for agent, count in sorted(counts.items(), key=lambda x: -x[1]):

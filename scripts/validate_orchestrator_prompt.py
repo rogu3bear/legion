@@ -10,10 +10,10 @@ Usage:
   # Or override the API endpoint:
   python scripts/validate_orchestrator_prompt.py --api-base http://127.0.0.1:1234/v1
 """
-import os
-import json
-import openai
 import argparse
+import os
+
+import openai
 from dotenv import load_dotenv
 
 # Parse command line arguments
@@ -39,7 +39,7 @@ template_path = os.path.join(project_root, "legion", "prompts", "orchestrator.md
 if not os.path.exists(template_path):
     raise FileNotFoundError(f"Orchestrator prompt template not found at: {template_path}")
 
-with open(template_path, "r", encoding="utf-8") as f:
+with open(template_path, encoding="utf-8") as f:
     system_prompt = f.read()
 
 # Build chat messages

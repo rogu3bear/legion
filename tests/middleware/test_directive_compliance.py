@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from tests.middleware.orchestrator_stub import orchestrator_stub
+
 sys.modules.setdefault('legion.orchestrator', orchestrator_stub)
 
 from middleware.src.middleware.directive_compliance import DirectiveCompliance

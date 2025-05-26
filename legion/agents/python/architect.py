@@ -76,7 +76,7 @@ class ArchitectAgent(BaseAgent):
 
         def list_files(startpath):
             tree = []
-            for root, dirs, files in os.walk(startpath):
+            for root, _dirs, files in os.walk(startpath):
                 level = root.replace(startpath, "").count(os.sep)
                 indent = "  " * level
                 tree.append(f"{indent}{os.path.basename(root)}/")

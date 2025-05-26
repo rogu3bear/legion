@@ -11,17 +11,17 @@ from interface.api.v1.endpoints.system import _call_orchestrator  # Import helpe
 from interface.crud import crud_agent
 from interface.models.agent import Agent as AgentModel
 from interface.models.user import User
+from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.agent import (
     AgentActionResponse,
     AgentConfigInfo,
     AgentConfigUpdate,
     AgentDispatchPayload,
     AgentDispatchResponse,
-    AgentStatusInfo,
     AgentRegisterRequest,
     AgentRegisterResponse,
+    AgentStatusInfo,
 )
-from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
 
 logger = logging.getLogger(__name__)

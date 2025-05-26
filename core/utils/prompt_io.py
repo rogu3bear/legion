@@ -7,7 +7,6 @@ as requested in the WebUI backend implementation requirements.
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ def load_prompt(agent_name: str) -> str:
         return content
     except Exception as e:
         logger.error(f"Error reading prompt file for {agent_name}: {e}")
-        raise IOError(f"Failed to read prompt for agent: {agent_name}") from e
+        raise OSError(f"Failed to read prompt for agent: {agent_name}") from e
 
 
 def save_prompt(agent_name: str, content: str) -> None:
@@ -66,7 +65,7 @@ def save_prompt(agent_name: str, content: str) -> None:
 
     except Exception as e:
         logger.error(f"Error saving prompt for {agent_name}: {e}")
-        raise IOError(f"Failed to save prompt for agent: {agent_name}") from e
+        raise OSError(f"Failed to save prompt for agent: {agent_name}") from e
 
 
 def prompt_exists(agent_name: str) -> bool:

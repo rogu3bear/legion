@@ -1,5 +1,5 @@
-import sys # sys must be imported first for path modifications
-from pathlib import Path # pathlib for path manipulations
+import sys  # sys must be imported first for path modifications
+from pathlib import Path  # pathlib for path manipulations
 
 # Ensure the project root directory is in the Python path very early.
 # This must be done before any other imports that might rely on this path.
@@ -11,8 +11,8 @@ if str(PROJECT_ROOT) not in sys.path:
 import asyncio
 import json
 import secrets
-# import os # No longer needed for os.path
 
+# import os # No longer needed for os.path
 # Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -23,8 +23,8 @@ from starlette.responses import Response
 
 # Project-specific imports
 from core.logging_config import setup_logging
-from legion import Orchestrator
 from interface.core.config import settings
+from legion import Orchestrator
 
 logger = setup_logging(__name__)
 
@@ -37,17 +37,17 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 from interface.api.v1.endpoints import (  # noqa: E402
     agents_router,
     auth_router,
+    demo_router,
+    echo_router,
+    lmstudio_proxy_router,
     login_router,
     memory_router,
+    metrics_router,
     prompts_router,
-    echo_router,
+    queue_router,
     system_router,
     task_registry_router,
     tasks_router,
-    lmstudio_proxy_router,
-    queue_router,
-    metrics_router,
-    demo_router,
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])

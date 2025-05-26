@@ -3,9 +3,10 @@
 import sys
 from pathlib import Path
 
+
 def check_forbidden_docs():
     """Check for .md files outside docs/ directory."""
-    repo_root = Path(".")
+    repo_root = Path()
     docs_dir = repo_root / "docs"
 
     violations = []
@@ -32,7 +33,7 @@ def check_forbidden_docs():
         skip_dirs = {'ui', 'artifacts', 'legion/prompts', 'research'}
         if any(skip_dir in str(md_file) for skip_dir in skip_dirs):
             continue
-            
+
         # Allow README.md in skills subdirectories
         if md_file.name == 'README.md' and 'skills/' in str(md_file):
             continue

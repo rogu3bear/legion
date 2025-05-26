@@ -4,12 +4,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from tests.middleware.yaml_stub import yaml
 from tests.middleware.orchestrator_stub import orchestrator_stub
+from tests.middleware.yaml_stub import yaml
+
 sys.modules['yaml'] = yaml
 sys.modules.setdefault('legion.orchestrator', orchestrator_stub)
 
-import unittest
 
 from legion.middleware import validator
 

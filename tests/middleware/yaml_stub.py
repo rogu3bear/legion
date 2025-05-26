@@ -4,10 +4,7 @@ import types
 yaml = types.ModuleType('yaml')
 
 def safe_load(stream):
-    if hasattr(stream, 'read'):
-        data = stream.read()
-    else:
-        data = stream
+    data = stream.read() if hasattr(stream, 'read') else stream
     if not data:
         return {}
     return json.loads(data)

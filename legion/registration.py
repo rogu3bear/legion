@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import hmac
 import json
-import logging
 import secrets
 import time
-from typing import Any, Dict
+from typing import Any
 
 try:
     import redis  # type: ignore
@@ -22,19 +21,19 @@ class RegistrationService:
         self.secret = secret
         if redis is None:
             self.client = None
-            self.store: Dict[str, Any] = {}
+            self.store: dict[str, Any] = {}
             self.logs: list[str] = []
         else:
             self.client = redis.Redis(host=host, port=port, decode_responses=True)
 
-    def _log(self, payload: Dict[str, Any]) -> None:
+    def _log(self, payload: dict[str, Any]) -> None:
         data = json.dumps(payload)
         if self.client:
             self.client.rpush("handshake_log", data)
         else:
             self.logs.append(data)
 
-    def handle(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def handle(self, payload: dict[str, Any]) -> dict[str, Any]:
         phase = payload.get("phase")
         if phase == "INITIAL_REQUEST":
             agent_id = payload.get("agent_id")

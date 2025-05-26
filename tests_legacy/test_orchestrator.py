@@ -1,9 +1,11 @@
+import contextlib
 import logging
 import os
 import sys
 import tempfile
 
 import pytest
+
 from legion.orchestrator import Orchestrator
 
 
@@ -37,10 +39,8 @@ def test_duplicate_startup_and_cleanup(monkeypatch, caplog):
     with open(pid_path, "w") as f:
         f.write("999999")
     with caplog.at_level("INFO"):
-        try:
+        with contextlib.suppress(ExitCalled):
             Orchestrator(pid_file=pid_path)
-        except ExitCalled:
-            pass
         assert any("already running" in r.message for r in caplog.records)
     # Cleanup
     orch1._release_lock()

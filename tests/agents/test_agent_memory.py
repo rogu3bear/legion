@@ -1,6 +1,7 @@
 import unittest
 
 import pytest
+
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
 from legion.agents.python.healthcheck import HealthcheckAgent
@@ -30,7 +31,7 @@ class DummyOrchestrator:
 
     def __init__(self):
         self.config = {}
-        for agent_name in self.agent_channel_ids.keys():
+        for agent_name in self.agent_channel_ids:
             self.config[agent_name] = {"repo_path": "."}
 
 

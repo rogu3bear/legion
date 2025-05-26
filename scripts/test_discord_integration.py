@@ -3,18 +3,17 @@
 
 import asyncio
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from legion.utils.discord_bridge import (
-    send_discord_message,
+    MessageType,
+    create_orchestrator_callback,
     send_discord_action,
     send_discord_embed,
-    MessageType,
-    create_orchestrator_callback
+    send_discord_message,
 )
 
 

@@ -1,5 +1,7 @@
 import unittest
+
 from legion.registration import RegistrationService
+
 
 class FakeRedis:
     def __init__(self):

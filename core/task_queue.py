@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class TaskQueue:
@@ -15,7 +15,7 @@ class TaskQueue:
         return f"legion:queue:{agent_id}:{priority}"
 
     def enqueue_task(
-        self, agent_id: str, task_dict: Dict[str, Any], priority: str = "normal"
+        self, agent_id: str, task_dict: dict[str, Any], priority: str = "normal"
     ) -> None:
         data = json.dumps(task_dict)
         if priority == "high":
@@ -25,7 +25,7 @@ class TaskQueue:
         else:
             self.r.rpush(self._key(agent_id, "normal"), data)
 
-    def dequeue_task(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    def dequeue_task(self, agent_id: str) -> dict[str, Any] | None:
         for level in self.priorities:
             key = self._key(agent_id, level)
             raw = self.r.lpop(key)

@@ -1,6 +1,7 @@
+
 import openai
 import pytest
-from unittest.mock import MagicMock, patch
+
 from core.utils.chroma_client import ChromaClient
 
 

@@ -1,12 +1,12 @@
 """Integration tests for LM Studio MCP Bridge."""
 
 import os
-import pytest
-import httpx
 from unittest.mock import AsyncMock, patch
 
-from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter, LMStudioMCP
+import pytest
+
 from legion.core.llm_mode_client import ModeSwitchingLLMClient
+from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter, LMStudioMCP
 
 
 @pytest.fixture

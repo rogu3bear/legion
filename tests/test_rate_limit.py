@@ -2,13 +2,16 @@
 Tests for rate limiting functionality in LM Studio proxy.
 """
 
-import time
-import pytest
-from unittest.mock import patch, MagicMock
-from fastapi.testclient import TestClient
-from fastapi import Request
+from unittest.mock import MagicMock, patch
 
-from interface.api.v1.endpoints.lmstudio_proxy import check_rate_limit, request_tracker, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW
+from fastapi.testclient import TestClient
+
+from interface.api.v1.endpoints.lmstudio_proxy import (
+    RATE_LIMIT_REQUESTS,
+    RATE_LIMIT_WINDOW,
+    check_rate_limit,
+    request_tracker,
+)
 
 
 class TestRateLimiting:
@@ -27,7 +30,7 @@ class TestRateLimiting:
         client_ip = "192.168.1.100"
 
         # Make requests within limit
-        for i in range(RATE_LIMIT_REQUESTS):
+        for _i in range(RATE_LIMIT_REQUESTS):
             assert check_rate_limit(client_ip) is True
 
         # Next request should be blocked
@@ -38,7 +41,7 @@ class TestRateLimiting:
         client_ip = "192.168.1.101"
 
         # Fill up the rate limit
-        for i in range(RATE_LIMIT_REQUESTS):
+        for _i in range(RATE_LIMIT_REQUESTS):
             check_rate_limit(client_ip)
 
         # Additional requests should be blocked
@@ -55,7 +58,7 @@ class TestRateLimiting:
             mock_time.return_value = start_time
 
             # Fill up the rate limit
-            for i in range(RATE_LIMIT_REQUESTS):
+            for _i in range(RATE_LIMIT_REQUESTS):
                 assert check_rate_limit(client_ip) is True
 
             # Next request should be blocked
@@ -73,7 +76,7 @@ class TestRateLimiting:
         client_ip2 = "192.168.1.104"
 
         # Fill up rate limit for first IP
-        for i in range(RATE_LIMIT_REQUESTS):
+        for _i in range(RATE_LIMIT_REQUESTS):
             check_rate_limit(client_ip1)
 
         # First IP should be blocked
@@ -91,14 +94,14 @@ class TestRateLimiting:
             mock_time.return_value = start_time
 
             # Make some requests
-            for i in range(5):
+            for _i in range(5):
                 check_rate_limit(client_ip)
 
             # Advance time to make some requests expire
             mock_time.return_value = start_time + RATE_LIMIT_WINDOW - 10
 
             # Make more requests (should still be within limit total)
-            for i in range(5):
+            for _i in range(5):
                 assert check_rate_limit(client_ip) is True
 
             # Should be at limit now
@@ -108,7 +111,7 @@ class TestRateLimiting:
             mock_time.return_value = start_time + RATE_LIMIT_WINDOW + 1
 
             # Should have space again (first 5 requests expired)
-            for i in range(5):
+            for _i in range(5):
                 assert check_rate_limit(client_ip) is True
 
 
@@ -126,9 +129,9 @@ class TestLMStudioChatRateLimit:
     @patch('interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient')
     def test_chat_endpoint_rate_limit_success(self, mock_client):
         """Test chat endpoint allows requests within rate limit."""
-        from interface.api.v1.endpoints.lmstudio_proxy import router
         from fastapi import FastAPI
-        from fastapi.testclient import TestClient
+
+        from interface.api.v1.endpoints.lmstudio_proxy import router
 
         app = FastAPI()
         app.include_router(router)
@@ -150,16 +153,16 @@ class TestLMStudioChatRateLimit:
         }
 
         # Should succeed within rate limit
-        for i in range(5):  # Well within limit
+        for _i in range(5):  # Well within limit
             response = client.post("/chat", json=chat_data)
             assert response.status_code == 200
 
     @patch('interface.api.v1.endpoints.lmstudio_proxy.httpx.AsyncClient')
     def test_chat_endpoint_rate_limit_exceeded(self, mock_client):
         """Test chat endpoint blocks requests when rate limit is exceeded."""
-        from interface.api.v1.endpoints.lmstudio_proxy import router
         from fastapi import FastAPI
-        from fastapi.testclient import TestClient
+
+        from interface.api.v1.endpoints.lmstudio_proxy import router
 
         app = FastAPI()
         app.include_router(router)
@@ -181,7 +184,7 @@ class TestLMStudioChatRateLimit:
         }
 
         # Fill up the rate limit
-        for i in range(RATE_LIMIT_REQUESTS):
+        for _i in range(RATE_LIMIT_REQUESTS):
             response = client.post("/chat", json=chat_data)
             assert response.status_code == 200
 
@@ -197,9 +200,9 @@ class TestLMStudioChatRateLimit:
 
     def test_rate_limit_unknown_client_ip(self):
         """Test rate limiting with unknown client IP."""
-        from interface.api.v1.endpoints.lmstudio_proxy import router
         from fastapi import FastAPI
-        from fastapi.testclient import TestClient
+
+        from interface.api.v1.endpoints.lmstudio_proxy import router
 
         app = FastAPI()
         app.include_router(router)

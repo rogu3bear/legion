@@ -2,8 +2,9 @@ import json
 import sys
 from unittest.mock import MagicMock
 
-import legion.cli as cli
 import pytest
+
+import legion.cli as cli
 from legion.orchestrator import AgentLoadError
 
 
@@ -58,7 +59,7 @@ def test_list_agents(capsys):
 def test_run_agent_success(capsys, key, msg):
     args = ["run-agent", key] + (["-m", msg] if msg else [])
     with pytest.raises(SystemExit) as exc:
-        sys.argv = ["legion"] + args
+        sys.argv = ["legion", *args]
         cli.main()
     code = exc.value.code
     output = capsys.readouterr().out

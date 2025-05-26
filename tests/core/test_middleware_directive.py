@@ -1,10 +1,6 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-
-from core.utils.chroma_client import ChromaClient
-from core.middleware.directive_definitions import (AGENT_DIRECTIVE_STRING,
-                                                        MIDDLEWARE_DIRECTIVE_PROMPT)
 from middleware.src.middleware.directive_compliance import DirectiveCompliance
 from middleware.src.middleware.middleware import (
     ACCEPTABLE_SIMILARITY,
@@ -12,6 +8,8 @@ from middleware.src.middleware.middleware import (
     THERAPIST_AGENT_THRESHOLD,
     RequestMiddleware,
 )
+
+from core.utils.chroma_client import ChromaClient
 
 
 @pytest.fixture

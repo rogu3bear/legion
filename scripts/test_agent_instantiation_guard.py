@@ -15,7 +15,7 @@ from scripts.legion_codemod_context import CodemodContext
 
 # Helper to run the codemod on a string
 def run_codemod_on_string(source_code, apply_fixes=False):
-    args = Namespace(apply=apply_fixes)
+    Namespace(apply=apply_fixes)
     context = CodemodContext(filename="<string>")
     # Pass apply flag via codemod context scratch
     context.scratch["apply"] = apply_fixes
@@ -58,14 +58,6 @@ def my_func():
     agent1 = ArchitectAgent(conf=1)
     therapist = TA()
 """
-        expected_code = """
-# Import for TA removed as TherapistAgent was replaced
-# Import for ArchitectAgent removed as it was replaced
-
-def my_func():
-    agent1 = orchestrator.load_agent('architect')
-    therapist = orchestrator.load_agent('therapist')
-"""
         # We need to parse the expected code to compare CSTs for robustness,
         # but comparing code strings is simpler for this example.
         # Note: Whitespace and comments might differ slightly depending on CST formatting.
@@ -95,7 +87,7 @@ class Orchestrator:
         # This instantiation should NOT be flagged or changed
         agent = ArchitectAgent(self, None)
 """
-        args = Namespace(apply=True)  # Try applying fixes
+        Namespace(apply=True)  # Try applying fixes
         # Simulate the context having the orchestrator path
         context = CodemodContext(filename="legion/orchestrator.py")
         # context.args.repo_root = Path.cwd()

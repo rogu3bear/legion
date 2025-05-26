@@ -4,6 +4,7 @@ import os
 import unittest
 
 import pytest
+
 from integration.discord.bot import fetch_thread_history
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent

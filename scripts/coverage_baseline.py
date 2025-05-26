@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 
+
 def get_coverage_baseline():
     """Get current test coverage baseline."""
     try:
@@ -19,7 +20,7 @@ def get_coverage_baseline():
 
         if result.returncode == 0:
             try:
-                with open('coverage-baseline.json', 'r') as f:
+                with open('coverage-baseline.json') as f:
                     coverage_data = json.load(f)
                     total_coverage = coverage_data['totals']['percent_covered']
                     print(f"✅ Coverage baseline established: {total_coverage:.1f}%")

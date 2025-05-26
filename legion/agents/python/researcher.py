@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """ResearcherAgent implementation for search and synthesis."""
 
 import json
 import os
 from hashlib import sha256
-from typing import Dict, List, Optional
 
 try:
     import redis  # type: ignore
@@ -21,7 +21,7 @@ from skills.summarize import summarize_texts
 class ResearcherAgent(BaseAgent):
     """Agent that conducts research and synthesizes findings."""
 
-    def __init__(self, name: str, config: Optional[dict] = None, llm_client=None) -> None:
+    def __init__(self, name: str, config: dict | None = None, llm_client=None) -> None:
         super().__init__(name, config or {}, llm_client)
         self.redis = None
 
@@ -50,7 +50,7 @@ class ResearcherAgent(BaseAgent):
     def _cache_key(self, query: str) -> str:
         return "research_cache:" + sha256(query.encode("utf-8")).hexdigest()
 
-    def conduct_research(self, query: str, sources: List[str]) -> List[str]:
+    def conduct_research(self, query: str, sources: list[str]) -> list[str]:
         """Search the web and return raw data, using Redis cache when available."""
         key = self._cache_key(query)
         if self.redis:
@@ -68,11 +68,11 @@ class ResearcherAgent(BaseAgent):
                 pass
         return data
 
-    def synthesize_findings(self, raw_data: List[str]) -> str:
+    def synthesize_findings(self, raw_data: list[str]) -> str:
         """Synthesize raw search data into a report."""
         return summarize_texts(raw_data)
 
-    def process_message(self, msg: Dict[str, any], ctx: Optional[dict] = None):
+    def process_message(self, msg: dict[str, any], ctx: dict | None = None):
         """Dispatch message to research or synthesis handlers."""
         action = msg.get("action")
         if action == "research":

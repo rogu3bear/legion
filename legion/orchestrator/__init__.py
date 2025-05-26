@@ -23,7 +23,9 @@ import yaml
 import zmq.asyncio
 
 import legion.ports as unified_port_manager
+from core.di_container import ILLMClient, IStateManager, container
 from integration.discord.cogs.ux_feed import render_feed_item
+from legion.agent_registry import registry as agent_registry
 from legion.agents.python import (
     ArchitectAgent,
     EchoAgent,
@@ -33,22 +35,22 @@ from legion.agents.python import (
     TherapistAgent,
     UxDesignerAgent,
 )
-from core.di_container import ILLMClient, IStateManager, container
+from legion.agents.therapist import validate as therapist_validate
 from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
-from legion.agent_registry import registry as agent_registry
-from legion.agents.therapist import validate as therapist_validate
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
 from memory.legion_memory import LegionAgentMemory
 from metrics.exporter import dispatch_counter, dispatch_latency
+
 try:  # pragma: no cover - optional during tests
     from legion.orchestrator.state_repo import repo as state_repo
 except Exception:
     state_repo = object()
-from legion.task_queue import Task, queue as task_queue
 from legion.orchestrator.intro_prompt import build_intro
+from legion.task_queue import Task
+from legion.task_queue import queue as task_queue
 
 # Setup structured logging early using the new utility
 # Configuration can be driven by environment variables or defaults in setup_legion_logging
@@ -453,7 +455,7 @@ class Orchestrator:
             # Schedule the shutdown coroutine to be run by the loop.
             # asyncio.create_task is generally preferred over ensure_future directly.
             # If self.shutdown() is async:
-            task = asyncio.create_task(
+            asyncio.create_task(
                 self.shutdown(signal_name=signal.Signals(signum).name)
             )
             # Track the task if needed
@@ -499,10 +501,8 @@ class Orchestrator:
         """Synchronous lock release wrapper for atexit."""
         # This method MUST be synchronous as atexit handlers are.
         if self._pid_file and self._lock_acquired:
-            try:
+            with contextlib.suppress(Exception):
                 logger.info(f"atexit: Releasing process lock for PID file {self._pid_file}")
-            except Exception:
-                pass
             try:
                 if self._lock_fd is not None:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
@@ -511,12 +511,10 @@ class Orchestrator:
                 if os.path.exists(self._pid_file):
                     os.remove(self._pid_file)
                 self._lock_acquired = False
-                try:
+                with contextlib.suppress(Exception):
                     logger.info(
                         f"atexit: Process lock released and PID file {self._pid_file} removed."
                     )
-                except Exception:
-                    pass
             except Exception as e:
                 # Log error but don't crash atexit handler
                 logger.error(
@@ -928,7 +926,7 @@ class Orchestrator:
     async def broadcast(self, prompt):
         """Sends a prompt to all registered agents."""
         responses = {}
-        for agent_name in self.agents.keys():  # Iterate over loaded agents
+        for agent_name in self.agents:  # Iterate over loaded agents
             try:
                 logger.info(f"Broadcasting to agent: {agent_name}")
                 # Assuming ask method now handles its own errors and returns an error string if applicable
@@ -1174,7 +1172,7 @@ class Orchestrator:
                             f"Therapist rejected message ID {message_id} for agent {agent_name}: {reason}"
                         )
                         return f"[Blocked by therapist: {reason}]"
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     logger.error(
                         f"Therapist validation error for message ID {message_id} to agent {agent_name}: {e}"
                     )
@@ -2005,13 +2003,13 @@ class Orchestrator:
         if hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
                 self._zmq_pub_socket.send_json({"type": "agent_registered", "agent_id": agent_id})
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 logger.error(f"Failed to publish agent_registered event: {e}")
         task = self.queue.dequeue(agent_id)
         if task and hasattr(self, "_zmq_pub_socket") and self._zmq_pub_socket:
             try:
                 self._zmq_pub_socket.send_json({"type": "task_assigned", "task_id": task.id, "agent_id": agent_id})
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 logger.error(f"Failed to publish task_assigned event: {e}")
         if task:
             logger.info(
@@ -2208,9 +2206,11 @@ if __name__ == "__main__":
     # Initialize LM Studio MCP service if in local mode
     if os.getenv("LLM_MODE", "").lower() == "local":
         try:
-            from legion.mcp.bridges.lmstudio_bridge import create_lmstudio_mcp
-            import uvicorn
             import threading
+
+            import uvicorn
+
+            from legion.mcp.bridges.lmstudio_bridge import create_lmstudio_mcp
 
             lmstudio_mcp = create_lmstudio_mcp()
             container.register_instance("LMStudioMCP", lmstudio_mcp)

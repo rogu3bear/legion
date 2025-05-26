@@ -3,9 +3,9 @@ import os
 import unittest
 
 import openai
-
 import pytest
 from dotenv import load_dotenv
+
 from core.utils.llm_client import LLMClient
 
 load_dotenv()

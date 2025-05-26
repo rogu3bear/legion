@@ -2,7 +2,6 @@
 
 import logging
 import os
-from typing import Dict, Any
 
 import httpx
 from fastapi import APIRouter, HTTPException
@@ -168,5 +167,5 @@ async def lmstudio_models() -> JSONResponse:
         logger.error(f"Error fetching LM Studio models: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to fetch models: {str(e)}"
+            detail=f"Failed to fetch models: {e!s}"
         )

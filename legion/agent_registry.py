@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -13,7 +12,7 @@ class AgentMeta:
     """Metadata describing an agent's runtime configuration."""
 
     name: str
-    function_tags: List[str]
+    function_tags: list[str]
     priority: int
     status_route: str
     max_retries: int = 0
@@ -28,7 +27,7 @@ class AgentRegistry:
 
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or _REGISTRY_PATH
-        self._agents: Dict[str, AgentMeta] = {}
+        self._agents: dict[str, AgentMeta] = {}
         self.load()
 
     def load(self) -> None:
@@ -40,10 +39,10 @@ class AgentRegistry:
         for name, conf in data.items():
             self._agents[name] = AgentMeta(name=name, **conf)
 
-    def get(self, name: str) -> Optional[AgentMeta]:
+    def get(self, name: str) -> AgentMeta | None:
         return self._agents.get(name)
 
-    def all(self) -> Dict[str, AgentMeta]:
+    def all(self) -> dict[str, AgentMeta]:
         return dict(self._agents)
 
 

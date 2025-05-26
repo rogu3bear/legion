@@ -11,13 +11,13 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.mcp_unified import get_mcp_db
 from core.mcp_config import get_mcp_config
+from core.mcp_unified import get_mcp_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -238,13 +238,13 @@ class MCPDatabaseOptimizer:
         after = results['performance_after']
 
         if before and after:
-            print(f"\n📈 PERFORMANCE COMPARISON:")
+            print("\n📈 PERFORMANCE COMPARISON:")
 
-            print(f"Total Queries:")
+            print("Total Queries:")
             print(f"  Before: {before.get('total_queries', 0):,}")
             print(f"  After:  {after.get('total_queries', 0):,}")
 
-            print(f"Average Query Time:")
+            print("Average Query Time:")
             print(f"  Before: {before.get('avg_query_time', 0):.3f}s")
             print(f"  After:  {after.get('avg_query_time', 0):.3f}s")
 
@@ -261,7 +261,7 @@ class MCPDatabaseOptimizer:
             for rec in results['recommendations']:
                 print(f"• {rec}")
 
-        print(f"\n🔧 MAINTENANCE SCHEDULE:")
+        print("\n🔧 MAINTENANCE SCHEDULE:")
         print("• Run optimization weekly in production")
         print("• Monitor slow query ratio daily")
         print("• Archive old data monthly")
@@ -299,7 +299,7 @@ async def main():
             return
 
     try:
-        results = await optimizer.run_optimization()
+        await optimizer.run_optimization()
         print("\n✅ Database optimization completed successfully!")
 
     except Exception as e:

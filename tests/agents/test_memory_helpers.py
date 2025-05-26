@@ -2,6 +2,7 @@ import datetime
 import unittest
 
 import pytest
+
 from legion.agents.base import BaseAgent
 from memory.legion_memory import LegionAgentMemory
 

@@ -2,16 +2,16 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, Any, Set
+from typing import Any
 
 from legion.task_queue import Task, queue
 
 # Track threads we have seen to send intro messages only once per thread
-_KNOWN_THREADS: Set[str] = set()
+_KNOWN_THREADS: set[str] = set()
 # TODO: Persist thread history in state_repo to survive restarts
 
 
-def process_directive(payload: Dict[str, Any]) -> str:
+def process_directive(payload: dict[str, Any]) -> str:
     """Process an incoming directive payload.
 
     If this is the first time we've seen the ``thread_id`` in ``payload``

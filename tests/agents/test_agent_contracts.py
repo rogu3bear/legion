@@ -1,6 +1,7 @@
 import unittest
 
 import pytest
+
 from legion.agents.python.architect import ArchitectAgent
 from legion.core.prompt_builder import PromptBuilder
 

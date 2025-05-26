@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+
 from legion.state_repo import repo as state_repo
 
 router = APIRouter()

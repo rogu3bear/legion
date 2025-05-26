@@ -1,7 +1,7 @@
-import unittest
 import importlib.util
 import sys
 import types
+import unittest
 
 # Stub minimal package tree so doctor module can load without dependencies
 legion_pkg = types.ModuleType("legion")

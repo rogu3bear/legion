@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import hmac
 import json
+import secrets
 import time
 import uuid
-import hmac
-import secrets
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:  # pragma: no cover - optional dependency
     import redis
@@ -31,7 +31,7 @@ class _MemoryRedis:
     def set(self, key: str, value: str) -> None:
         self.values[key] = value
 
-    def get(self, key: str) -> Optional[str]:
+    def get(self, key: str) -> str | None:
         return self.values.get(key)
 
     def delete(self, key: str) -> None:
@@ -39,7 +39,7 @@ class _MemoryRedis:
 
 
 class StateRepo:
-    def __init__(self, r: Optional[Any] = None) -> None:
+    def __init__(self, r: Any | None = None) -> None:
         if r is not None:
             self.r = r
         else:
@@ -49,7 +49,7 @@ class StateRepo:
                 self.r = redis.StrictRedis(decode_responses=True)
 
     # -- Agent Registration Handshake --
-    def initiate_handshake(self, agent_id: str, role: str, caps: list[str]) -> Dict[str, str]:
+    def initiate_handshake(self, agent_id: str, role: str, caps: list[str]) -> dict[str, str]:
         """Begin registration handshake and return challenge token."""
         challenge = secrets.token_hex(16)
         token = str(uuid.uuid4())
@@ -96,14 +96,14 @@ class StateRepo:
         self.r.hset(f"agents:{agent_id}", mapping=data)
         return token
 
-    def get_agent(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    def get_agent(self, agent_id: str) -> dict[str, Any] | None:
         data = self.r.hgetall(f"agents:{agent_id}")
         if not data:
             return None
         data["caps"] = json.loads(data.get("caps", "[]"))
         return data
 
-    def get_agent_status(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    def get_agent_status(self, agent_id: str) -> dict[str, Any] | None:
         data = self.get_agent(agent_id)
         if not data:
             return None

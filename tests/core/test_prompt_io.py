@@ -1,16 +1,17 @@
 """Tests for core prompt I/O utility functions."""
 
-import pytest
-from unittest.mock import patch, mock_open
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 from core.utils.prompt_io import (
-    load_prompt,
-    save_prompt,
-    prompt_exists,
-    get_prompt_file_path,
+    PROMPT_FILE_EXTENSION,
     PROMPTS_DIR,
-    PROMPT_FILE_EXTENSION
+    get_prompt_file_path,
+    load_prompt,
+    prompt_exists,
+    save_prompt,
 )
 
 
@@ -94,7 +95,7 @@ class TestPromptIO:
 
     def test_constants(self):
         """Test that constants are set correctly."""
-        assert PROMPTS_DIR == Path("legion/prompts")
+        assert Path("legion/prompts") == PROMPTS_DIR
         assert PROMPT_FILE_EXTENSION == ".md"
 
     def test_file_path_construction(self):

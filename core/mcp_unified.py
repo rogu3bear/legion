@@ -9,15 +9,12 @@ indexing, connection pooling, and async operations.
 import asyncio
 import json
 import logging
-import sqlite3
-import threading
 import time
 from contextlib import asynccontextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
-from uuid import uuid4
+from typing import Any, Dict, List, Optional
 
 import aiosqlite
 

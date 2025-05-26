@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from legion.agents.base import BaseAgent
 
@@ -20,7 +20,7 @@ class EchoAgent(BaseAgent):
 
     def __init__(self, orchestrator) -> None:
         super().__init__(orchestrator)
-        self.log_buffer: List[Dict[str, Any]] = []
+        self.log_buffer: list[dict[str, Any]] = []
         log_dir = Path("memory") / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
         self.log_file = log_dir / "echo_agent.jsonl"

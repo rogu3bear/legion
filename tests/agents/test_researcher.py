@@ -1,7 +1,7 @@
-import unittest
 import importlib.util
 import sys
 import types
+import unittest
 from unittest.mock import patch
 
 legion_pkg = types.ModuleType("legion")

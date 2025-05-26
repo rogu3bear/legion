@@ -5,6 +5,7 @@ Command-line interface for Legion.
 
 import argparse
 import asyncio
+import contextlib
 import json
 import subprocess
 import sys
@@ -93,12 +94,10 @@ def main():
 
         if args.command == "version":
             ver = "unknown"
-            try:
+            with contextlib.suppress(PackageNotFoundError):
                 ver = version("legion")
-            except PackageNotFoundError:
-                pass
             git_rev = ""
-            try:
+            with contextlib.suppress(Exception):
                 git_rev = (
                     subprocess.check_output(
                         ["git", "rev-parse", "--short", "HEAD"],
@@ -107,8 +106,6 @@ def main():
                     .decode()
                     .strip()
                 )
-            except Exception:
-                pass
             if git_rev:
                 print(f"{ver}+{git_rev}")
             else:

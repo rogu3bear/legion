@@ -1,7 +1,8 @@
+import hmac
 import unittest
+
 from legion.state_repo import StateRepo
 from tests.stubs.fakeredis_stub import StrictRedis
-import hmac
 
 
 class StateRepoHandshakeTests(unittest.TestCase):

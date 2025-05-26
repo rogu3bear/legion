@@ -4,6 +4,7 @@ import time
 import unittest
 
 import pytest
+
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent

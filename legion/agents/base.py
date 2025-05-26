@@ -4,12 +4,13 @@ Base agent class for Legion agents.
 Provides core agent logic, Discord posting, memory, and LLM integration.
 """
 
+import contextlib
 import logging
+import os
 import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-import os
 
 import openai
 
@@ -17,7 +18,6 @@ from core.di_container import ILLMClient, container
 from core.logging_config import setup_logging
 from core.prompt_builder import PromptBuilder
 from memory.legion_memory import LegionAgentMemory
-from legion.utils.discord_bridge import send_discord_embed, MessageType
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -68,7 +68,7 @@ class BaseAgent:
         """Post a message to the agent's Discord channel, splitting if too long."""
         try:
             # Import here to avoid circular imports
-            from legion.utils.discord_bridge import send_discord_embed, MessageType
+            from legion.utils.discord_bridge import MessageType, send_discord_embed
 
             # Determine message type based on content
             msg_type = MessageType.INFO
@@ -150,7 +150,7 @@ class BaseAgent:
     async def send_status_update(self, status: str, details: Optional[Dict[str, Any]] = None):
         """Send a formatted status update to Discord."""
         try:
-            from legion.utils.discord_bridge import send_discord_embed, MessageType
+            from legion.utils.discord_bridge import MessageType, send_discord_embed
 
             fields = []
             if details:
@@ -169,7 +169,7 @@ class BaseAgent:
     async def send_error_notification(self, error: str, context: Optional[str] = None):
         """Send a formatted error notification to Discord."""
         try:
-            from legion.utils.discord_bridge import send_discord_embed, MessageType
+            from legion.utils.discord_bridge import MessageType, send_discord_embed
 
             fields = []
             if context:
@@ -187,7 +187,7 @@ class BaseAgent:
     async def send_success_notification(self, message: str, metrics: Optional[Dict[str, Any]] = None):
         """Send a formatted success notification to Discord."""
         try:
-            from legion.utils.discord_bridge import send_discord_embed, MessageType
+            from legion.utils.discord_bridge import MessageType, send_discord_embed
 
             fields = []
             if metrics:
@@ -423,10 +423,8 @@ class BaseAgent:
                 exc_info=True,
             )
             # Fallback generic error handling
-            try:
+            with contextlib.suppress(Exception):
                 await self.post_to_discord(f"[Error] Internal error in {self.name}.")
-            except Exception:
-                pass
             return "[Error: Internal error in message processing]"
 
     def get_message_embedding(self, text: str) -> List[float]:

@@ -1,4 +1,5 @@
 import unittest
+
 from legion.queue.priority import PriorityQueue
 from tests.stubs.fakeredis_stub import StrictRedis
 

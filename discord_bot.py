@@ -1,6 +1,5 @@
 """Minimal Discord bridge for Legion actions."""
 
-import asyncio
 import json
 import os
 import time

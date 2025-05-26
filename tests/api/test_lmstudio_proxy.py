@@ -1,10 +1,11 @@
 """Tests for LM Studio proxy API endpoints."""
 
-import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
-from fastapi.testclient import TestClient
 from collections import defaultdict, deque
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import httpx
+import pytest
+from fastapi.testclient import TestClient
 
 from interface.main import app
 
@@ -197,7 +198,7 @@ class TestLMStudioProxy:
                 return_value=mock_response_obj
             )
 
-            response = test_client.post("/api/v1/lmstudio/chat", json=chat_request)
+            test_client.post("/api/v1/lmstudio/chat", json=chat_request)
 
         # Verify the custom URL was used
         call_args = mock_client.return_value.__aenter__.return_value.post.call_args
@@ -346,7 +347,7 @@ class TestLMStudioProxy:
                 yield chunk
 
         with patch("httpx.AsyncClient") as mock_client, \
-             patch("interface.api.v1.endpoints.lmstudio_proxy.request_tracker", defaultdict(deque)) as mock_tracker:
+             patch("interface.api.v1.endpoints.lmstudio_proxy.request_tracker", defaultdict(deque)):
 
             mock_response_obj = MagicMock()
             mock_response_obj.aiter_bytes = mock_aiter_bytes
@@ -389,7 +390,7 @@ class TestLMStudioProxy:
             assert response.status_code == 200
 
             # Verify that debug logs contain redacted content
-            debug_calls = [call for call in mock_logger.debug.call_args_list]
+            debug_calls = list(mock_logger.debug.call_args_list)
             if debug_calls:
                 log_message = str(debug_calls[-1])
                 assert "[REDACTED]" in log_message

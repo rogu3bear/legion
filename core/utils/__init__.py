@@ -9,15 +9,15 @@ Part of Legion Re-org Safety Blueprint - Phase 2
 
 # Re-export core utilities from their new locations
 try:
-    from core.utils.network import fetch_with_retries
-    from core.utils.indexing import placeholder_indexing
     from core.utils.chroma_client import ChromaClient
     from core.utils.file_operations import (
+        get_all_prompts,
+        list_available_agents,
         load_prompt,
         save_prompt,
-        list_available_agents,
-        get_all_prompts,
     )
+    from core.utils.indexing import placeholder_indexing
+    from core.utils.network import fetch_with_retries
 except ImportError:
     # Fallback during transition
     def fetch_with_retries(*args, **kwargs):
@@ -50,11 +50,11 @@ except ImportError:
             raise NotImplementedError("Core utilities not yet moved")
 
 __all__ = [
-    'fetch_with_retries',
-    'placeholder_indexing',
     'ChromaClient',
-    'load_prompt',
-    'save_prompt',
-    'list_available_agents',
+    'fetch_with_retries',
     'get_all_prompts',
+    'list_available_agents',
+    'load_prompt',
+    'placeholder_indexing',
+    'save_prompt',
 ]

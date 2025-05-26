@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 
-from .endpoints import agents, auth, login, memory, system, tasks, lmstudio_health, prompts, lmstudio_proxy
+from .endpoints import (
+    agents,
+    auth,
+    lmstudio_health,
+    lmstudio_proxy,
+    login,
+    memory,
+    prompts,
+    system,
+    tasks,
+)
 
 api_router = APIRouter()
 

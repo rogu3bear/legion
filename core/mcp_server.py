@@ -10,20 +10,17 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
-import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from core.mcp_unified import (
+    CacheRecord,
+    CodebaseRecord,
+    EventRecord,
     MCPUnifiedDB,
     VectorRecord,
-    CacheRecord,
-    EventRecord,
-    CodebaseRecord,
-    DevopsRecord,
     get_mcp_db,
 )
 
@@ -202,7 +199,7 @@ class LegionMCPServer:
     async def invalidate_cache(self, key: str) -> bool:
         """Invalidate a specific cache entry."""
         # Set expiration to past time to mark as expired
-        past_time = datetime.now(timezone.utc) - timedelta(seconds=1)
+        datetime.now(timezone.utc) - timedelta(seconds=1)
 
         # This is a simplified implementation - in practice you'd update the expires_at
         value = await self.db.get_cache(key)

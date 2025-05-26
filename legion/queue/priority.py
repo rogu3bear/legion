@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:  # pragma: no cover - optional dependency
     import redis
@@ -35,7 +35,7 @@ class PriorityQueue:
     KEY = "queue:tasks"
     TASK_HASH = "queue:taskdata"
 
-    def __init__(self, r: Optional[Any] = None) -> None:
+    def __init__(self, r: Any | None = None) -> None:
         if r is not None:
             self.r = r
         else:
@@ -43,7 +43,7 @@ class PriorityQueue:
                 raise RuntimeError("Redis library not available")
             self.r = redis.StrictRedis(decode_responses=True)
 
-    def enqueue(self, task: Dict[str, Any], priority: int = 5) -> str:
+    def enqueue(self, task: dict[str, Any], priority: int = 5) -> str:
         """Enqueue a task and return its id."""
 
         tid = task.setdefault("id", str(uuid.uuid4()))
@@ -53,7 +53,7 @@ class PriorityQueue:
         self.r.zadd(self.KEY, {tid: score})
         return tid
 
-    def dequeue(self) -> Optional[Dict[str, Any]]:
+    def dequeue(self) -> dict[str, Any] | None:
         """Retrieve the highest priority task or ``None`` if empty."""
 
         pipe = self.r.pipeline()

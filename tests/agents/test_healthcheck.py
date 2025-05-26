@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from legion.agents.python.healthcheck import HealthcheckAgent
 
 
@@ -74,7 +75,7 @@ async def test_health_loop_below_threshold(health_agent):
 
     # Get current uptime for constructing the expected message of the last call
     # Note: This timing might still be slightly off, but checking the pattern is key
-    uptime_approx = health_agent.config[
+    health_agent.config[
         "check_interval"
     ]  # Approximate uptime at the time of the call inside the loop
     threshold = health_agent.config["uptime_threshold"]

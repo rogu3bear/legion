@@ -1,5 +1,10 @@
 import pytest
-from legion.utils.port_conflict_checker import validate_port_range, check_ports_available
+
+from legion.utils.port_conflict_checker import (
+    check_ports_available,
+    validate_port_range,
+)
+
 
 def test_validate_port_range():
     # Development range (27000-28000)

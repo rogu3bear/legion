@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import time
 from datetime import datetime
@@ -36,10 +37,8 @@ class HealthcheckAgent(BaseAgent):
         """Stop the health monitoring loop."""
         if self.health_task:
             self.health_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self.health_task
-            except asyncio.CancelledError:
-                pass
             self.health_task = None
             self.logger.info("Health monitoring stopped")
 

@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from core.interfaces import ILLMClient
 from legion.mcp.bridges.lmstudio_bridge import LMStudioAdapter
@@ -67,9 +67,9 @@ class ModeSwitchingLLMClient(ILLMClient):
             response = await self.lmstudio_adapter.chat_complete(messages, **params)
 
             # Extract response text from various response formats
-            if "choices" in response and response["choices"]:
+            if response.get("choices"):
                 return response["choices"][0]["message"]["content"]
-            elif "generations" in response and response["generations"]:
+            elif response.get("generations"):
                 return response["generations"][0]["text"]
             else:
                 logger.error(f"Unexpected local LLM response format: {response}")

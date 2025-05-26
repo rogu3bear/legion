@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import List
+
+from pydantic import BaseModel, Field
 
 from interface.schemas.agent import (
     AgentActionResponse,
@@ -32,12 +33,12 @@ __all__ = [
     "AgentCreate",
     "AgentStatusInfo",
     "AgentUpdate",
+    "ChatMessage",
+    "ChatRequest",
     "Task",
     "TaskCreate",
     "TaskCreatedResponse",
     "TaskList",
-    "ChatMessage",
-    "ChatRequest",
 ]
 
 

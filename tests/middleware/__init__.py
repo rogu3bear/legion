@@ -1,6 +1,7 @@
 import sys
-from tests.middleware.yaml_stub import yaml
+
 from tests.middleware.orchestrator_stub import orchestrator_stub
+from tests.middleware.yaml_stub import yaml
 
 # Inject YAML stub if pyyaml is missing
 if 'yaml' not in sys.modules:

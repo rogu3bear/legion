@@ -8,21 +8,19 @@ updates, and validation.
 """
 
 import asyncio
-import json
 import logging
-import os
 import shutil
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.mcp_unified import get_mcp_db, MCPUnifiedDB
+from core.mcp_config import create_mcp_env_example, get_config_manager
 from core.mcp_server import get_mcp_server
-from core.mcp_config import get_config_manager, create_mcp_env_example
+from core.mcp_unified import get_mcp_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,9 +1,11 @@
 import unittest
+
 from fastapi import FastAPI
+
 import interface.api.v1.endpoints.agent as agent_ep
-from tests.stubs.testclient import TestClient
-from tests.stubs.fakeredis_stub import StrictRedis
 from legion.state_repo import StateRepo
+from tests.stubs.fakeredis_stub import StrictRedis
+from tests.stubs.testclient import TestClient
 
 
 class AgentRegisterTests(unittest.TestCase):

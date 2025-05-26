@@ -10,7 +10,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from interface.api.v1.schemas import ChatMessage, ChatRequest
+from interface.api.v1.schemas import ChatRequest
 from interface.core.config import settings
 
 logger = logging.getLogger(__name__)

@@ -1,12 +1,12 @@
 """Tests for prompt management API endpoints."""
 
-import pytest
-from unittest.mock import patch, mock_open
-from fastapi.testclient import TestClient
-from pathlib import Path
+from unittest.mock import patch
 
-from interface.main import app
+import pytest
+from fastapi.testclient import TestClient
+
 from interface.dependencies import get_current_active_user
+from interface.main import app
 from interface.models.user import User
 
 

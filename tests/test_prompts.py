@@ -2,14 +2,19 @@
 Tests for prompt management functionality including file locking.
 """
 
-import pytest
 import threading
-import time
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 from fastapi import HTTPException
 
-from core.utils.file_operations import save_prompt, load_prompt, list_available_agents, get_all_prompts
+from core.utils.file_operations import (
+    get_all_prompts,
+    list_available_agents,
+    load_prompt,
+    save_prompt,
+)
 
 
 class TestPromptOperations:

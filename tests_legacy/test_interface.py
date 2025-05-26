@@ -6,10 +6,10 @@ import unittest
 import uuid
 from unittest.mock import patch  # Added for mocking
 
+import pytest
 from fastapi import HTTPException, status  # Added status
 from fastapi.testclient import TestClient
-
-import pytest
+from sqlalchemy.orm import Session
 
 # Core Imports
 from interface.core.config import settings
@@ -29,7 +29,6 @@ from interface.main import app
 from interface.models.user import (
     User as UserModel,
 )  # Rename to avoid confusion with schema
-from sqlalchemy.orm import Session
 
 
 @unittest.skip("legacy failure – deferred")

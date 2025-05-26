@@ -62,8 +62,9 @@ def get_memory_manager() -> IMemoryManager:
 
 # Default service registrations
 import os
-from core.utils.llm_client import LLMClient
+
 from core.state import StateManager
+from core.utils.llm_client import LLMClient
 
 # Use mode-switching client if LLM_MODE is set, otherwise use legacy client
 if os.getenv("LLM_MODE"):

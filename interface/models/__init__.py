@@ -1,7 +1,7 @@
 """Interface models for Legion WebUI."""
 
+from .agent import Agent
 from .user import User
 from .user_preference import UserPreference
-from .agent import Agent
 
-__all__ = ["User", "UserPreference", "Agent"]
+__all__ = ["Agent", "User", "UserPreference"]

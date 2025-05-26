@@ -3,8 +3,7 @@ Integration tests for security features.
 """
 
 import os
-import pytest
-from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
 
@@ -27,7 +26,6 @@ class TestSecurityIntegration:
         # Test that the main app respects the DEBUG setting
         # We can't easily test the route inclusion without reloading modules,
         # but we can verify the logic works by checking route counts
-        import os
         original_debug = os.environ.get('DEBUG')
 
         try:

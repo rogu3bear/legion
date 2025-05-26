@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-import sys, re, pathlib, urllib.parse
+import pathlib
+import re
+import sys
+import urllib.parse
+
 bad=[]
 for md in pathlib.Path('docs').rglob('*.md'):
     text=md.read_text()

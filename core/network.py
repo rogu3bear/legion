@@ -1,11 +1,9 @@
 """Network utilities for Legion."""
 
 import logging
-import time
 import os
+import time
 from typing import Optional
-
-from .utils.network import fetch_with_retries
 
 import requests
 

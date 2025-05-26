@@ -11,16 +11,14 @@ import json
 import logging
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.mcp_unified import get_mcp_db
 from core.mcp_server import get_mcp_server
-from core.mcp_config import get_mcp_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -223,7 +221,7 @@ class MCPPerformanceMonitor:
         print(f"Background Tasks: {current['health']['active_background_tasks']}/{current['health']['expected_background_tasks']}")
 
         # Performance Metrics
-        print(f"\n📊 PERFORMANCE METRICS")
+        print("\n📊 PERFORMANCE METRICS")
         print(f"Operations/sec: {metrics['operations_per_second']}")
         print(f"DB Efficiency: {metrics['database_efficiency_percent']}%")
         print(f"Avg Query Time: {db_stats.get('avg_query_time', 0):.3f}s")
@@ -231,13 +229,13 @@ class MCPPerformanceMonitor:
         print(f"Cache Hit Est.: {metrics['cache_hit_estimation']}%")
 
         # Database Statistics
-        print(f"\n💾 DATABASE STATISTICS")
+        print("\n💾 DATABASE STATISTICS")
         print(f"Total Records: {metrics['total_database_records']:,}")
         print(f"Total Queries: {db_stats.get('total_queries', 0):,}")
         print(f"Connection Pool: {db_stats.get('connection_pool_size', 0)}")
 
         # Operation Breakdown
-        print(f"\n🔧 OPERATION BREAKDOWN")
+        print("\n🔧 OPERATION BREAKDOWN")
         for op_type, count in op_stats.items():
             percentage = (count / max(sum(op_stats.values()), 1)) * 100
             print(f"{op_type.replace('_', ' ').title()}: {count:,} ({percentage:.1f}%)")
@@ -245,23 +243,23 @@ class MCPPerformanceMonitor:
         # Table Statistics
         table_stats = db_stats.get('table_stats', {})
         if table_stats:
-            print(f"\n📋 TABLE STATISTICS")
+            print("\n📋 TABLE STATISTICS")
             for table, count in table_stats.items():
                 print(f"{table.replace('_', ' ').title()}: {count:,} records")
 
         # Alerts
         if self.alerts:
-            print(f"\n🚨 ALERTS")
+            print("\n🚨 ALERTS")
             for alert in self.alerts:
                 icon = {"info": "ℹ️", "warning": "⚠️", "error": "❌", "critical": "🔥"}.get(alert['level'], "❓")
                 print(f"{icon} {alert['message']}")
         else:
-            print(f"\n✅ NO ALERTS")
+            print("\n✅ NO ALERTS")
 
         # Performance Recommendations
         recommendations = self._get_performance_recommendations(metrics, db_stats)
         if recommendations:
-            print(f"\n💡 RECOMMENDATIONS")
+            print("\n💡 RECOMMENDATIONS")
             for rec in recommendations:
                 print(f"• {rec}")
 
@@ -321,18 +319,18 @@ class MCPPerformanceMonitor:
             ops_per_sec = [h['calculated_metrics']['operations_per_second'] for h in self.performance_history[1:]]
             query_times = [h['stats']['database_stats'].get('avg_query_time', 0) for h in self.performance_history]
 
-            print(f"\n⏱️  UPTIME SUMMARY")
+            print("\n⏱️  UPTIME SUMMARY")
             print(f"Total Uptime: {self._format_uptime(total_uptime)}")
             print(f"Monitoring Sessions: {len(self.performance_history)}")
 
             if ops_per_sec:
-                print(f"\n🚀 OPERATIONS SUMMARY")
+                print("\n🚀 OPERATIONS SUMMARY")
                 print(f"Avg Ops/sec: {sum(ops_per_sec) / len(ops_per_sec):.2f}")
                 print(f"Max Ops/sec: {max(ops_per_sec):.2f}")
                 print(f"Min Ops/sec: {min(ops_per_sec):.2f}")
 
             if query_times:
-                print(f"\n⚡ QUERY PERFORMANCE")
+                print("\n⚡ QUERY PERFORMANCE")
                 print(f"Avg Query Time: {sum(query_times) / len(query_times):.3f}s")
                 print(f"Max Query Time: {max(query_times):.3f}s")
                 print(f"Min Query Time: {min(query_times):.3f}s")
@@ -343,11 +341,11 @@ class MCPPerformanceMonitor:
             recommendations = self._get_performance_recommendations(final_metrics, final_db_stats)
 
             if recommendations:
-                print(f"\n💡 FINAL RECOMMENDATIONS")
+                print("\n💡 FINAL RECOMMENDATIONS")
                 for rec in recommendations:
                     print(f"• {rec}")
 
-            print(f"\n✅ Monitoring completed successfully!")
+            print("\n✅ Monitoring completed successfully!")
 
         print("="*60)
 
