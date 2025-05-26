@@ -14,3 +14,4 @@ types-python-jose>=3.3.0 # Type stubs for python-jose
 types-passlib>=1.7.0 # Type stubs for passlib
 aiosqlite>=0.19.0 # Async SQLite support for unified MCP database
 portalocker>=2.7.0 # Added for file locking in concurrent scenarios
+pydantic-settings>=2.2.0,<3.0.0
