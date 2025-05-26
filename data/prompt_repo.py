@@ -50,7 +50,7 @@ def _handle_redis_error(func):
 def all_agents(client: Redis):
     """Return the full agent registry with system prompts from agent files."""
     registry_data = json.loads(REG_PATH.read_text())
-    
+
     processed_registry = {}
     for agent_name, agent_config in registry_data.items():
         current_system_prompt, current_skills = get_prompt(client, agent_name)
@@ -66,22 +66,22 @@ def all_agents(client: Redis):
 def _get_default_system_prompt(agent_name: str) -> str:
     """Get the default system prompt from the agent's Python file."""
     agent_file = Path(f"legion/agents/python/{agent_name}.py")
-    
+
     if not agent_file.exists():
         return "You are a helpful assistant."
-    
+
     try:
         content = agent_file.read_text()
-        
+
         prompt_match_single_line = None
         prompt_match_multi_line_block = None
 
         patterns_to_check = [
             f'{agent_name}.system_prompt = ',
-            'system_prompt = ', 
+            'system_prompt = ',
             'SYSTEM_PROMPT = '
         ]
-        
+
         found_prompt_value = None
 
         for line_idx, line in enumerate(content.splitlines()):
@@ -89,7 +89,7 @@ def _get_default_system_prompt(agent_name: str) -> str:
             for pattern in patterns_to_check:
                 if stripped_line.startswith(pattern):
                     value_part = stripped_line[len(pattern):].strip()
-                    
+
                     if value_part.startswith('(') and value_part.endswith(')'):
                         value_part = value_part[1:-1].strip()
 
@@ -108,7 +108,7 @@ def _get_default_system_prompt(agent_name: str) -> str:
                                     break
                                 else:
                                     prompt_lines.append(current_block_line)
-                            if found_prompt_value: break 
+                            if found_prompt_value: break
                     elif value_part.startswith('"') and value_part.endswith('"'):
                         found_prompt_value = value_part[1:-1]
                         break
@@ -130,12 +130,12 @@ def get_prompt(client: Redis, agent: str):
     if data:
         override = json.loads(data)
         return html.unescape(override["system"]), override["skills"]
-    
+
     default_prompt = _get_default_system_prompt(agent)
-    
+
     registry_data = json.loads(REG_PATH.read_text())
     default_skills = registry_data.get(agent, {}).get("function_tags", [])
-        
+
     return default_prompt, default_skills
 
 @_handle_redis_error
@@ -151,7 +151,7 @@ def save_prompt(client: Redis, agent: str, system: str, skills: list[str]):
         client.ltrim(history_key, 0, PROMPT_HISTORY_MAX_LEN - 1)
 
     escaped_system_prompt = html.escape(system)
-    
+
     new_prompt_data = {"system": escaped_system_prompt, "skills": skills}
     client.set(redis_key, json.dumps(new_prompt_data))
 
@@ -199,7 +199,7 @@ def revert_prompt(client: Redis, agent: str):
         return None
 
     last_version_data = json.loads(last_version_json)
-    
+
     client.set(redis_key, json.dumps(last_version_data))
 
     event_payload = {
@@ -208,7 +208,7 @@ def revert_prompt(client: Redis, agent: str):
         "payload": last_version_data
     }
     client.publish(PROMPT_EVENTS_CHANNEL, json.dumps(event_payload))
-    
+
     return {"system": html.unescape(last_version_data["system"]), "skills": last_version_data["skills"]}
 
 # Initial call to set up R (optional, can be deferred to first use)
@@ -216,4 +216,4 @@ def revert_prompt(client: Redis, agent: str):
 #     get_redis_client()
 # except redis.exceptions.ConnectionError:
 #     print("Failed to connect to Redis on module load. Will try again on first use.")
-#     pass 
+#     pass

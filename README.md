@@ -178,16 +178,15 @@ Legion follows a strict layered architecture enforced by CI:
 7. **Presentation Layer**: Web UI with FastAPI backend
 8. **Infrastructure Layer**: CI/CD, scripts, documentation
 
-### Development
+### Dev Guide
 
 ```bash
-make doctor      # Environment health check
-make dev         # Launch Orchestrator + Web UI
+make doctor   # Validate env
+make dev      # Launch orchestrator + UI
 ```
 
-* Redis runs on port `7600`
-* UI available at [http://localhost:7602](http://localhost:7602)
-* Agent Prompt Editor at [/admin/agent-prompts](http://localhost:7602/admin/agent-prompts)
+* UI: [http://localhost:7602](http://localhost:7602)
+* Agent Admin: `/admin/agent-prompts`
 
 ## Agent Instantiation Guard
 **Purpose:** Prevent direct construction of agent classes outside the orchestrator.

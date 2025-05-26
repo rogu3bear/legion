@@ -32,14 +32,14 @@ is_port_listening() {
 # Function to start Redis if needed
 start_redis_if_needed() {
     local redis_port=${LEGION_REDIS_PORT:-7600}
-    
+
     if is_port_listening "$redis_port"; then
         echo "[INFO] Redis already running on port $redis_port"
         return 0
     fi
-    
+
     echo "[INFO] Redis not detected on port $redis_port. Attempting to start..."
-    
+
     if command -v redis-server >/dev/null 2>&1; then
         if redis-server --daemonize yes --port "$redis_port" --logfile redis.log; then
             echo "[INFO] Redis started successfully on port $redis_port"
@@ -63,27 +63,27 @@ start_redis_if_needed() {
 cleanup() {
     echo ""
     echo "[INFO] Shutting down services..."
-    
+
     # Kill orchestrator
     if [ -n "$ORCHESTRATOR_PID" ]; then
         echo "[INFO] Stopping orchestrator (PID $ORCHESTRATOR_PID)..."
         kill "$ORCHESTRATOR_PID" 2>/dev/null || true
         wait "$ORCHESTRATOR_PID" 2>/dev/null || true
     fi
-    
+
     # Kill web UI
     if [ -n "$WEB_UI_PID" ]; then
         echo "[INFO] Stopping web UI (PID $WEB_UI_PID)..."
         kill "$WEB_UI_PID" 2>/dev/null || true
         wait "$WEB_UI_PID" 2>/dev/null || true
     fi
-    
+
     # Stop Redis if we started it
     if [ "$REDIS_STARTED_BY_SCRIPT" = true ]; then
         echo "[INFO] Stopping Redis daemon..."
         redis-cli -p "${LEGION_REDIS_PORT:-7600}" shutdown 2>/dev/null || true
     fi
-    
+
     echo "[INFO] Cleanup complete."
 }
 

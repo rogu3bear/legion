@@ -43,7 +43,7 @@ function App() {
     return (
       <div>
         <nav className="bg-gray-100 p-4 mb-4">
-          <button 
+          <button
             onClick={() => setCurrentPage('main')}
             className="text-blue-600 hover:text-blue-800"
           >
@@ -59,14 +59,14 @@ function App() {
     <div style={{ padding: "20px" }}>
       <div className="flex justify-between items-center mb-4">
         <h1>Legion Agent Management</h1>
-        <button 
+        <button
           onClick={() => setCurrentPage('admin')}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
         >
           Agent Prompts Admin
         </button>
       </div>
-      
+
       <PortMapDisplay />
       <div className="flex flex-wrap">
         {agents.map(agent => (

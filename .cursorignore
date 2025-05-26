@@ -40,4 +40,4 @@ build/
 *.sqlite3
 
 # Generated documentation that might be outdated
-docs/system/function_index.md 
+docs/system/function_index.md

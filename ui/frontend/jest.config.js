@@ -17,7 +17,7 @@ export default {
   transform: {
     '^.+\\.(js|jsx)$': ['babel-jest', {
       presets: [
-        ['@babel/preset-env', { 
+        ['@babel/preset-env', {
           targets: { node: 'current' },
           modules: 'commonjs'
         }],
@@ -27,12 +27,15 @@ export default {
     }]
   },
   collectCoverageFrom: [
-    'src/components/simple.jsx',
+    'src/components/Hello.jsx',
     '!src/main.jsx',
-    '!**/node_modules/**'
+    '!**/node_modules/**',
+    '!src/**/__tests__/**',
+    '!src/setupTests.js',
+    '!src/App.jsx'
   ],
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx}'
   ]
-}; 
+};

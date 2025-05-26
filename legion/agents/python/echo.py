@@ -50,7 +50,7 @@ class EchoAgent(BaseAgent):
         self.log_buffer.append(entry)
         if len(self.log_buffer) >= 10:
             self._flush_buffer()
-        
+
         result = f"Echoed: {message}"
         await self.log_to_feed(
             skill_name="echo_task",

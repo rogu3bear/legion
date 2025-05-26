@@ -23,9 +23,9 @@ class HealthcheckAgent(BaseAgent):
     async def handle_task(self, payload: dict) -> dict:
         """Handle incoming tasks."""
         function_tag = payload.get("function_tag")
-        
+
         if function_tag == "health_check":
             result = await self.health_check()
             return {"status": "✅ Success", "result": result}
         else:
-            return {"status": "❌ Unknown function_tag", "error": f"Unknown function_tag: {function_tag}"} 
+            return {"status": "❌ Unknown function_tag", "error": f"Unknown function_tag: {function_tag}"}

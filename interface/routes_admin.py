@@ -101,7 +101,7 @@ async def update_agent_prompt_route(agent: str, prompt_data: PromptUpdate, clien
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"Invalid skill: '{skill}'. Skill must be one of {sorted(list(master_skills))}"
                 )
-        
+
         # System prompt is already validated by Pydantic for length and basic script tag check.
         # html.escape will be handled by save_prompt in the repo.
         saved_data = repo_save_prompt(client, agent, prompt_data.system, prompt_data.skills)
@@ -129,7 +129,7 @@ async def revert_agent_prompt_route(agent: str, client: redis.Redis = Depends(ge
         reverted_data = repo_revert_prompt(client, agent)
         if reverted_data is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No history found for agent {agent} to revert.")
-        
+
         return {
             "status": "success",
             "message": f"Prompt for agent {agent} reverted to previous version.",
@@ -140,4 +140,4 @@ async def revert_agent_prompt_route(agent: str, client: redis.Redis = Depends(ge
     except HTTPException: # Re-raise if it's already an HTTPException
         raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to revert prompt for {agent}: {str(e)}") 
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to revert prompt for {agent}: {str(e)}")

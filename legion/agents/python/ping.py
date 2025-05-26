@@ -22,7 +22,7 @@ class PingAgent(BaseAgent):
     async def handle_task(self, payload: dict) -> dict:
         """Handle incoming tasks."""
         function_tag = payload.get("function_tag")
-        
+
         if function_tag == "ping":
             result = await self.handle_ping()
             return {"status": "✅ Success", "result": result}

@@ -27,4 +27,4 @@ jobs:
           # Add any other ENV VARS your application might need for CI
           # e.g., GENERAL_CHANNEL_ID: "0"
         run: |
-          python .github/scripts/ci_test_echo.py 
+          python .github/scripts/ci_test_echo.py

@@ -14,10 +14,10 @@ from core.di_container import container, ILLMClient, IStateManager
 
 def main():
     """Test function-tag based routing."""
-    
+
     print("🧪 Testing Function-Tag Based Routing")
     print("=" * 50)
-    
+
     try:
         # Initialize orchestrator
         print("Initializing orchestrator...")
@@ -26,7 +26,7 @@ def main():
             llm_client=container.get(ILLMClient),
         )
         print("✅ Orchestrator initialized successfully")
-        
+
         # Test payloads with only function_tag (no agent specified)
         test_payloads = [
             {
@@ -37,7 +37,7 @@ def main():
                 }
             },
             {
-                "name": "Function-tag routing: record_counter", 
+                "name": "Function-tag routing: record_counter",
                 "payload": {
                     "function_tag": "record_counter",
                     "counter_name": "function_tag_test",
@@ -63,25 +63,25 @@ def main():
                 }
             }
         ]
-        
+
         # Run tests
         for i, test in enumerate(test_payloads, 1):
             print(f"\n🧪 Test {i}: {test['name']}")
             print(f"   Payload: {json.dumps(test['payload'], indent=2)}")
-            
+
             try:
                 result = orchestrator.dispatch_by_function_tag(test['payload'])
                 print(f"   ✅ Result: {json.dumps(result, indent=2)}")
             except Exception as e:
                 print(f"   ❌ Error: {e}")
-        
+
         print(f"\n🎉 Function-tag routing tests completed!")
-        
+
     except Exception as e:
         print(f"❌ Failed to test function-tag routing: {e}")
         return 1
-    
+
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

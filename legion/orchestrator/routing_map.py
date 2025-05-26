@@ -13,28 +13,28 @@ _FUNCTION_TAG_ROUTING: Dict[str, str] = {
     # Echo agent functions
     "echo_task": "echo",
     "log_payload": "echo",
-    
+
     # Metrics agent functions
     "record_counter": "metrics",
     "record_gauge": "metrics",
     "record_histogram": "metrics",
     "get_metrics": "metrics",
-    
+
     # Therapist agent functions
     "validate_intent": "therapist",
     "analyze_task": "therapist",
     "provide_feedback": "therapist",
-    
+
     # Ping agent functions
     "ping": "ping",
-    
+
     # Healthcheck agent functions
     "health_check": "healthcheck",
-    
+
     # Architect agent functions
     "design_system": "architect",
     "review_architecture": "architect",
-    
+
     # UX Designer agent functions
     "design_ui": "ux_designer",
     "review_ux": "ux_designer",

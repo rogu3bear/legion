@@ -85,7 +85,7 @@ These examples show how to request MCP tool usage when working with Cursor's AI 
 
 ### Context-Aware Development
 ```
-AI Request: "Before we refactor this function, store the current implementation 
+AI Request: "Before we refactor this function, store the current implementation
 in vector memory and check if we have any cached analysis of similar functions."
 ```
 
@@ -96,7 +96,7 @@ in vector memory and check if we have any cached analysis of similar functions."
 
 ### Code Review Process
 ```
-AI Request: "Analyze this pull request, store the analysis results, and log 
+AI Request: "Analyze this pull request, store the analysis results, and log
 this code review event for tracking."
 ```
 
@@ -107,7 +107,7 @@ this code review event for tracking."
 
 ### Deployment Monitoring
 ```
-AI Request: "We're deploying version 3.0. Log the deployment start, cache the 
+AI Request: "We're deploying version 3.0. Log the deployment start, cache the
 current system state, and prepare for monitoring."
 ```
 
@@ -120,7 +120,7 @@ current system state, and prepare for monitoring."
 
 ### Contextual Memory Chain
 ```
-AI Request: "Based on previous vector memories about authentication, implement 
+AI Request: "Based on previous vector memories about authentication, implement
 a new login system and store the implementation approach for future reference."
 ```
 
@@ -128,7 +128,7 @@ a new login system and store the implementation approach for future reference."
 
 ### Performance Optimization Workflow
 ```
-AI Request: "Check cached performance metrics, analyze current bottlenecks, 
+AI Request: "Check cached performance metrics, analyze current bottlenecks,
 and store optimization recommendations."
 ```
 
@@ -136,7 +136,7 @@ and store optimization recommendations."
 
 ### Code Evolution Tracking
 ```
-AI Request: "Compare this file with previous analysis, identify changes, 
+AI Request: "Compare this file with previous analysis, identify changes,
 and update our codebase tracking with the evolution."
 ```
 
@@ -152,7 +152,7 @@ If MCP tools are unavailable, the AI will:
 
 ### Debugging Tool Issues
 ```
-AI Request: "The MCP server seems unresponsive. Run a health check and 
+AI Request: "The MCP server seems unresponsive. Run a health check and
 show me the server status."
 ```
 
@@ -197,18 +197,18 @@ show me the server status."
 
 ### Agent Memory Sharing
 ```
-AI Request: "Store this architectural decision in vector memory so the 
+AI Request: "Store this architectural decision in vector memory so the
 architect agent can reference it in future planning sessions."
 ```
 
 ### Cross-Agent Communication
 ```
-AI Request: "Log this API change event so all agents can be aware of the 
+AI Request: "Log this API change event so all agents can be aware of the
 interface modifications."
 ```
 
 ### Persistent Agent State
 ```
-AI Request: "Cache the current agent configuration so it persists across 
+AI Request: "Cache the current agent configuration so it persists across
 development sessions."
 ```

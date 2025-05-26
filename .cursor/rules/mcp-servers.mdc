@@ -37,7 +37,7 @@ Legion uses **5 independent MCP servers** instead of a single unified server:
 - **`vector/store`** - Store text with embeddings for semantic search
   - Parameters: agent_name, text, embedding, metadata?, similarity_threshold?
   - Returns: record_id, status
-- **`vector/retrieve`** - Find similar text using vector similarity  
+- **`vector/retrieve`** - Find similar text using vector similarity
   - Parameters: agent_name, query_embedding, top_k?, similarity_threshold?
   - Returns: results[], count
 
@@ -143,7 +143,7 @@ When working in Cursor, reference specific server capabilities:
 - "Store this function analysis in vector memory for semantic search"
 - "Find similar code patterns using vector retrieval"
 
-**Cache Memory Examples**:  
+**Cache Memory Examples**:
 - "Cache this API response for 1 hour"
 - "Store this computation result temporarily"
 
@@ -162,7 +162,7 @@ When working in Cursor, reference specific server capabilities:
 ### Development Workflows
 The isolated MCP servers enable:
 - **Context Preservation**: Store and retrieve development context per domain
-- **Code Analysis**: Track file changes and dependencies systematically  
+- **Code Analysis**: Track file changes and dependencies systematically
 - **Event Tracking**: Monitor development operations across domains
 - **Performance Optimization**: Cache frequently accessed data with TTL
 - **Infrastructure Monitoring**: Track DevOps operations and their status
@@ -196,7 +196,7 @@ Each server provides health and statistics endpoints:
 
 ### Server Status
 - **Vector Memory**: Tracks embedding operations and vector similarities
-- **Cache Memory**: Monitors TTL expiration and cleanup operations  
+- **Cache Memory**: Monitors TTL expiration and cleanup operations
 - **Event Logging**: Tracks event creation and query performance
 - **Codebase Analysis**: Monitors file analysis and dependency tracking
 - **DevOps Operations**: Tracks infrastructure operations and status updates
@@ -217,7 +217,7 @@ Each server logs independently:
 - Clear error boundaries between services
 - Individual server health monitoring
 
-### ✅ Enhanced Maintainability  
+### ✅ Enhanced Maintainability
 - Single responsibility per server
 - Independent deployments possible
 - Focused, smaller codebases
@@ -243,7 +243,7 @@ Each server logs independently:
 3. **Dependencies**: Check that core dependencies are available
 4. **Database Access**: Ensure `memory/db/` directory exists and is writable
 
-### Cursor Integration Issues  
+### Cursor Integration Issues
 1. **Configuration**: Restart Cursor IDE after configuration changes
 2. **Logs**: Check Cursor's developer console for MCP server logs
 3. **Config File**: Verify configuration exists at `~/.cursor/mcp.json`
@@ -270,7 +270,7 @@ Legion agents can leverage isolated MCP tools for:
 - Retrieve relevant context using similarity search
 - Build knowledge bases with vector embeddings
 
-### 💾 State Persistence (Cache Server)  
+### 💾 State Persistence (Cache Server)
 - Cache agent state between sessions with TTL
 - Store computation results temporarily
 - Implement short-term memory with expiration
@@ -285,7 +285,7 @@ Legion agents can leverage isolated MCP tools for:
 - Store code analysis results for reuse
 - Map codebase relationships and impacts
 
-### 🚀 Infrastructure Operations (DevOps Server)  
+### 🚀 Infrastructure Operations (DevOps Server)
 - Monitor agent-triggered infrastructure changes
 - Track deployment and scaling operations
 - Log system health and performance metrics

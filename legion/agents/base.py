@@ -117,7 +117,7 @@ class BaseAgent:
                                 if new_system_prompt is not None:
                                     self.system_prompt = html.unescape(new_system_prompt)
                                     self.logger.info(f"[{self.name}] Hot-reloaded system_prompt.")
-                                
+
                                 if new_skills is not None:
                                     self.skills = new_skills
                                     self.logger.info(f"[{self.name}] Hot-reloaded skills: {self.skills}")
@@ -143,7 +143,7 @@ class BaseAgent:
                         self.logger.info(f"[{self.name}] Prompt listener: Redis client closed.")
                     except Exception as e_close:
                         self.logger.error(f"[{self.name}] Prompt listener: Error closing Redis client: {e_close}")
-            
+
             await asyncio.sleep(10)
 
     async def post_to_discord(self, message):
@@ -285,11 +285,11 @@ class BaseAgent:
         """Helper to send structured logs to the agent-feed channel."""
         try:
             from legion.utils.discord_bridge import MessageType, send_discord_embed
-            
+
             # Default message type if not provided
             if message_type is None:
                 message_type = MessageType.INFO
-            
+
             timestamp = datetime.now(timezone.utc).isoformat()
             details = [
                 ("Timestamp", timestamp),
@@ -298,10 +298,10 @@ class BaseAgent:
                 ("Output/Result", str(output_summary)[:1000]),
                 ("Status", status)
             ]
-            
+
             # Use agent feed channel ID from environment
             agent_feed_channel_id = int(os.getenv("AGENT_FEED_CHANNEL_ID", 1362902052279291904))
-            
+
             await send_discord_embed(
                 agent_name=self.name,
                 message=f"{skill_name} Executed",

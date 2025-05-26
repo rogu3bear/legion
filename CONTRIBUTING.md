@@ -2,14 +2,10 @@
 
 Thank you for considering contributing to Legion! We value community contributions and aim to maintain a high standard of code quality and collaboration.
 
-## Getting Started
-
 ## Development Setup
-
 - Clone and run `make doctor`
-- Use `make dev` to launch Orchestrator + UI (port 7602)
-- Redis should be locally installed (port 7600)
-- Python 3.12 and Node 18+ required
+- Start with `make dev` (port 7602)
+- Python 3.12, Redis @ 7600, Node 18+
 
 ### Code Quality & Linting
 
@@ -21,11 +17,13 @@ Thank you for considering contributing to Legion! We value community contributio
     pre-commit install
     ```
 
-## Branch Strategy
+## Testing
+- Run: `pnpm run test:coverage` (from `ui/frontend` directory)
+- CI enforces 80% min lines/statements
 
-- Use `feat/`, `fix/`, `chore/`, `test/` prefixes
-- CI must pass with 80%+ coverage
-- 1 reviewer required for PR
+## Branching
+- PR required, green CI
+- Use `feat/`, `fix/`, `chore/` prefixes
 
 ## Commit Message Style
 
@@ -50,11 +48,6 @@ The basic format is:
 `fix(ui): resolve incorrect display of timestamps`
 `docs(contributing): clarify commit style guidelines`
 `chore(deps): upgrade react to v18`
-
-## Testing
-
-- `pnpm --prefix ui/frontend run test:coverage`
-- Jest thresholds enforced: 80% lines/statements
 
 ### Agent Instantiation Guard
 
@@ -81,8 +74,7 @@ The basic format is:
 *   Failing legacy tests should be quarantined by decorating test classes with `mark_legacy` from `tests.legacy_skip`.
 
 ## No Docker
-
-- Docker has been fully removed. Local Python and Redis must be used.
+- Docker is forbidden. Redis must be native.
 
 ## Questions or Issues?
 

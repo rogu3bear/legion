@@ -29,4 +29,4 @@ updates:
     # Condition to only run if package.json exists in ui/frontend
     # This condition is not directly supported by dependabot.yml syntax in this way.
     # Dependabot will simply not find a manifest if the path is wrong.
-    # Ensure the directory path is correct. 
+    # Ensure the directory path is correct.

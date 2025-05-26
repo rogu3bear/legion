@@ -5,8 +5,8 @@ const SearchableMultiSelect = ({ options, selected, onChange, placeholder }) => 
   const [searchTerm, setSearchTerm] = useState('')
   const [isOpen, setIsOpen] = useState(false)
 
-  const filteredOptions = useMemo(() => 
-    options.filter(opt => 
+  const filteredOptions = useMemo(() =>
+    options.filter(opt =>
       opt.toLowerCase().includes(searchTerm.toLowerCase())
     ), [options, searchTerm])
 
@@ -20,13 +20,13 @@ const SearchableMultiSelect = ({ options, selected, onChange, placeholder }) => 
 
   return (
     <div className="relative">
-      <button 
+      <button
         type="button"
         className="w-full p-2 border rounded-lg text-left bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {selected.length > 0 
-          ? `${selected.length} skill(s) selected` 
+        {selected.length > 0
+          ? `${selected.length} skill(s) selected`
           : placeholder || 'Select skills...'}
         <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
           <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -34,7 +34,7 @@ const SearchableMultiSelect = ({ options, selected, onChange, placeholder }) => 
       </button>
       {isOpen && (
         <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          <input 
+          <input
             type="text"
             className="w-full p-2 border-b sticky top-0 bg-white z-10"
             placeholder="Search skills..."
@@ -43,14 +43,14 @@ const SearchableMultiSelect = ({ options, selected, onChange, placeholder }) => 
           />
           <ul>
             {filteredOptions.length > 0 ? filteredOptions.map(option => (
-              <li 
+              <li
                 key={option}
                 className={`p-2 hover:bg-gray-100 cursor-pointer flex items-center ${
                   selected.includes(option) ? 'bg-blue-50 font-semibold' : ''
                 }`}
                 onClick={() => toggleOption(option)}
               >
-                <input 
+                <input
                   type="checkbox"
                   checked={selected.includes(option)}
                   readOnly
@@ -74,7 +74,7 @@ export default function AgentPromptsAdmin() {
   const [modalOpen, setModalOpen] = useState(false)
   const [currentSystemPrompt, setCurrentSystemPrompt] = useState('')
   const [currentSelectedSkills, setCurrentSelectedSkills] = useState([])
-  
+
   const [loadingModal, setLoadingModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [reverting, setReverting] = useState(false)
@@ -100,7 +100,7 @@ export default function AgentPromptsAdmin() {
         throw new Error(errData.detail?.message || `HTTP error ${response.status}`)
       }
       const data = await response.json()
-      setAgentsData({ 
+      setAgentsData({
         agents: data.agents || {},
         all_skills: data.all_skills || []
       })
@@ -114,7 +114,7 @@ export default function AgentPromptsAdmin() {
     setLoadingModal(true)
     setSelectedAgentName(agentName)
     setModalOpen(true)
-    
+
     try {
       const response = await fetch(`${API_PREFIX}/${agentName}`)
       if (!response.ok) {
@@ -137,17 +137,17 @@ export default function AgentPromptsAdmin() {
   const handleSavePrompt = async () => {
     if (!selectedAgentName) return
     setSaving(true)
-    
+
     try {
       const response = await fetch(`${API_PREFIX}/${selectedAgentName}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          system: currentSystemPrompt, 
-          skills: currentSelectedSkills 
+        body: JSON.stringify({
+          system: currentSystemPrompt,
+          skills: currentSelectedSkills
         })
       })
-      
+
       const responseData = await response.json().catch(() => ({}))
 
       if (response.ok) {
@@ -241,7 +241,7 @@ export default function AgentPromptsAdmin() {
   return (
     <div style={{ padding: "20px" }}>
       <h1 className="text-2xl font-bold mb-6">Agent Prompt Manager</h1>
-      
+
       {toast && (
         <div className={`fixed top-5 right-5 p-4 rounded-lg shadow-xl z-[100] text-white ${
           toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
@@ -258,8 +258,8 @@ export default function AgentPromptsAdmin() {
               <p className="text-xs text-gray-500 mb-2">Priority: {agentInfo.priority}</p>
               <p className="text-xs text-gray-600 mb-1 font-medium">Current Skills:</p>
               <div className="text-xs text-gray-700 mb-3 max-h-20 overflow-y-auto break-all">
-                {agentInfo.function_tags && agentInfo.function_tags.length > 0 
-                  ? agentInfo.function_tags.join(', ') 
+                {agentInfo.function_tags && agentInfo.function_tags.length > 0
+                  ? agentInfo.function_tags.join(', ')
                   : 'No skills assigned'}
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function AgentPromptsAdmin() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Skills ({currentSelectedSkills.length} selected)</label>
-                    <SearchableMultiSelect 
+                    <SearchableMultiSelect
                       options={agentsData.all_skills}
                       selected={currentSelectedSkills}
                       onChange={setCurrentSelectedSkills}
@@ -342,4 +342,4 @@ export default function AgentPromptsAdmin() {
       )}
     </div>
   )
-} 
+}

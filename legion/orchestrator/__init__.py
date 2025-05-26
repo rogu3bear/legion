@@ -2159,27 +2159,27 @@ class Orchestrator:
     def dispatch_by_function_tag(self, payload: dict) -> dict:
         """
         Dispatches a task based on function_tag in the payload.
-        
+
         Args:
             payload: The payload containing function_tag and other task data.
-            
+
         Returns:
             A dictionary containing the agent's response.
         """
         function_tag = payload.get("function_tag")
         if not function_tag:
             return {
-                "status": "error", 
+                "status": "error",
                 "message": "No function_tag specified in payload"
             }
-            
+
         agent_key = get_agent_for_function_tag(function_tag)
         if not agent_key:
             return {
                 "status": "error",
                 "message": f"No agent found for function_tag: {function_tag}"
             }
-            
+
         logger.info(f"Routing function_tag '{function_tag}' to agent '{agent_key}'")
         return self.dispatch(agent_key, payload)
 

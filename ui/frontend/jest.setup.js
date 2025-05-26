@@ -9,4 +9,4 @@ Object.defineProperty(global, 'import', {
       }
     }
   }
-}); 
+});

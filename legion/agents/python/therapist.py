@@ -119,7 +119,7 @@ class TherapistAgent(BaseAgent):
             validation_status = "✅ Approved (Basic Validation)"
             validation_message = "Task approved based on presence of essential keys."
             discord_message_type = MessageType.SUCCESS
-        
+
         self.logger.info(f"TherapistAgent - validate_intent: {validation_status} - {validation_message}")
 
         await self.log_to_feed(
@@ -129,7 +129,7 @@ class TherapistAgent(BaseAgent):
             output_summary=validation_message,
             message_type=discord_message_type
         )
-        
+
         return {"validation_status": validation_status, "message": validation_message, "is_valid": "✅" in validation_status}
 
     async def sanitize_prompt(self, prompt_text: str) -> Dict[str, Any]:

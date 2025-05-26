@@ -15,7 +15,7 @@ from core.di_container import container, ILLMClient, IStateManager
 
 def main():
     """Run the four live test payloads through the orchestrator."""
-    
+
     # Test payloads
     test_payloads = [
         {
@@ -56,39 +56,39 @@ def main():
             }
         }
     ]
-    
+
     # Initialize orchestrator without PID file for testing
     print("Initializing orchestrator...")
     try:
         # Initialize dependencies
         llm_client = container.get(ILLMClient)
         state_manager = container.get(IStateManager)
-        
+
         orch = Orchestrator(
             pid_file=None,  # No PID file for testing
             state_manager=state_manager,
             llm_client=llm_client
         )
-        
+
         print("✅ Orchestrator initialized successfully")
-        
+
         # Run each test payload
         for i, test in enumerate(test_payloads, 1):
             print(f"\n🧪 Test {i}: {test['name']}")
             print(f"   Agent: {test['agent']}")
             print(f"   Payload: {json.dumps(test['payload'], indent=2)}")
-            
+
             try:
                 result = orch.dispatch(test['agent'], test['payload'])
                 print(f"   ✅ Result: {json.dumps(result, indent=2)}")
             except Exception as e:
                 print(f"   ❌ Error: {e}")
-                
+
         print("\n🎉 All test payloads completed!")
-        
+
     except Exception as e:
         print(f"❌ Failed to initialize orchestrator: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()

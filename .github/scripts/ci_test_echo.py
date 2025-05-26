@@ -27,15 +27,15 @@ def run_echo_test():
             state_manager=container.get(IStateManager),
             llm_client=container.get(ILLMClient)
         )
-        
+
         payload = {"function_tag": "echo_task", "message": "Hello from CI"}
         print(f"CI Test: Dispatching payload: {json.dumps(payload)}")
 
         # Use dispatch_by_function_tag as it's simpler for this test
         result = orchestrator.dispatch_by_function_tag(payload)
-        
+
         print(f"CI Test Result: {json.dumps(result)}")
-        
+
         # Validate status from the orchestrator's dispatch_by_function_tag method
         assert result.get("status") == "success", \
             f"Orchestrator dispatch status was not 'success'. Got: {result.get("status")}. Full result: {result}"
@@ -43,15 +43,15 @@ def run_echo_test():
         # Validate the agent's response nested within the orchestrator's response
         agent_response = result.get("response")
         assert agent_response is not None, f"Agent response was None. Full result: {result}"
-        
+
         assert agent_response.get("status") == "✅ Success", \
             f"Agent response status was not '✅ Success'. Got: {agent_response.get("status")}. Agent response: {agent_response}"
-        
+
         assert "Echoed: Hello from CI" in agent_response.get("result", ""), \
             f"'Echoed: Hello from CI' not found in agent result. Got: {agent_response.get("result")}. Agent response: {agent_response}"
-            
+
         print("CI Test: echo_task successful!")
-        
+
     except AssertionError as ae:
         print(f"CI Test: Assertion Error: {ae}")
         sys.exit(1)
@@ -62,4 +62,4 @@ def run_echo_test():
         sys.exit(1)
 
 if __name__ == "__main__":
-    run_echo_test() 
+    run_echo_test()

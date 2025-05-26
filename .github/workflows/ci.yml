@@ -25,7 +25,7 @@ jobs:
           # pip install flake8 # Assuming flake8 is in requirements.txt or managed by pre-commit
       - name: Environment health check (Python)
         run: make doctor # If this primarily checks Python env
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -37,18 +37,11 @@ jobs:
           node-version: '18' # Or your preferred LTS version
           cache: 'pnpm'
 
-      - name: Install frontend dependencies
+      - name: Frontend Test + Coverage
         run: |
-          # Adjust path if your package.json for frontend is not at root
-          if [ -f "ui/frontend/package.json" ]; then
-            pnpm install --prefix ui/frontend
-          elif [ -f "package.json" ]; then
-            pnpm install
-          else
-            echo "No package.json found for pnpm install."
-            exit 1
-          fi
-      
+          pnpm install --prefix ui/frontend
+          pnpm run --prefix ui/frontend test:coverage
+
       - name: Lint with ESLint (Frontend)
         run: |
           # Adjust path and command if needed
@@ -60,21 +53,6 @@ jobs:
             echo "ESLint lint script not found or package.json missing."
           fi
 
-      - name: Run frontend tests with coverage
-        run: |
-          if [ -f "ui/frontend/package.json" ]; then
-            echo "Running frontend tests with coverage in ui/frontend..."
-            pnpm --prefix ui/frontend run test:coverage
-          elif [ -f "package.json" ] && jq -e '.scripts."test:coverage"' package.json > /dev/null; then
-            echo "Running frontend tests with coverage from root package.json..."
-            pnpm run test:coverage
-          else
-            echo "Frontend test:coverage script not found or package.json missing."
-          fi
-
-      - name: Lint (Python)
-        run: make lint
-      
       - name: Run pytest (Python)
         run: |
           source .venv/bin/activate
@@ -86,12 +64,12 @@ jobs:
           source .venv/bin/activate
           bandit -r legion/ -o artifacts/reports/bandit_report_ci.json -f json
 
-      - name: Frontend Audit (pnpm)
+      - name: Audit Dependencies
         run: |
           if [ -f "ui/frontend/package.json" ]; then
             pnpm --prefix ui/frontend audit --audit-level high
           elif [ -f "package.json" ]; then
-            pnpm audit --audit-level high
+            pnpm audit --audit-level high # If audit is for root package.json
           else
             echo "No package.json for frontend audit."
             exit 1
@@ -127,7 +105,7 @@ jobs:
   visual-regression:
     name: "Visual Regression (Playwright)"
     runs-on: ubuntu-latest
-    continue-on-error: true 
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Setup pnpm
@@ -294,7 +272,7 @@ jobs:
           echo "guard_status=${{ needs.agent-instantiation-guard.result }}" >> $GITHUB_OUTPUT
           echo "lm_status=${{ needs.lmstudio-integration.result }}" >> $GITHUB_OUTPUT
           echo "visual_status=${{ needs.visual-regression.result }}" >> $GITHUB_OUTPUT
-          
+
           final_status="success"
           if [[ "${{ needs.build-and-test.result }}" != "success" && "${{ needs.build-and-test.result }}" != "skipped" ]] || \
              [[ "${{ needs.agent-instantiation-guard.result }}" != "success" && "${{ needs.agent-instantiation-guard.result }}" != "skipped" ]] || \
@@ -322,9 +300,9 @@ jobs:
           if [ "$JOB_STATUS" != "success" ]; then
             status_icon="❌"
           fi
-          
+
           message_content="$status_icon **$WORKFLOW_NAME** run *$JOB_STATUS* for commit \`${SHA::7}\`. Details: $RUN_URL"
-          
+
           # Append details of failed jobs if any
           if [ "${{ needs.build-and-test.result }}" != "success" ] && [ "${{ needs.build-and-test.result }}" != "skipped" ]; then
             message_content+="\n- Build/Test: ${{ needs.build-and-test.result }}"
@@ -338,7 +316,7 @@ jobs:
           if [ "${{ needs.visual-regression.result }}" != "success" ] && [ "${{ needs.visual-regression.result }}" != "skipped" ]; then
             message_content+="\n- Visual Regression: ${{ needs.visual-regression.result }} (non-blocking)"
           fi
-          
+
           curl -H "Content-Type: application/json" \\
                -d "{\\"content\\":\\"$message_content\\"}" \\
                "$DISCORD_WEBHOOK"

@@ -44,7 +44,7 @@ class MetricsAgent(BaseAgent):
             return None
         try:
             # Use the new Legion-specific Redis port and variable
-            port = int(os.getenv("LEGION_REDIS_PORT", "7610")) 
+            port = int(os.getenv("LEGION_REDIS_PORT", "7610"))
             return redis.Redis(host="localhost", port=port, decode_responses=True)
         except Exception as e: # Added exception logging
             self.logger.error(f"MetricsAgent: Failed to connect to Redis: {e}")
@@ -122,7 +122,7 @@ class MetricsAgent(BaseAgent):
             self._redis.hset("metrics:latest", mapping=stats)
             for key, value in stats.items():
                 self._redis.incrby(f"metrics:{key}:total", int(value))
-            # No direct agent-feed log here to avoid noise from _heartbeat, 
+            # No direct agent-feed log here to avoid noise from _heartbeat,
             # _heartbeat itself will log completion.
         except Exception as e:
             self.logger.error(f"MetricsAgent: Error pushing to Redis: {e}")
