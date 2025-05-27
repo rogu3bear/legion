@@ -14,3 +14,4 @@ from .task_registry import Task as RegistryTask, TaskStatus as RegistryTaskStatu
 from .token import Token, TokenPayload
 from .user import User, UserCreate, UserInDB, UserUpdate
 from .user_preference import UserPreference, UserPreferenceCreate, UserPreferenceUpdate
+from .echo import EchoLogEntry

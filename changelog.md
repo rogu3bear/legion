@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stub file `legion/core/utils/indexing.py` for core indexing logic.
 - Stub file `legion/agents/python/developer.py` for Python Developer Agent.
 - Stub migration script `legion/core/db/migrations/0001_initial.py`.
+- Added Echo Log Viewer UI and `/echo/logs` API endpoint.
 - Initial tests with mocks for `legion.core.utils.network.fetch_with_retries` in `tests/core/test_network.py`.
 - Identified and added core Python dependencies to `requirements.txt`.
 - Basic `package.json` structure for potential frontend dependencies.

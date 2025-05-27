@@ -1,10 +1,13 @@
 import logging
 import uuid
-from typing import Dict
+import json
+from pathlib import Path
+from typing import Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from interface.api.v1.endpoints.system import _call_orchestrator
 from pydantic import BaseModel
+from interface.schemas.echo import EchoLogEntry
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -28,3 +31,26 @@ def send_echo(payload: EchoPayload) -> Dict[str, str]:
     if content is None:
         raise HTTPException(status_code=502, detail="No response from orchestrator")
     return {"echo": content}
+
+@router.get("/logs", response_model=List[EchoLogEntry], summary="Retrieve Echo logs")
+def get_echo_logs(agent: str = Query(...), event: Optional[str] = Query(None)) -> List[EchoLogEntry]:
+    """Return latest echo logs for a given agent filtered by event."""
+    logs_dir = Path("logs/echo")
+    entries: List[EchoLogEntry] = []
+    if not logs_dir.exists():
+        return entries
+    for log_file in logs_dir.glob("*.json"):
+        try:
+            data = json.load(open(log_file))
+        except Exception:
+            continue
+        if data.get("agent") != agent:
+            continue
+        if event and data.get("event") != event:
+            continue
+        try:
+            entries.append(EchoLogEntry(**data))
+        except Exception:
+            continue
+    entries.sort(key=lambda e: e.timestamp, reverse=True)
+    return entries[:100]
