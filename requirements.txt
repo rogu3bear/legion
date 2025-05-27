@@ -12,3 +12,9 @@ chromadb>=0.4.0,<0.5.0 # Added for ChromaClient functionality
 httpx>=0.25.0,<0.28.0 # Added for async HTTP requests in API endpoints
 types-python-jose>=3.3.0 # Type stubs for python-jose
 types-passlib>=1.7.0 # Type stubs for passlib
+# Runtime dependencies for authentication and templating
+jinja2>=3.1.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.0
+pydantic-settings>=2.0.0
+pyzmq>=26.0.0

@@ -12,7 +12,10 @@ try:  # pragma: no cover - optional deps may be missing in tests
     from .metrics import router as metrics_router
     from .agent import router as agent_router
     from .handshake import bp as handshake_bp
-except Exception:  # pragma: no cover - endpoints unavailable
+except Exception as e:  # pragma: no cover - endpoints unavailable
+    print(f"ROUTER IMPORT ERROR: {e}")
+    import traceback
+    traceback.print_exc()
     agents_router = auth_router = lmstudio_proxy_router = None
     login_router = memory_router = system_router = None
     tasks_router = task_registry_router = None
