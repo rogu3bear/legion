@@ -7,6 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+    prompt_router,
 # Standard library imports
 import asyncio
 import json
@@ -43,6 +44,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     tasks_router,
     lmstudio_proxy_router,
     queue_router,
+    prompt_router,
     metrics_router,
 )
 
@@ -55,6 +57,7 @@ app.include_router(task_registry_router, prefix="/api/v1/registry/tasks", tags=[
 app.include_router(queue_router, prefix="/api/v1", tags=["queue"])
 app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
+app.include_router(prompt_router, prefix="/api/v1", tags=["prompts"])
 app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["metrics"])
 

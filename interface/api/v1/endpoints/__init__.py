@@ -2,6 +2,7 @@ try:  # pragma: no cover - optional deps may be missing in tests
     from .agents import router as agents_router
     from .auth import router as auth_router
     from .lmstudio_proxy import router as lmstudio_proxy_router
+    from .prompt_routes import router as prompt_router
     from .login import router as login_router
     from .memory import router as memory_router
     from .system import router as system_router
@@ -22,6 +23,7 @@ except Exception:  # pragma: no cover - endpoints unavailable
 __all__ = [
     "agents_router",
     "auth_router",
+    "prompt_router",
     "lmstudio_proxy_router",
     "login_router",
     "memory_router",
