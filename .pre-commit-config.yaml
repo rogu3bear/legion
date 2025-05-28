@@ -63,3 +63,8 @@ repos:
         files: .env.development
         pass_filenames: false
         always_run: true # Ensure it runs every time to keep .env.ports.example in sync
+    -   id: check-ports
+        name: Enforce .env.ports consistency
+        entry: bash scripts/hooks/check_ports.sh
+        language: system
+        pass_filenames: false
