@@ -12,3 +12,12 @@ chromadb>=0.4.0,<0.5.0 # Added for ChromaClient functionality
 httpx>=0.25.0,<0.28.0 # Added for async HTTP requests in API endpoints
 types-python-jose>=3.3.0 # Type stubs for python-jose
 types-passlib>=1.7.0 # Type stubs for passlib
+# Missing dependencies for PR #100 Echo Log Viewer
+jinja2>=3.1.0,<4.0.0 # Required for templating
+python-jose[cryptography]>=3.3.0,<4.0.0 # Authentication (full package, not just stubs)
+passlib[bcrypt]>=1.7.0,<2.0.0 # Password hashing (full package, not just stubs)
+pydantic-settings>=2.0.0,<3.0.0 # Settings management
+pyzmq>=25.0.0,<26.0.0 # ZeroMQ messaging
+email-validator>=2.0.0,<3.0.0 # Email validation
+prometheus-client>=0.16.0,<1.0.0 # Metrics collection
+python-multipart>=0.0.6,<1.0.0 # File upload support
