@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from interface.api.v1.endpoints.metrics import get_redis_client
-from legion.orchestrator import _call_orchestrator
+from interface.api.v1.endpoints.system import _call_orchestrator
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
