@@ -46,6 +46,20 @@ from interface.api.v1.endpoints import (  # noqa: E402
     metrics_router,
 )
 
+# Router guards - ensure all routers are properly initialized
+from fastapi.routing import APIRouter
+assert isinstance(auth_router, APIRouter), f"auth_router is {type(auth_router)}, expected APIRouter"
+assert isinstance(login_router, APIRouter), f"login_router is {type(login_router)}, expected APIRouter"
+assert isinstance(agents_router, APIRouter), f"agents_router is {type(agents_router)}, expected APIRouter"
+assert isinstance(system_router, APIRouter), f"system_router is {type(system_router)}, expected APIRouter"
+assert isinstance(tasks_router, APIRouter), f"tasks_router is {type(tasks_router)}, expected APIRouter"
+assert isinstance(task_registry_router, APIRouter), f"task_registry_router is {type(task_registry_router)}, expected APIRouter"
+assert isinstance(queue_router, APIRouter), f"queue_router is {type(queue_router)}, expected APIRouter"
+assert isinstance(memory_router, APIRouter), f"memory_router is {type(memory_router)}, expected APIRouter"
+assert isinstance(lmstudio_proxy_router, APIRouter), f"lmstudio_proxy_router is {type(lmstudio_proxy_router)}, expected APIRouter"
+assert isinstance(echo_router, APIRouter), f"echo_router is {type(echo_router)}, expected APIRouter"
+assert isinstance(metrics_router, APIRouter), f"metrics_router is {type(metrics_router)}, expected APIRouter"
+
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
 app.include_router(agents_router, prefix="/api/v1/agents", tags=["agents"])
