@@ -15,6 +15,10 @@ else
     log_msg "ERROR: .env file not found. Exiting."
     exit 1
 fi
+if [ -f .env.ports ]; then
+    set -a; source .env.ports; set +a
+    log_msg "INFO: Loaded ports from .env.ports"
+fi
 
 # Create and activate virtual environment, install dependencies if needed
 if [ ! -d .venv ]; then

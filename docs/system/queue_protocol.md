@@ -32,7 +32,7 @@ first.
 ## ZMQ Event Example (Legacy/Optional)
 
 This queue publishes agent registration and task assignment events over ZMQ.
-Messages are sent on `tcp://127.0.0.1:7808` (see `LEGION_PORT_MAP['zmq_pub']`).
+Messages are sent on `tcp://127.0.0.1:27070` (see `LEGION_PORT_MAP['zmq_pub']`).
 
 Example payload:
 

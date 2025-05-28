@@ -6,8 +6,8 @@ participant Echo
 participant MetricsAgent
 participant DiscordBridge
 
-Agent -> Orchestrator: task request (port 7808)
-Orchestrator -> Queue: enqueue task (port 7810)
+Agent -> Orchestrator: task request (port 27070)
+Orchestrator -> Queue: enqueue task (port 27040)
 Queue --> Orchestrator: ack
 Orchestrator --> Agent: response
 Queue -> Echo: publish message

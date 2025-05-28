@@ -24,3 +24,4 @@ in Redis under the ``echo:events`` list and indexed by level and agent ID.
 Events can be queried via the Nexus API at ``/api/v1/echo/search``.
 Successful writes trigger a short notification to the ``agent-feed`` channel
 using ``scripts/post_agent_feed.sh``.
+See [Plan-Agents Ledger](plan_agents_ledger.md) for experimental planning agents.

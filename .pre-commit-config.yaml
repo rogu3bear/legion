@@ -58,3 +58,8 @@ repos:
         files: .env.development
         pass_filenames: false
         always_run: true # Ensure it runs every time to keep .env.ports.example in sync
+    -   id: env-ports-consistency
+        name: Ensure .env.ports matches example
+        entry: scripts/pre-commit-hooks/check_env_ports_consistency.sh
+        language: script
+        pass_filenames: false

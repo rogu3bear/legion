@@ -5,6 +5,10 @@ set -e
 if [ -f .env ]; then
     source .env
 fi
+# Load port assignments
+if [ -f .env.ports ]; then
+    source .env.ports
+fi
 # Load development-specific overrides
 if [ -f .env.development ]; then
     source .env.development

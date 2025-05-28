@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REDIS_PORT=7600
-ORCH_PORT=7603
-UI_PORT=7602
+if [ -f .env.ports ]; then
+    source .env.ports
+fi
+
+REDIS_PORT="${PORT_ALLOCATOR_REDIS:-7600}"
+ORCH_PORT="${PORT_ALLOCATOR_ORCHESTRATOR:-7603}"
+UI_PORT="${PORT_ALLOCATOR_WEB_UI:-7602}"
 
 REDIS_PID=""
 REDIS_PIDFILE="/tmp/legion_dev_redis.pid"

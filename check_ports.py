@@ -10,8 +10,8 @@ import sys
 from pathlib import Path
 import re
 
-RANGE_START = 7801
-RANGE_END = 7810
+RANGE_START = 27000
+RANGE_END = 28000
 
 ENV_FILE = Path(".env.ports")
 

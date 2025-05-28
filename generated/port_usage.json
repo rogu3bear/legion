@@ -1,12 +1,15 @@
 {
-  "ui_backend": 7801,
-  "ui_frontend": 7802,
-  "orchestrator_rest": 7803,
-  "interface_api": 7804,
-  "middleware": 7805,
-  "metrics": 7806,
-  "researcher_api": 7807,
-  "zmq_pub": 7808,
-  "zmq_sub": 7809,
-  "redis": 7810
+  "orchestrator_rest": 27000,
+  "ui_backend": 27001,
+  "chroma": 27020,
+  "prometheus": 27030,
+  "redis": 27040,
+  "postgres": 27050,
+  "grafana": 27060,
+  "zmq_pub": 27070,
+  "zmq_rep": 27071,
+  "therapist": 27080,
+  "executor": 27081,
+  "architect": 27082,
+  "metrics": 27083
 }

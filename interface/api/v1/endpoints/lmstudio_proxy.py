@@ -4,6 +4,7 @@ import logging
 import os
 
 import httpx
+from legion.utils.retry import async_retry
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
@@ -46,13 +47,15 @@ async def lmstudio_echo(request: Request) -> JSONResponse:
     logger.debug(f"Payload: {payload}")
 
     async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                LMSTUDIO_COMPLETION_ENDPOINT
-                json=payload
-                headers=request.headers.raw,  # Forward original headers if necessary, be cautious with sensitive ones
-                timeout=60.0,  # Set a reasonable timeout
+        async def do_request():
+            return await client.post(
+                LMSTUDIO_COMPLETION_ENDPOINT,
+                json=payload,
+                headers=request.headers.raw,
+                timeout=60.0,
             )
+        try:
+            response = await async_retry(do_request)
             response.raise_for_status()  # Raise an exception for HTTP 4xx or 5xx errors
 
             # Return the raw JSON response from LM Studio

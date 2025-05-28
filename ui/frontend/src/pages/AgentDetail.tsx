@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import EchoLogViewer from '../components/EchoLogViewer'
 import useSWR from 'swr'
 
 interface AgentDetailProps {
@@ -55,7 +56,7 @@ export default function AgentDetail({ agentId }: AgentDetailProps) {
         Therapist ➤ Diagnose Agent
       </button>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <div className="flex flex-col rounded-2xl shadow p-4 space-y-2">
           <h3 className="font-semibold">Calls &amp; Qs</h3>
           <textarea
@@ -87,6 +88,10 @@ export default function AgentDetail({ agentId }: AgentDetailProps) {
               <p className="text-gray-500">No messages</p>
             )}
           </div>
+        </div>
+        <div className="flex flex-col rounded-2xl shadow p-4 space-y-2">
+          <h3 className="font-semibold">Recent Logs</h3>
+          <EchoLogViewer agentId={agentId} />
         </div>
       </div>
     </div>

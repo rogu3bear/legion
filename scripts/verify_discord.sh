@@ -9,6 +9,9 @@ else
     echo "[ERROR] .env file not found"
     exit 1
 fi
+if [ -f .env.ports ]; then
+    source .env.ports
+fi
 
 # Validate required environment variables
 required_vars=("DISCORD_TOKEN" "DISCORD_CHANNELS_PATH")
