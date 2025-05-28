@@ -490,7 +490,7 @@
 | scripts/check_direct_agent_instantiation.py | - | check_file | (path) | Needs Documentation |
 | scripts/check_direct_agent_instantiation.py | - | is_in_test_dir | (path) | Needs Documentation |
 | scripts/check_direct_agent_instantiation.py | - | main | (root_dir) | Needs Documentation |
-| scripts/cli.py | - | dev_start | (dev_start) | Start the development environment using Docker Compose. |
+| scripts/cli.py | - | dev_start | (dev_start) | Start the development environment with local Redis and UI. |
 | scripts/doc_ports.py | - | generate_table | (ports) | Needs Documentation |
 | scripts/doc_ports.py | - | main | () | Needs Documentation |
 | scripts/doc_ports.py | - | parse_env | () | Needs Documentation |
