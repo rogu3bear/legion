@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import uuid
 from typing import Optional
 
 from pydantic import BaseModel
@@ -23,12 +22,27 @@ class EventSchema(BaseModel):
     payload: dict
 
 
+class EchoEvent(BaseModel):
+    """Structured event for the Echo logger."""
+
+    timestamp: float
+    level: str
+    agent_id: str
+    payload: dict
+
+
 class EchoAgent:
     """Logging helper that persists events to the database."""
 
-    def __init__(self, db_url: Optional[str] = None, redis_url: Optional[str] = None) -> None:
-        db_url = db_url or os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///memory/db/legion.db")
-        connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+    def __init__(
+        self, db_url: Optional[str] = None, redis_url: Optional[str] = None
+    ) -> None:
+        db_url = db_url or os.getenv(
+            "SQLALCHEMY_DATABASE_URI", "sqlite:///memory/db/legion.db"
+        )
+        connect_args = (
+            {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+        )
         self._engine = create_engine(db_url, connect_args=connect_args)
         Base.metadata.create_all(self._engine)
         self._SessionLocal = sessionmaker(bind=self._engine)
@@ -55,3 +69,24 @@ class EchoAgent:
             except Exception:
                 pass
         return uid
+
+    def record(self, event: EchoEvent) -> None:
+        """Record an EchoEvent to Redis with secondary indexes."""
+        if self._redis is None:
+            return
+        data = event.model_dump()
+        encoded = json.dumps(data)
+        try:
+            self._redis.rpush("echo:events", encoded)
+            self._redis.zadd(f"echo:by_level:{event.level}", {encoded: event.timestamp})
+            self._redis.zadd(
+                f"echo:by_agent:{event.agent_id}", {encoded: event.timestamp}
+            )
+            try:
+                from legion.utils.agent_feed import post_agent_feed
+
+                post_agent_feed(f"Echo recorded: {event.level}")
+            except Exception:
+                pass
+        except Exception:
+            pass
