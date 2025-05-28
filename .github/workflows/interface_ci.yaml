@@ -15,6 +15,11 @@ on:
       - '.github/workflows/interface_ci.yaml'
       - 'pyproject.toml'
       - 'requirements.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   lint_and_test:
