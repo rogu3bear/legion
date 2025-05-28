@@ -5,14 +5,14 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    Enum,
-    ForeignKey,
-    Integer,
-    String,
+    JSON
+    Boolean
+    Column
+    DateTime
+    Enum
+    ForeignKey
+    Integer
+    String
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -74,19 +74,19 @@ class Agent(Base):
     def to_dict(self) -> Dict[str, Any]:
         """Convert agent to dictionary representation."""
         return {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type,
-            "status": self.status.value,
-            "capabilities": self.capabilities,
-            "config": self.config,
-            "metadata": self.agent_metadata,
-            "is_active": self.is_active,
+            "id": self.id
+            "name": self.name
+            "type": self.type
+            "status": self.status.value
+            "capabilities": self.capabilities
+            "config": self.config
+            "metadata": self.agent_metadata
+            "is_active": self.is_active
             "last_heartbeat": self.last_heartbeat.isoformat()
             if self.last_heartbeat
-            else None,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
+            else None
+            "created_at": self.created_at.isoformat()
+            "updated_at": self.updated_at.isoformat()
         }
 
     def update_status(self, status: AgentStatus) -> None:
@@ -138,21 +138,21 @@ class Task(Base):
     def to_dict(self) -> Dict[str, Any]:
         """Convert task to dictionary representation."""
         return {
-            "id": self.id,
-            "agent_id": self.agent_id,
-            "type": self.type,
-            "status": self.status.value,
-            "priority": self.priority.value,
-            "title": self.title,
-            "description": self.description,
-            "metadata": self.task_metadata,
-            "result": self.result,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "id": self.id
+            "agent_id": self.agent_id
+            "type": self.type
+            "status": self.status.value
+            "priority": self.priority.value
+            "title": self.title
+            "description": self.description
+            "metadata": self.task_metadata
+            "result": self.result
+            "created_at": self.created_at.isoformat() if self.created_at else None
+            "started_at": self.started_at.isoformat() if self.started_at else None
             "completed_at": self.completed_at.isoformat()
             if self.completed_at
-            else None,
-            "error": self.error,
+            else None
+            "error": self.error
         }
 
     def start(self) -> None:

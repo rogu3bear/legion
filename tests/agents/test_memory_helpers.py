@@ -17,9 +17,9 @@ def agent():
     agent.name = "test_agent"
     # override config
     agent.config = {
-        "memory_top_k": 5,
-        "memory_base_dir": "custom_memory",
-        "memory_tags": ["tag1", "tag2"],
+        "memory_top_k": 5
+        "memory_base_dir": "custom_memory"
+        "memory_tags": ["tag1", "tag2"]
     }
     return agent
 
@@ -64,9 +64,9 @@ def test_mem_store_dedup_and_enrichment(monkeypatch, agent):
     # create duplicate snippets
     common_embedding = [1.0, 0.0]
     input_snips = [
-        {"text": "dup", "embedding": common_embedding},
-        {"text": "dup", "embedding": common_embedding},
-        {"text": "unique", "embedding": [0.0, 1.0]},
+        {"text": "dup", "embedding": common_embedding}
+        {"text": "dup", "embedding": common_embedding}
+        {"text": "unique", "embedding": [0.0, 1.0]}
     ]
     # timestamp for enrichment
     ts = datetime.datetime(2022, 2, 2, 14, 30)

@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 
 spec = importlib.util.spec_from_file_location(
-    "legion.orchestrator",
-    Path(__file__).resolve().parents[2] / "legion" / "orchestrator.py",
+    "legion.orchestrator"
+    Path(__file__).resolve().parents[2] / "legion" / "orchestrator.py"
 )
 orch_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(orch_mod)

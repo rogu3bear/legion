@@ -62,7 +62,7 @@ def test_check_ports_available_conflicts(mocker):
 
     with pytest.raises(RuntimeError, match="Port conflicts detected"):
         check_ports_available({
-            "service1": 27000,
+            "service1": 27000
             "service2": 27001
         })
 
@@ -92,7 +92,7 @@ def test_check_ports_available_success(mocker):
 
     # Should not raise any exceptions
     check_ports_available({
-        "service1": 27000,
+        "service1": 27000
         "service2": 27001
     })
 

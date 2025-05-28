@@ -5,6 +5,15 @@ Launch orchestrator if available and send a health_ping via ZMQ.
 
 import logging
 import os
+import sys
+from pathlib import Path
+
+# Add project root to path for settings import
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from core.settings.ports import get_port
 
 try:
     from legion.orchestrator.main import start_app
@@ -41,8 +50,8 @@ def main() -> None:
     start_app()
     ctx = zmq.Context.instance()
     sock = ctx.socket(zmq.PUB)
-    # Use environment variable or default port
-    port = os.getenv('PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_PUB', os.getenv('ZMQ_PUB_PORT', '7608'))
+    # Use new settings helper for port management
+    port = get_port("ORCHESTRATOR_ZMQ_PUB", 7608)
     sock.bind(f"tcp://127.0.0.1:{port}")
     sock.send_json({"type": "health_ping"})
     sock.close()

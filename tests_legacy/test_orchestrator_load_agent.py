@@ -39,17 +39,17 @@ class TestOrchestratorLoadAgent(unittest.TestCase):
         # Set up test configs
         self.orchestrator.config = {
             "architect": {
-                "name": "architect",
-                "class": "ArchitectAgent",
-                "prompt": "Test prompt",
-                "channel_id": 123,
-            },
+                "name": "architect"
+                "class": "ArchitectAgent"
+                "prompt": "Test prompt"
+                "channel_id": 123
+            }
             "therapist": {
-                "name": "therapist",
-                "class": "TherapistAgent",
-                "prompt": "Test prompt",
-                "channel_id": 456,
-            },
+                "name": "therapist"
+                "class": "TherapistAgent"
+                "prompt": "Test prompt"
+                "channel_id": 456
+            }
         }
 
     @mock.patch("importlib.import_module")

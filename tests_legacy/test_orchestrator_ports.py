@@ -129,10 +129,10 @@ def test_orchestrator_startup_logs_banner(mock_logger, tmp_path):
     # Check if logger.info was called and if the banner is in the log messages
     banner_found = False
     expected_substrings = [
-        "[orchestrator] dynamic ports ->",
-        "redis:1111",
-        "web:2222",
-        "chroma:3333",
+        "[orchestrator] dynamic ports ->"
+        "redis:1111"
+        "web:2222"
+        "chroma:3333"
     ]
     for call_args in mock_logger.info.call_args_list:
         log_message = call_args[0][0]

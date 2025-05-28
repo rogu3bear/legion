@@ -6,10 +6,10 @@ import openai
 
 
 def summarize_placeholder(
-    snippets: List[str],
-    model: str = "gpt-3.5-turbo",
-    max_tokens: int = 128,
-    temperature: float = 0.3,
+    snippets: List[str]
+    model: str = "gpt-3.5-turbo"
+    max_tokens: int = 128
+    temperature: float = 0.3
 ) -> str:
     """
     Summarize a list of memory snippets using the LLM.
@@ -21,15 +21,15 @@ def summarize_placeholder(
         + "\n".join(snippets)
     )
     messages = [
-        {"role": "system", "content": "You are a helpful summarizer."},
-        {"role": "user", "content": prompt},
+        {"role": "system", "content": "You are a helpful summarizer."}
+        {"role": "user", "content": prompt}
     ]
     try:
         resp = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
+            model=model
+            messages=messages
+            max_tokens=max_tokens
+            temperature=temperature
         )
         return resp.choices[0].message.content.strip()
     except Exception as e:

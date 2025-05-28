@@ -11,12 +11,12 @@ from interface.models.agent import Agent  # Updated path
 # Assuming communication layer setup
 from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.agent import (
-    AgentActionResponse,
-    AgentConfigUpdate,
-    AgentCreate,
+    AgentActionResponse
+    AgentConfigUpdate
+    AgentCreate
     AgentDispatchPayload,  # Added import for dispatch payload
-    AgentStatusInfo,
-    AgentUpdate,
+    AgentStatusInfo
+    AgentUpdate
 )
 
 logger = logging.getLogger(__name__)
@@ -68,8 +68,8 @@ def create_agent(db: Session, agent_in: AgentCreate) -> Agent:  # Removed *
 
 
 def update_agent(
-    db: Session,
-    db_agent: Agent,
+    db: Session
+    db_agent: Agent
     agent_in: AgentUpdate,  # Removed *
 ) -> Agent:
     """Update an agent."""
@@ -184,9 +184,9 @@ def update_agent_config(
     try:
         response = send_orchestrator_request(
             {
-                "action": "update_agent_config",
-                "agent_name": agent_name,
-                "config": config_in.dict(),
+                "action": "update_agent_config"
+                "agent_name": agent_name
+                "config": config_in.dict()
             }
         )
         if response and response.get("status") == "success" and "config" in response:
@@ -210,8 +210,8 @@ def dispatch_to_agent(
     try:
         response = send_orchestrator_request(
             {
-                "action": "dispatch_to_agent",
-                "agent_name": agent_name,
+                "action": "dispatch_to_agent"
+                "agent_name": agent_name
                 "payload": message.model_dump(),  # Use model_dump for Pydantic v2
             }
         )
@@ -245,10 +245,10 @@ def control_agent_lifecycle(
     if lifecycle_action not in valid_actions:
         logger.error(f"Invalid lifecycle action requested: {lifecycle_action}")
         return AgentActionResponse(
-            agent_name=agent_name,
-            action=lifecycle_action,
-            status="error",
-            detail="Invalid action",
+            agent_name=agent_name
+            action=lifecycle_action
+            status="error"
+            detail="Invalid action"
         )
 
     command = {"action": lifecycle_action, "payload": {"agent_name": agent_name}}
@@ -256,20 +256,20 @@ def control_agent_lifecycle(
 
     if response and "status" in response:
         return AgentActionResponse(
-            agent_name=agent_name,
-            action=lifecycle_action,
-            status=response["status"],
-            detail=response.get("detail"),
+            agent_name=agent_name
+            action=lifecycle_action
+            status=response["status"]
+            detail=response.get("detail")
         )
     else:
         logger.error(
             f"Failed to {lifecycle_action} agent '{agent_name}'. Response: {response}"
         )
         return AgentActionResponse(
-            agent_name=agent_name,
-            action=lifecycle_action,
-            status="error",
-            detail="Communication error or invalid response from orchestrator",
+            agent_name=agent_name
+            action=lifecycle_action
+            status="error"
+            detail="Communication error or invalid response from orchestrator"
         )
 
 
@@ -284,17 +284,17 @@ def reload_agent_configurations() -> Optional[AgentActionResponse]:
         # or adapt the schema/response structure later.
         return AgentActionResponse(
             agent_name="all",  # Indicate this affects all agents
-            action="reload_configs",
-            status=response_data["status"],
-            detail=response_data.get("detail"),
+            action="reload_configs"
+            status=response_data["status"]
+            detail=response_data.get("detail")
         )
     else:
         logger.error(f"Failed to reload agent configs. Response: {response_data}")
         return AgentActionResponse(
-            agent_name="all",
-            action="reload_configs",
-            status="error",
-            detail="Communication error or invalid response from orchestrator",
+            agent_name="all"
+            action="reload_configs"
+            status="error"
+            detail="Communication error or invalid response from orchestrator"
         )
 
 

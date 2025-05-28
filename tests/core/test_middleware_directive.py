@@ -3,14 +3,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from core.utils.chroma_client import ChromaClient
-from legion.core.middleware.directive_definitions import (AGENT_DIRECTIVE_STRING,
+from legion.core.middleware.directive_definitions import (AGENT_DIRECTIVE_STRING
                                                         MIDDLEWARE_DIRECTIVE_PROMPT)
 from middleware.src.middleware.directive_compliance import DirectiveCompliance
 from middleware.src.middleware.middleware import (
-    ACCEPTABLE_SIMILARITY,
-    REVIEW_SIMILARITY,
-    THERAPIST_AGENT_THRESHOLD,
-    RequestMiddleware,
+    ACCEPTABLE_SIMILARITY
+    REVIEW_SIMILARITY
+    THERAPIST_AGENT_THRESHOLD
+    RequestMiddleware
 )
 
 
@@ -138,8 +138,8 @@ def test_process_request_directive_non_compliant(
         {"id": "doc1", "similarity": similarity}
     ]  # Embedding OK
     mock_directive_compliance.check.return_value = (
-        "non_compliant",
-        {"reason": "bad keyword"},
+        "non_compliant"
+        {"reason": "bad keyword"}
     )
     status, details = middleware.process_request(
         "test with bad_keyword", {"agent_id": "test_agent"}
@@ -157,8 +157,8 @@ def test_process_request_directive_therapist_triggered(
         {"id": "doc1", "similarity": similarity}
     ]  # Embedding OK
     mock_directive_compliance.check.return_value = (
-        "therapist_triggered",
-        {"reason": "critical issue"},
+        "therapist_triggered"
+        {"reason": "critical issue"}
     )
     status, details = middleware.process_request(
         "critical request", {"agent_id": "test_agent"}
@@ -177,8 +177,8 @@ def test_process_request_directive_rejection_takes_precedence(
         {"id": "doc1", "similarity": similarity}
     ]  # Embedding would otherwise be approved
     mock_directive_compliance.check.return_value = (
-        "non_compliant",
-        {"reason": "directive violation"},
+        "non_compliant"
+        {"reason": "directive violation"}
     )
     status, details = middleware.process_request("test", {"agent_id": "test_agent"})
     assert status == "rejected"
@@ -195,8 +195,8 @@ def test_process_request_directive_therapist_takes_precedence(
         {"id": "doc1", "similarity": similarity}
     ]  # Embedding would otherwise be approved
     mock_directive_compliance.check.return_value = (
-        "therapist_triggered",
-        {"reason": "suspicious pattern"},
+        "therapist_triggered"
+        {"reason": "suspicious pattern"}
     )
     status, details = middleware.process_request("test", {"agent_id": "test_agent"})
     assert status == "escalated_therapist"
@@ -213,8 +213,8 @@ def test_process_request_directive_therapist_takes_precedence_over_embedding_rev
         {"id": "doc1", "similarity": similarity}
     ]  # Embedding would otherwise be needs_review
     mock_directive_compliance.check.return_value = (
-        "therapist_triggered",
-        {"reason": "suspicious pattern"},
+        "therapist_triggered"
+        {"reason": "suspicious pattern"}
     )
     status, details = middleware.process_request("test", {"agent_id": "test_agent"})
     assert status == "escalated_therapist"

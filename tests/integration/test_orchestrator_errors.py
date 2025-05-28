@@ -83,19 +83,19 @@ async def orchestrator_instance(mock_dependencies):
 
     mock_agent_configs_dict = {
         "test_agent": {
-            "name": "test_agent",
-            "class": "MockAgent",
-            "prompt": "test_prompt",
-            "channel_id": "12345",
+            "name": "test_agent"
+            "class": "MockAgent"
+            "prompt": "test_prompt"
+            "channel_id": "12345"
             # Ensure all fields accessed by agent instantiation in Orchestrator.__init__ are present
             # e.g., if it accesses config.get("memory_base_dir") for LegionAgentMemory
-        },
+        }
         "error_agent": {
-            "name": "error_agent",
-            "class": "MockAgent",
-            "prompt": "error_prompt",
-            "channel_id": "67890",
-        },
+            "name": "error_agent"
+            "class": "MockAgent"
+            "prompt": "error_prompt"
+            "channel_id": "67890"
+        }
     }
 
     # This side effect function will be called when Orchestrator.load_agent_configs() is invoked.
@@ -107,12 +107,12 @@ async def orchestrator_instance(mock_dependencies):
     # Patch Orchestrator.load_agent_configs to use our side effect.
     # Patch CLASS_MAP in the orchestrator module to include MockAgent.
     with patch.object(
-        Orchestrator,
-        "load_agent_configs",
-        side_effect=mock_load_agent_configs_side_effect,
-        autospec=True,
+        Orchestrator
+        "load_agent_configs"
+        side_effect=mock_load_agent_configs_side_effect
+        autospec=True
     ), patch("legion.orchestrator.CLASS_MAP", {"MockAgent": MockAgent}):
-        # Initialize orchestrator. Inside __init__, our patched load_agent_configs will run,
+        # Initialize orchestrator. Inside __init__, our patched load_agent_configs will run
         # setting self.config. Then, the agent instantiation loop will run using this
         # self.config and the patched CLASS_MAP.
         orch = Orchestrator(
@@ -137,7 +137,7 @@ async def orchestrator_instance(mock_dependencies):
     # Ensure all background tasks created by orchestrator are awaited/cancelled
     # This is critical to avoid warnings like "Task was destroyed but it is pending!"
     # Orchestrator's shutdown should handle its _background_tasks (ZMQ loops)
-    # If other tasks are created directly in tests or by Orchestrator outside _background_tasks,
+    # If other tasks are created directly in tests or by Orchestrator outside _background_tasks
     # they might need explicit handling here or in the Orchestrator's shutdown.
     # Give a very small delay for any final task cleanup if needed.
     await asyncio.sleep(0.01)
@@ -155,7 +155,7 @@ async def test_orchestrator_startup_and_shutdown(orchestrator_instance):
     assert "test_agent" in orch.agents
 
     # Shutdown is handled by the fixture's teardown.
-    # We can add assertions here that would be true before explicit shutdown,
+    # We can add assertions here that would be true before explicit shutdown
     # and then rely on fixture for the shutdown call.
     # For this test, the fixture's yield and subsequent shutdown is the primary test.
     # To be more explicit here (though redundant with fixture):
@@ -174,12 +174,12 @@ async def test_dispatch_message_agent_exception(orchestrator_instance, caplog):
 
     # Patch run_middleware_pipeline to simulate it passing, so we test agent exception
     with patch(
-        "legion.orchestrator.run_middleware_pipeline",
-        return_value={"final_valid": True, "directive": "trigger error"},
+        "legion.orchestrator.run_middleware_pipeline"
+        return_value={"final_valid": True, "directive": "trigger error"}
     ) as mock_middleware, patch.object(
-        orch.agents["error_agent"],
-        "handle_task",
-        side_effect=ValueError("Agent task failed badly"),
+        orch.agents["error_agent"]
+        "handle_task"
+        side_effect=ValueError("Agent task failed badly")
     ) as mock_handle_task:
         response = await orch.dispatch_message(
             agent_name="error_agent", content="trigger error", author="test_user"
@@ -207,8 +207,8 @@ async def test_dispatch_message_unknown_agent(orchestrator_instance, caplog):
 
     # Patch run_middleware_pipeline to simulate it passing, so we test unknown agent error
     with patch(
-        "legion.orchestrator.run_middleware_pipeline",
-        return_value={"final_valid": True, "directive": "Hello"},
+        "legion.orchestrator.run_middleware_pipeline"
+        return_value={"final_valid": True, "directive": "Hello"}
     ) as mock_middleware:
         response = await orch.dispatch_message(
             agent_name="non_existent_agent", content="Hello", author="test_user"
@@ -229,9 +229,9 @@ async def test_ask_agent_exception(orchestrator_instance, caplog):
     caplog.set_level(logging.ERROR)
 
     with patch.object(
-        orch.agents["error_agent"],
-        "handle_task",
-        side_effect=RuntimeError("Ask failed in agent"),
+        orch.agents["error_agent"]
+        "handle_task"
+        side_effect=RuntimeError("Ask failed in agent")
     ):
         response = await orch.ask(agent_name="error_agent", prompt="problematic prompt")
 
@@ -369,9 +369,9 @@ async def test_zmq_rep_loop_dispatch_command_exception(orchestrator_instance, ca
     command_causing_error = {"action": "cause_error_in_dispatch", "payload": {}}
 
     with patch.object(
-        orch,
-        "dispatch_command",
-        side_effect=Exception("Dispatch command internal error"),
+        orch
+        "dispatch_command"
+        side_effect=Exception("Dispatch command internal error")
     ) as mock_dispatch:
         context = zmq.asyncio.Context.instance()
         client_socket = context.socket(zmq.REQ)
@@ -416,8 +416,8 @@ async def test_middleware_error_handling_in_dispatch_message(
 
     # Patch the run_middleware_pipeline function where it's imported in orchestrator.py
     with patch(
-        "legion.orchestrator.run_middleware_pipeline",
-        side_effect=Exception("Middleware boom!"),
+        "legion.orchestrator.run_middleware_pipeline"
+        side_effect=Exception("Middleware boom!")
     ) as mock_run_pipeline:
         response = await orch.dispatch_message(
             agent_name="test_agent", content="Test message"

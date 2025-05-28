@@ -23,12 +23,12 @@ else:
     endpoint = "/v1/chat/completions"
 url = base.rstrip("/") + endpoint
 headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+    "Authorization": f"Bearer {api_key}"
 }
 data = {
-    "model": model,
-    "messages": [{"role": "user", "content": "Hello, are you working?"}],
+    "model": model
+    "messages": [{"role": "user", "content": "Hello, are you working?"}]
 }
 
 print(f"Testing LM Studio endpoint: {url}")

@@ -10,12 +10,12 @@ from legion.agents.python.ux_designer import UxDesignerAgent
 from memory.legion_memory import LegionAgentMemory
 
 AGENT_CLASSES = [
-    ArchitectAgent,
-    EchoAgent,
-    PingAgent,
-    TherapistAgent,
-    UxDesignerAgent,
-    MetricsAgent,
+    ArchitectAgent
+    EchoAgent
+    PingAgent
+    TherapistAgent
+    UxDesignerAgent
+    MetricsAgent
 ]
 
 

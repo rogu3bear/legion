@@ -44,8 +44,8 @@ class MockCtx:
 async def test_create_task_success_direct_call(bot_and_cog):
     bot, cog, orchestrator = bot_and_cog
     orchestrator.dispatch_command.return_value = {
-        "status": "success",
-        "task_id": "abc123",
+        "status": "success"
+        "task_id": "abc123"
     }
 
     ctx = MockCtx()
@@ -59,10 +59,10 @@ async def test_create_task_success_direct_call(bot_and_cog):
     assert embed.title == "Task Created"  # Corrected title
 
     expected_fields = {
-        "Task ID": "abc123",
-        "Agent": "executor",
-        "Directive": "deploy patch",
-        "Confidence": "0.9",
+        "Task ID": "abc123"
+        "Agent": "executor"
+        "Directive": "deploy patch"
+        "Confidence": "0.9"
     }
     present_fields = {f.name: f.value for f in embed.fields}
     assert present_fields == expected_fields, (
@@ -71,12 +71,12 @@ async def test_create_task_success_direct_call(bot_and_cog):
 
     orchestrator.dispatch_command.assert_called_once_with(
         {
-            "action": "create_task",
+            "action": "create_task"
             "payload": {
-                "agent": "executor",
-                "directive": "deploy patch",
-                "confidence": 0.9,
-            },
+                "agent": "executor"
+                "directive": "deploy patch"
+                "confidence": 0.9
+            }
         }
     )
 
@@ -85,8 +85,8 @@ async def test_create_task_success_direct_call(bot_and_cog):
 async def test_create_task_failure_from_orchestrator_direct_call(bot_and_cog):
     bot, cog, orchestrator = bot_and_cog
     orchestrator.dispatch_command.return_value = {
-        "status": "error",
-        "detail": "Middleware rejection detail",
+        "status": "error"
+        "detail": "Middleware rejection detail"
     }
 
     ctx = MockCtx()

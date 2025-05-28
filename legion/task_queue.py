@@ -30,11 +30,11 @@ class Task:
 
 class TaskQueue:
     def __init__(
-        self,
-        host: str = "localhost",
-        port: int = None,
-        max_retries: int = 5,
-        base_delay: int = 5,
+        self
+        host: str = "localhost"
+        port: int = None
+        max_retries: int = 5
+        base_delay: int = 5
     ) -> None:
         if redis is None:
             self.client = None
@@ -79,8 +79,8 @@ class TaskQueue:
             self.agent_queues[task.agent].sort(key=lambda t: (t.priority, t.available_at))
             
         logger.info(
-            "task enqueued",
-            extra={"props": {"task_id": task.id, "agent": task.agent, "priority": task.priority}},
+            "task enqueued"
+            extra={"props": {"task_id": task.id, "agent": task.agent, "priority": task.priority}}
         )
 
     def dequeue(self, agent: str) -> Optional[Task]:
@@ -212,8 +212,8 @@ class TaskQueue:
             else:
                 self.dead_letter[task_id] = task
             logger.error(
-                "task failed",
-                extra={"props": {"task_id": task_id, "retries": task.retries}},
+                "task failed"
+                extra={"props": {"task_id": task_id, "retries": task.retries}}
             )
             return
         delay = min(self.base_delay * 2 ** (task.retries - 1), 60)
@@ -237,8 +237,8 @@ class TaskQueue:
             self.agent_queues[task.agent].sort(key=lambda t: (t.priority, t.available_at))
             
         logger.info(
-            "task retry",
-            extra={"props": {"task_id": task_id, "attempt": task.retries, "delay": delay}},
+            "task retry"
+            extra={"props": {"task_id": task_id, "attempt": task.retries, "delay": delay}}
         )
 
     def update_state(self, task_id: str, state: str) -> None:

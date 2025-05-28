@@ -9,12 +9,12 @@ import os
 import sys
 
 AGENT_CLASSES = {
-    "ArchitectAgent",
-    "TherapistAgent",
-    "MetricsAgent",
-    "UxDesignerAgent",
-    "PingAgent",
-    "EchoAgent",
+    "ArchitectAgent"
+    "TherapistAgent"
+    "MetricsAgent"
+    "UxDesignerAgent"
+    "PingAgent"
+    "EchoAgent"
 }
 
 IGNORED_DIRS = {"tests", "test", "__pycache__"}

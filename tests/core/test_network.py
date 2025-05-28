@@ -30,8 +30,8 @@ def test_fetch_with_retries_fail_then_success(mock_sleep, mock_get):
     mock_success_response.status_code = 200
 
     mock_get.side_effect = [
-        requests.exceptions.Timeout("Timeout"),
-        mock_success_response,
+        requests.exceptions.Timeout("Timeout")
+        mock_success_response
     ]
 
     response = fetch_with_retries("http://example.com", retries=3, delay=0.1)

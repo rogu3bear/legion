@@ -19,45 +19,45 @@ depends_on = None
 def upgrade() -> None:
     """Create initial core database tables."""
     # Create schema_version table
-    op.create_table('schema_version',
-        sa.Column('version', sa.Integer(), nullable=False),
+    op.create_table('schema_version'
+        sa.Column('version', sa.Integer(), nullable=False)
         sa.PrimaryKeyConstraint('version')
     )
 
     # Create agents table
-    op.create_table('agents',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('name', sa.String(), nullable=False),
-        sa.Column('type', sa.String(), nullable=False),
-        sa.Column('status', sa.String(), nullable=False),
-        sa.Column('capabilities', sa.String(), nullable=True),
-        sa.Column('config', sa.String(), nullable=True),
-        sa.Column('agent_metadata', sa.String(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=True),
-        sa.Column('last_heartbeat', sa.DateTime(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.PrimaryKeyConstraint('id'),
+    op.create_table('agents'
+        sa.Column('id', sa.Integer(), nullable=False)
+        sa.Column('name', sa.String(), nullable=False)
+        sa.Column('type', sa.String(), nullable=False)
+        sa.Column('status', sa.String(), nullable=False)
+        sa.Column('capabilities', sa.String(), nullable=True)
+        sa.Column('config', sa.String(), nullable=True)
+        sa.Column('agent_metadata', sa.String(), nullable=True)
+        sa.Column('is_active', sa.Boolean(), nullable=True)
+        sa.Column('last_heartbeat', sa.DateTime(), nullable=True)
+        sa.Column('created_at', sa.DateTime(), nullable=False)
+        sa.Column('updated_at', sa.DateTime(), nullable=False)
+        sa.PrimaryKeyConstraint('id')
         sa.UniqueConstraint('name')
     )
 
     # Create tasks table
-    op.create_table('tasks',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('agent_id', sa.Integer(), nullable=False),
-        sa.Column('type', sa.String(), nullable=False),
-        sa.Column('status', sa.String(), nullable=False),
-        sa.Column('priority', sa.String(), nullable=False),
-        sa.Column('title', sa.String(), nullable=False),
-        sa.Column('description', sa.String(), nullable=True),
-        sa.Column('task_data', sa.String(), nullable=True),
-        sa.Column('result_data', sa.String(), nullable=True),
-        sa.Column('error_message', sa.String(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.Column('started_at', sa.DateTime(), nullable=True),
-        sa.Column('completed_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['agent_id'], ['agents.id'], ),
+    op.create_table('tasks'
+        sa.Column('id', sa.Integer(), nullable=False)
+        sa.Column('agent_id', sa.Integer(), nullable=False)
+        sa.Column('type', sa.String(), nullable=False)
+        sa.Column('status', sa.String(), nullable=False)
+        sa.Column('priority', sa.String(), nullable=False)
+        sa.Column('title', sa.String(), nullable=False)
+        sa.Column('description', sa.String(), nullable=True)
+        sa.Column('task_data', sa.String(), nullable=True)
+        sa.Column('result_data', sa.String(), nullable=True)
+        sa.Column('error_message', sa.String(), nullable=True)
+        sa.Column('created_at', sa.DateTime(), nullable=False)
+        sa.Column('updated_at', sa.DateTime(), nullable=False)
+        sa.Column('started_at', sa.DateTime(), nullable=True)
+        sa.Column('completed_at', sa.DateTime(), nullable=True)
+        sa.ForeignKeyConstraint(['agent_id'], ['agents.id'], )
         sa.PrimaryKeyConstraint('id')
     )
 

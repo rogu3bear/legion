@@ -30,6 +30,7 @@ if nc -z 127.0.0.1 "${REDIS_PORT}"; then
 else
     echo "Starting Redis on ${REDIS_PORT}"
     redis-server --port "${REDIS_PORT}" --daemonize yes --pidfile "${REDIS_PIDFILE}"
+    sleep 1 # Add a small delay for PID file creation
     REDIS_PID="$(cat "${REDIS_PIDFILE}")"
 fi
 

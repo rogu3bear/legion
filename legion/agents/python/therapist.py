@@ -88,12 +88,12 @@ class TherapistAgent(BaseAgent):
         - Reject if content is empty, unrelated, or confidence is low (simulated by context).
         """
         allowed_phrases = [
-            "self-assessment",
-            "well-being",
-            "agent support",
-            "therapy",
-            "stress",
-            "conflict",
+            "self-assessment"
+            "well-being"
+            "agent support"
+            "therapy"
+            "stress"
+            "conflict"
         ]
         if not content or not any(
             phrase in content.lower() for phrase in allowed_phrases

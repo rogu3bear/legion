@@ -45,18 +45,18 @@ class OrchestratorCog(commands.Cog):
     async def llm_test(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello world"},
+            {"role": "system", "content": "You are a helpful assistant."}
+            {"role": "user", "content": "Hello world"}
         ]
         try:
             loop = interaction.client.loop
 
             def sync_call():
                 resp = openai.ChatCompletion.create(
-                    model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
-                    messages=messages,
-                    temperature=0.3,
-                    max_tokens=32,
+                    model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+                    messages=messages
+                    temperature=0.3
+                    max_tokens=32
                 )
                 return resp.choices[0].message.content
 
@@ -66,8 +66,8 @@ class OrchestratorCog(commands.Cog):
             await interaction.followup.send(f"LLM test failed: {e}")
 
     @app_commands.command(
-        name="critique",
-        description="UX Designer: Critique and style the latest feed embeds.",
+        name="critique"
+        description="UX Designer: Critique and style the latest feed embeds."
     )
     async def ux_critique(self, interaction: discord.Interaction):
         agents = interaction.client.orchestrator._agent_objects
@@ -108,8 +108,8 @@ class OrchestratorCog(commands.Cog):
         valid_agents = list(interaction.client.orchestrator.agent_channel_ids.keys())
         if agent_name not in valid_agents:
             await interaction.response.send_message(
-                f"Invalid agent: {agent_name}. Valid agents: {', '.join(valid_agents)}",
-                ephemeral=True,
+                f"Invalid agent: {agent_name}. Valid agents: {', '.join(valid_agents)}"
+                ephemeral=True
             )
             return
         print(
@@ -119,18 +119,18 @@ class OrchestratorCog(commands.Cog):
             f"[DEBUG ask] Incoming agent_name={agent_name!r}, available={valid_agents}"
         )
         context = {
-            "channel_id": interaction.channel.id,
-            "thread_id": getattr(interaction.channel, "id", interaction.channel.id),
-            "content": question,
-            "author": interaction.user.name,
-            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+            "channel_id": interaction.channel.id
+            "thread_id": getattr(interaction.channel, "id", interaction.channel.id)
+            "content": question
+            "author": interaction.user.name
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat()
         }
         # Correctly dispatch message passing content and metadata
         reply = await interaction.client.orchestrator.dispatch_message(
-            agent_name,
-            question,
-            author=interaction.user.name,
-            timestamp=context["timestamp"],
+            agent_name
+            question
+            author=interaction.user.name
+            timestamp=context["timestamp"]
         )
         # Send the agent's reply back to the user
         await interaction.response.send_message(reply)
@@ -147,14 +147,14 @@ class OrchestratorCog(commands.Cog):
         agents = interaction.client.orchestrator._agent_objects
         if agent_id not in agents:
             await interaction.response.send_message(
-                f"Invalid agent: {agent_id}. Valid agents: {', '.join(agents.keys())}",
-                ephemeral=True,
+                f"Invalid agent: {agent_id}. Valid agents: {', '.join(agents.keys())}"
+                ephemeral=True
             )
             return
         if key not in agents[agent_id].config:
             await interaction.response.send_message(
-                f"Invalid configuration key: {key}. Valid keys: {', '.join(agents[agent_id].config.keys())}",
-                ephemeral=True,
+                f"Invalid configuration key: {key}. Valid keys: {', '.join(agents[agent_id].config.keys())}"
+                ephemeral=True
             )
             return
         agents[agent_id].config[key] = value
@@ -163,14 +163,14 @@ class OrchestratorCog(commands.Cog):
         )
         # Log feedback/confirmation to orchestrator or state manager
         self.bot.orchestrator.log_feedback(
-            agent_id=agent_id,
+            agent_id=agent_id
             feedback_payload={
-                "type": "config_update",
-                "user": interaction.user.id,
-                "channel": interaction.channel_id,
-                "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-                "details": f"Updated {key} to {value}",
-            },
+                "type": "config_update"
+                "user": interaction.user.id
+                "channel": interaction.channel_id
+                "timestamp": datetime.datetime.now(timezone.utc).isoformat()
+                "details": f"Updated {key} to {value}"
+            }
         )
 
 

@@ -2,11 +2,11 @@
 
 # Expose commonly used schemas directly
 from .agent import (
-    AgentActionResponse,
-    AgentConfigInfo,
-    AgentDispatchPayload,
-    AgentDispatchResponse,
-    AgentStatusInfo,
+    AgentActionResponse
+    AgentConfigInfo
+    AgentDispatchPayload
+    AgentDispatchResponse
+    AgentStatusInfo
 )
 from .memory import DocumentResponse, MemorySearchResponse
 from .task import Task, TaskCreate, TaskCreatedResponse, TaskList, TaskUpdate

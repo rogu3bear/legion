@@ -54,7 +54,7 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
         missing_keys = set(DEFAULT_PORTS.keys()) - set(RUNTIME_PORTS.keys())
         # This should ideally not happen if defaults are always loaded first.
         # However, if a DEFAULT_PORT key somehow doesn't make it into RUNTIME_PORTS
-        # (e.g. different naming convention not handled by the loading logic),
+        # (e.g. different naming convention not handled by the loading logic)
         # this assertion will catch it.
         # For the specified assertion `set(DEFAULT_PORTS) <= set(runtime_ports)`
         # this means that every key in DEFAULT_PORTS must be a key in RUNTIME_PORTS.
@@ -74,16 +74,16 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
 # Valid port allocation map used across Legion. Only ports within this range
 # should be used by services.
 LEGION_PORT_MAP: Dict[str, int] = {
-    "ui_backend": 7801,
-    "ui_frontend": 7802,
-    "orchestrator_rest": 7803,
-    "interface_api": 7804,
-    "middleware": 7805,
-    "metrics": 7806,
-    "researcher_api": 7807,
-    "zmq_pub": 7808,
-    "zmq_sub": 7809,
-    "redis": 7810,
+    "ui_backend": 7801
+    "ui_frontend": 7802
+    "orchestrator_rest": 7803
+    "interface_api": 7804
+    "middleware": 7805
+    "metrics": 7806
+    "researcher_api": 7807
+    "zmq_pub": 7808
+    "zmq_sub": 7809
+    "redis": 7810
 }
 
 

@@ -20,11 +20,11 @@ class TestClient:
     def _run(self, method: str, path: str, payload=None):
         body = json.dumps(payload).encode() if payload is not None else b""
         scope = {
-            "type": "http",
-            "method": method,
-            "path": path,
-            "query_string": b"",
-            "headers": [],
+            "type": "http"
+            "method": method
+            "path": path
+            "query_string": b""
+            "headers": []
         }
         messages = []
 

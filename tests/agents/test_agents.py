@@ -25,20 +25,20 @@ def test_env(tmp_path_factory):
     open(report_path, "w").close()
     open(db_path, "w").close()
     yield {
-        "log_path": str(log_path),
-        "report_path": str(report_path),
-        "db_path": str(db_path),
-        "logs_dir": str(logs_dir),
-        "reports_dir": str(reports_dir),
-        "db_dir": str(db_dir),
+        "log_path": str(log_path)
+        "report_path": str(report_path)
+        "db_path": str(db_path)
+        "logs_dir": str(logs_dir)
+        "reports_dir": str(reports_dir)
+        "db_dir": str(db_dir)
     }
 
 
 @pytest.mark.asyncio
 async def test_metrics_agent_reads_task_log(test_env, monkeypatch):
     entries = [
-        {"type": "metric", "content": "CPU usage"},
-        {"type": "metric", "content": "Memory usage"},
+        {"type": "metric", "content": "CPU usage"}
+        {"type": "metric", "content": "Memory usage"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -56,8 +56,8 @@ async def test_metrics_agent_reads_task_log(test_env, monkeypatch):
 @pytest.mark.asyncio
 async def test_therapist_agent_reads_task_log(test_env, monkeypatch):
     entries = [
-        {"type": "therapy", "content": "Session started"},
-        {"type": "therapy", "content": "Session ended"},
+        {"type": "therapy", "content": "Session started"}
+        {"type": "therapy", "content": "Session ended"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -75,7 +75,7 @@ async def test_therapist_agent_reads_task_log(test_env, monkeypatch):
 @pytest.mark.asyncio
 async def test_metrics_agent_composes_summary(test_env, monkeypatch):
     entries = [
-        {"type": "metric", "content": "CPU usage"},
+        {"type": "metric", "content": "CPU usage"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -93,7 +93,7 @@ async def test_metrics_agent_composes_summary(test_env, monkeypatch):
 @pytest.mark.asyncio
 async def test_therapist_agent_composes_summary(test_env, monkeypatch):
     entries = [
-        {"type": "therapy", "content": "Session started"},
+        {"type": "therapy", "content": "Session started"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -110,11 +110,11 @@ async def test_therapist_agent_composes_summary(test_env, monkeypatch):
 
 class DummyOrchestrator:
     agent_channel_ids = {
-        "architect_agent": 1,
-        "echo_agent": 3,
-        "ping_agent": 5,
-        "therapist_agent": 7,
-        "ux_designer_agent": 8,
+        "architect_agent": 1
+        "echo_agent": 3
+        "ping_agent": 5
+        "therapist_agent": 7
+        "ux_designer_agent": 8
     }
 
     def __init__(self):
@@ -130,18 +130,18 @@ class DummyClient:
 
 def test_agent_instantiation_and_properties():
     agent_classes = [
-        ArchitectAgent,
-        EchoAgent,
-        PingAgent,
-        TherapistAgent,
-        UxDesignerAgent,
+        ArchitectAgent
+        EchoAgent
+        PingAgent
+        TherapistAgent
+        UxDesignerAgent
     ]
     names = [
-        "architect_agent",
-        "echo_agent",
-        "ping_agent",
-        "therapist_agent",
-        "ux_designer_agent",
+        "architect_agent"
+        "echo_agent"
+        "ping_agent"
+        "therapist_agent"
+        "ux_designer_agent"
     ]
     for cls, name in zip(agent_classes, names):
         agent = cls(DummyOrchestrator())

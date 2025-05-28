@@ -19,27 +19,27 @@ depends_on = None
 def upgrade():
     # Create users table
     op.create_table(
-        "users",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("username", sa.String(length=50), nullable=False),
-        sa.Column("email", sa.String(length=100), nullable=False),
-        sa.Column("hashed_password", sa.String(length=200), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False, default=True),
+        "users"
+        sa.Column("id", sa.Integer(), nullable=False)
+        sa.Column("username", sa.String(length=50), nullable=False)
+        sa.Column("email", sa.String(length=100), nullable=False)
+        sa.Column("hashed_password", sa.String(length=200), nullable=False)
+        sa.Column("is_active", sa.Boolean(), nullable=False, default=True)
         sa.Column(
-            "created_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("CURRENT_TIMESTAMP"),
-        ),
+            "created_at"
+            sa.DateTime()
+            nullable=False
+            server_default=sa.text("CURRENT_TIMESTAMP")
+        )
         sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("CURRENT_TIMESTAMP"),
-        ),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("username"),
-        sa.UniqueConstraint("email"),
+            "updated_at"
+            sa.DateTime()
+            nullable=False
+            server_default=sa.text("CURRENT_TIMESTAMP")
+        )
+        sa.PrimaryKeyConstraint("id")
+        sa.UniqueConstraint("username")
+        sa.UniqueConstraint("email")
     )
 
 

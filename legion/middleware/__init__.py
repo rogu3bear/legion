@@ -47,11 +47,11 @@ def run_middleware_pipeline(
     if not directive_validation_result.get("is_valid", False):
         post_agent_feed("Directive validation failed")
         return {
-            "final_valid": False,
+            "final_valid": False
             "reason": directive_validation_result.get(
                 "reason", "Directive validation failed"
-            ),
-            "source": "validator",
+            )
+            "source": "validator"
         }
 
     # Step 2: Hallucination check (e.g., using hallucination_guard.py)
@@ -63,7 +63,7 @@ def run_middleware_pipeline(
 
     initial_confidence = request_payload.get("confidence")
     if initial_confidence is None:
-        # If confidence isn't part of the initial agent request,
+        # If confidence isn't part of the initial agent request
         # this step might be more applicable to agent *responses*.
         # For now, if no confidence, we can't run hallucination guard or therapist effectively based on it.
         # However, the therapist example *requires* confidence.
@@ -85,14 +85,14 @@ def run_middleware_pipeline(
         hallucination_check_input, threshold=confidence_threshold
     )
     logger.info(
-        "Hallucination guard result",
-        extra={"result": hallucination_result, "threshold": confidence_threshold},
+        "Hallucination guard result"
+        extra={"result": hallucination_result, "threshold": confidence_threshold}
     )
 
     middleware_passed_initial_checks = True  # From directive_validation_result
 
     if not hallucination_result.get("valid", False):
-        # Even if hallucination guard fails, therapist might still review,
+        # Even if hallucination guard fails, therapist might still review
         # but we should note the middleware's preliminary finding.
         # The diagram implies Therapist gets "middleware_validation: true" only if both pass.
         # Let's adjust: if hallucination fails, middleware_validation is false.
@@ -106,8 +106,8 @@ def run_middleware_pipeline(
     # Step 3: Therapist validation
     # Prepare payload for therapist as per the example
     therapist_input = {
-        "agent": request_payload.get("agent"),
-        "directive": request_payload.get("directive"),
+        "agent": request_payload.get("agent")
+        "directive": request_payload.get("directive")
         "confidence": initial_confidence,  # Pass the original confidence
         "middleware_validation": middleware_passed_initial_checks
         and hallucination_result.get(
@@ -119,11 +119,11 @@ def run_middleware_pipeline(
     # The therapist may still choose to override.
     if not therapist_input["middleware_validation"]:
         logger.info(
-            "Therapist review triggered despite initial middleware failure",
+            "Therapist review triggered despite initial middleware failure"
             extra={
-                "directive_valid": directive_validation_result.get("is_valid"),
-                "hallucination_valid": hallucination_result.get("valid"),
-            },
+                "directive_valid": directive_validation_result.get("is_valid")
+                "hallucination_valid": hallucination_result.get("valid")
+            }
         )
         post_agent_feed("Therapist review due to middleware failure")
 
@@ -135,16 +135,16 @@ def run_middleware_pipeline(
     if not therapist_decision.get("valid", False):
         post_agent_feed("Therapist rejected request")
         return {
-            "final_valid": False,
-            "reason": therapist_decision.get("reason", "Therapist rejected"),
-            "source": "therapist",
+            "final_valid": False
+            "reason": therapist_decision.get("reason", "Therapist rejected")
+            "source": "therapist"
         }
 
     # If all checks pass
     final_result = {
-        "final_valid": True,
-        "directive": therapist_decision.get("directive"),
-        "source": "all_middleware_approved",
+        "final_valid": True
+        "directive": therapist_decision.get("directive")
+        "source": "all_middleware_approved"
     }
     logger.info("Middleware pipeline approved", extra={"result": final_result})
     post_agent_feed("Request approved by middleware")
@@ -162,24 +162,24 @@ def run_middleware_pipeline(
 #         yaml.dump({"executor": {"allowed_directives": ["deploy critical patch X", "run diagnostics"]}}, f)
 #
 #     test_request_valid = {
-#         "agent": "executor",
-#         "directive": "deploy critical patch X",
+#         "agent": "executor"
+#         "directive": "deploy critical patch X"
 #         "confidence": 0.90  # Confidence from the agent or a preceding step
 #     }
 #     result_valid = run_middleware_pipeline(test_request_valid)
 #     print(f"Test Valid Request: {result_valid}")
 #
 #     test_request_low_confidence_therapist_pass = { # therapist has stricter confidence
-#         "agent": "executor",
-#         "directive": "deploy critical patch X",
+#         "agent": "executor"
+#         "directive": "deploy critical patch X"
 #         "confidence": 0.80
 #     }
 #     result_low_confidence_therapist_fail = run_middleware_pipeline(test_request_low_confidence_therapist_pass, confidence_threshold=0.75)
 #     print(f"Test Low Confidence (Therapist Fail): {result_low_confidence_therapist_fail}")
 #
 #     test_request_low_confidence_middleware_fail = {
-#         "agent": "executor",
-#         "directive": "deploy critical patch X",
+#         "agent": "executor"
+#         "directive": "deploy critical patch X"
 #         "confidence": 0.70
 #     }
 #     # Middleware (hallucination guard) uses 0.75 by default
@@ -187,8 +187,8 @@ def run_middleware_pipeline(
 #     print(f"Test Low Confidence (Middleware Fail): {result_low_confidence_middleware_fail}")
 #
 #     test_request_invalid_directive = {
-#         "agent": "executor",
-#         "directive": "launch the nukes",
+#         "agent": "executor"
+#         "directive": "launch the nukes"
 #         "confidence": 0.99
 #     }
 #     result_invalid_directive = run_middleware_pipeline(test_request_invalid_directive)

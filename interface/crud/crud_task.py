@@ -8,10 +8,10 @@ from typing import Any, Dict, Optional
 
 from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.task import (
-    Task,
-    TaskCreate,
-    TaskCreatedResponse,
-    TaskList,
+    Task
+    TaskCreate
+    TaskCreatedResponse
+    TaskList
 )
 
 logger = logging.getLogger(__name__)
@@ -52,10 +52,10 @@ def get_task(task_id: uuid.UUID) -> Optional[Task]:
 
 
 def list_tasks(
-    skip: int = 0,
-    limit: int = 100,
-    agent_id: Optional[str] = None,
-    status: Optional[str] = None,
+    skip: int = 0
+    limit: int = 100
+    agent_id: Optional[str] = None
+    status: Optional[str] = None
 ) -> Optional[TaskList]:
     """List tasks with optional filtering by agent_id and status."""
     try:

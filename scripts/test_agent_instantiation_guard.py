@@ -7,8 +7,8 @@ import libcst as cst
 # Assuming the codemod script is saved as agent_instantiation_guard.py
 # Adjust the import path if necessary
 from scripts.agent_instantiation_guard import (
-    AgentInstantiationCodemod,
-    class_name_to_agent_key,
+    AgentInstantiationCodemod
+    class_name_to_agent_key
 )
 from scripts.legion_codemod_context import CodemodContext
 
@@ -66,7 +66,7 @@ def my_func():
     agent1 = orchestrator.load_agent('architect')
     therapist = orchestrator.load_agent('therapist')
 """
-        # We need to parse the expected code to compare CSTs for robustness,
+        # We need to parse the expected code to compare CSTs for robustness
         # but comparing code strings is simpler for this example.
         # Note: Whitespace and comments might differ slightly depending on CST formatting.
 
@@ -80,8 +80,8 @@ def my_func():
             "from legion.agents.python.architect import ArchitectAgent", fixed_code
         )
         self.assertNotIn(
-            "from legion.agents.python.therapist import TherapistAgent as TA",
-            fixed_code,
+            "from legion.agents.python.therapist import TherapistAgent as TA"
+            fixed_code
         )
         self.assertEqual(len(warnings), 2)  # Warnings should still be generated
 

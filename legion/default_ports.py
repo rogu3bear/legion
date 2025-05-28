@@ -1,14 +1,14 @@
 import os
 
 DEFAULT_PORTS = {
-    "ui_backend": 7801,
-    "ui_frontend": 7802,
-    "orchestrator_rest": 7803,
-    "interface_api": 7804,
-    "middleware": 7805,
-    "metrics": 7806,
-    "researcher_api": 7807,
-    "zmq_pub": 7808,
-    "zmq_sub": 7809,
-    "redis": 7810,
+    "ui_backend": 7801
+    "ui_frontend": 7802
+    "orchestrator_rest": 7803
+    "interface_api": 7804
+    "middleware": 7805
+    "metrics": 7806
+    "researcher_api": 7807
+    "zmq_pub": 7808
+    "zmq_sub": 7809
+    "redis": 7810
 }

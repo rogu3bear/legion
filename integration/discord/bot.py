@@ -125,12 +125,12 @@ class LegionBot(commands.Bot):
 
         # Announce in agent-feed or general channel with agent list
         emoji_map = {
-            "architect_agent": "🏗️",
-            "metrics_agent": "📊",
-            "ux_designer_agent": "🎨",
-            "therapist_agent": "🗣️",
-            "ping_agent": "📶",
-            "echo_agent": "🔁",
+            "architect_agent": "🏗️"
+            "metrics_agent": "📊"
+            "ux_designer_agent": "🎨"
+            "therapist_agent": "🗣️"
+            "ping_agent": "📶"
+            "echo_agent": "🔁"
         }
 
         agent_names = list(self.orchestrator._agent_objects.keys())
@@ -204,10 +204,10 @@ class LegionBot(commands.Bot):
                     return  # Not an agent channel
 
                 response = await self.orchestrator.dispatch_message(
-                    agent_name=agent_name,
-                    content=message.content,
-                    author=message.author.name,
-                    timestamp=message.created_at.isoformat(),
+                    agent_name=agent_name
+                    content=message.content
+                    author=message.author.name
+                    timestamp=message.created_at.isoformat()
                 )
 
                 if response:

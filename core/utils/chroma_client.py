@@ -14,9 +14,9 @@ class ChromaClient:
     """
 
     def __init__(
-        self,
-        persist_directory: str = ".chromadb",
-        embedding_model: Optional[str] = None,
+        self
+        persist_directory: str = ".chromadb"
+        embedding_model: Optional[str] = None
     ):
         """
         Initializes the Chroma client and collection.
@@ -89,10 +89,10 @@ class ChromaClient:
         # Use upsert if available, else fallback to add
         if hasattr(self.collection, "upsert"):
             self.collection.upsert(
-                ids=[embedding_id],
-                embeddings=[embedding],
-                metadatas=[metadata],
-                documents=[None],
+                ids=[embedding_id]
+                embeddings=[embedding]
+                metadatas=[metadata]
+                documents=[None]
             )
         else:
             self.collection.add(
@@ -108,10 +108,10 @@ class ChromaClient:
         if not isinstance(query_embedding, list) or not query_embedding:
             raise ValueError("Query embedding must be a non-empty list of floats")
         results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=top_k,
-            include_embeddings=True,
-            include_distances=True,
+            query_embeddings=[query_embedding]
+            n_results=top_k
+            include_embeddings=True
+            include_distances=True
         )
         ids = results.get("ids", [[]])[0]
         embeddings = results.get("embeddings", [[]])[0]
@@ -150,13 +150,13 @@ class AsyncChromaClient:
         ssl = parsed_url.scheme == "https"
         try:
             self.client = chromadb.HttpClient(
-                host=host,
-                port=port,
-                ssl=ssl,
+                host=host
+                port=port
+                ssl=ssl
                 settings=chromadb.Settings(
-                    chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
-                    chroma_client_auth_credentials=api_key,
-                ),
+                    chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider"
+                    chroma_client_auth_credentials=api_key
+                )
             )
         except Exception:
             self.client = SimpleNamespace()
@@ -170,9 +170,9 @@ class AsyncChromaClient:
                 coll.upsert(
                     docs=[
                         {
-                            "id": f"{r.agent_name}:{r.interaction_id}",
-                            "embedding": r.embedding,
-                            "metadata": r.dict(exclude={"embedding"}),
+                            "id": f"{r.agent_name}:{r.interaction_id}"
+                            "embedding": r.embedding
+                            "metadata": r.dict(exclude={"embedding"})
                         }
                     ]
                 )
@@ -189,9 +189,9 @@ class AsyncChromaClient:
         await coll.upsert(
             docs=[
                 {
-                    "id": f"{record.agent_name}:{record.interaction_id}",
-                    "embedding": record.embedding,
-                    "metadata": record.dict(exclude={"embedding"}),
+                    "id": f"{record.agent_name}:{record.interaction_id}"
+                    "embedding": record.embedding
+                    "metadata": record.dict(exclude={"embedding"})
                 }
             ]
         )

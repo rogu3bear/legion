@@ -39,7 +39,7 @@ def send_request(
         timeout_ms: Maximum time to wait for a response in milliseconds.
 
     Returns:
-        The response dictionary received from the orchestrator,
+        The response dictionary received from the orchestrator
         or None if timed out or an error occurred.
     """
     if context is None:
@@ -89,8 +89,8 @@ def send_request(
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding errors)
         logger.error(
-            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}",
-            exc_info=True,
+            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}"
+            exc_info=True
         )
         return None
     finally:
@@ -102,8 +102,8 @@ def send_request(
             except Exception as e_close:
                 # Log error during close but don't mask original error
                 logger.error(
-                    f"Error closing ZMQ socket for request ID {request_id}: {e_close}",
-                    exc_info=True,
+                    f"Error closing ZMQ socket for request ID {request_id}: {e_close}"
+                    exc_info=True
                 )
 
 

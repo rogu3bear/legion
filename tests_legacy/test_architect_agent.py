@@ -46,13 +46,13 @@ def test_env(tmp_path_factory):
     Path(db_path).touch()
     # Patch paths in memory module if needed
     yield {
-        "configs": configs,
-        "log_path": str(log_path),
-        "report_path": str(report_path),
-        "db_path": str(db_path),
-        "logs_dir": str(logs_dir),
-        "reports_dir": str(reports_dir),
-        "db_dir": str(db_dir),
+        "configs": configs
+        "log_path": str(log_path)
+        "report_path": str(report_path)
+        "db_path": str(db_path)
+        "logs_dir": str(logs_dir)
+        "reports_dir": str(reports_dir)
+        "db_dir": str(db_dir)
     }
 
 
@@ -61,8 +61,8 @@ def test_env(tmp_path_factory):
 async def test_A1_architect_reads_task_log(test_env, monkeypatch):
     # Seed task_log.jsonl
     entries = [
-        {"type": "update", "content": "Initial design"},
-        {"type": "comment", "content": "Review complete"},
+        {"type": "update", "content": "Initial design"}
+        {"type": "comment", "content": "Review complete"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -93,8 +93,8 @@ async def test_A2_architect_extracts_llm_metrics(test_env, monkeypatch):
 async def test_A3_architect_composes_summary(test_env, monkeypatch):
     # Seed log and metrics
     entries = [
-        {"type": "update", "content": "Initial design"},
-        {"type": "comment", "content": "Review complete"},
+        {"type": "update", "content": "Initial design"}
+        {"type": "comment", "content": "Review complete"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -127,8 +127,8 @@ async def test_A4_architect_posts_summary(test_env, monkeypatch):
     monkeypatch.setattr(ArchitectAgent, "post_to_discord", fake_post_to_discord)
     # Seed log and metrics
     entries = [
-        {"type": "update", "content": "Initial design"},
-        {"type": "comment", "content": "Review complete"},
+        {"type": "update", "content": "Initial design"}
+        {"type": "comment", "content": "Review complete"}
     ]
     with open(test_env["log_path"], "w") as f:
         for entry in entries:
@@ -179,8 +179,8 @@ async def test_B1_architect_tags_metrics(monkeypatch):
         captured["msg"] = message
 
     monkeypatch.setattr(
-        "legion.agents.python.metrics.MetricsAgent.post_to_discord",
-        fake_post_to_discord,
+        "legion.agents.python.metrics.MetricsAgent.post_to_discord"
+        fake_post_to_discord
     )
     MetricsAgentClass = __import__(
         "legion.agents.python.metrics", fromlist=["MetricsAgent"]
@@ -204,8 +204,8 @@ async def test_B2_architect_triggers_therapist(monkeypatch):
         captured["msg"] = message
 
     monkeypatch.setattr(
-        "legion.agents.python.therapist.TherapistAgent.post_to_discord",
-        fake_post_to_discord,
+        "legion.agents.python.therapist.TherapistAgent.post_to_discord"
+        fake_post_to_discord
     )
     TherapistAgentClass = __import__(
         "legion.agents.python.therapist", fromlist=["TherapistAgent"]

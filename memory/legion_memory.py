@@ -19,8 +19,8 @@ class LegionAgentMemory:
     def __init__(self, agent_name: str, base_dir: str = "memory") -> None:
         """Initialize memory for a specific agent."""
         logger.info(
-            "Initializing LegionAgentMemory",
-            extra={"agent_name": agent_name, "base_dir": base_dir},
+            "Initializing LegionAgentMemory"
+            extra={"agent_name": agent_name, "base_dir": base_dir}
         )
         self.agent_name = agent_name
         # Ensure agent_name is a string for path composition
@@ -41,8 +41,8 @@ class LegionAgentMemory:
         c = conn.cursor()
         c.execute(
             """CREATE TABLE IF NOT EXISTS task_log (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        agent_name TEXT,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT
+                        agent_name TEXT
                         task_data TEXT
                     )"""
         )
@@ -78,8 +78,8 @@ class LegionAgentMemory:
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute(
-            "INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)",
-            (self.agent_name, json.dumps(task)),
+            "INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)"
+            (self.agent_name, json.dumps(task))
         )
         conn.commit()
         conn.close()
@@ -145,11 +145,11 @@ class LegionAgentMemory:
 
     @classmethod
     def retrieve_memories(
-        cls,
-        agent_name: str,
-        embedding: List[float],
-        top_k: int,
-        base_dir: str = "memory",
+        cls
+        agent_name: str
+        embedding: List[float]
+        top_k: int
+        base_dir: str = "memory"
     ) -> List[str]:
         """
         Loads or creates the vector index for that agent. Returns up to topK text snippets most similar to the embedding.

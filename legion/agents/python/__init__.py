@@ -14,12 +14,12 @@ from .researcher import ResearcherAgent
 # The noqa F401 suppresses unused import warnings here.
 
 __all__ = [
-    "ArchitectAgent",
-    "EchoAgent",
-    "MetricsAgent",
-    "PingAgent",
-    "TherapistAgent",
-    "UxDesignerAgent",
-    "DoctorAgent",
-    "ResearcherAgent",
+    "ArchitectAgent"
+    "EchoAgent"
+    "MetricsAgent"
+    "PingAgent"
+    "TherapistAgent"
+    "UxDesignerAgent"
+    "DoctorAgent"
+    "ResearcherAgent"
 ]

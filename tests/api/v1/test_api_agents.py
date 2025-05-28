@@ -8,9 +8,9 @@ from fastapi.testclient import TestClient
 # Adjust the import path if necessary
 from interface.main import app
 from interface.schemas.agent import (
-    AgentActionResponse,
-    AgentConfigInfo,
-    AgentStatusInfo,
+    AgentActionResponse
+    AgentConfigInfo
+    AgentStatusInfo
 )
 
 # Use a synchronous test client for simplicity in these examples
@@ -18,25 +18,25 @@ client = TestClient(app)
 
 # --- Mock Data ---
 MOCK_AGENT_LIST = [
-    {"name": "Doctor", "status": "running", "tasks": 1},
-    {"name": "Researcher", "status": "idle", "tasks": 0},
+    {"name": "Doctor", "status": "running", "tasks": 1}
+    {"name": "Researcher", "status": "idle", "tasks": 0}
 ]
 
 MOCK_DOCTOR_STATUS = {
-    "name": "Doctor",
-    "status": "running",
-    "tasks": 1,
-    "cpu_usage": 10.5,
-    "memory_usage": 256.0,
-    "last_heartbeat": "2023-10-27T10:00:00Z",
+    "name": "Doctor"
+    "status": "running"
+    "tasks": 1
+    "cpu_usage": 10.5
+    "memory_usage": 256.0
+    "last_heartbeat": "2023-10-27T10:00:00Z"
 }
 
 MOCK_DOCTOR_CONFIG = {
-    "agent_name": "Doctor",
-    "llm_model": "gpt-4",
-    "temperature": 0.7,
-    "max_tokens": 1000,
-    "description": "Provides medical advice.",
+    "agent_name": "Doctor"
+    "llm_model": "gpt-4"
+    "temperature": 0.7
+    "max_tokens": 1000
+    "description": "Provides medical advice."
 }
 
 MOCK_NOT_FOUND_RESPONSE = {"error": "Agent not found"}
@@ -46,12 +46,12 @@ MOCK_COMM_FAILURE_RESPONSE = {"error": "Orchestrator communication failed"}
 
 
 @pytest.mark.parametrize(
-    "mock_response, expected_status, expected_json",
+    "mock_response, expected_status, expected_json"
     [
-        (MOCK_AGENT_LIST, 200, MOCK_AGENT_LIST),
-        (MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE),
+        (MOCK_AGENT_LIST, 200, MOCK_AGENT_LIST)
+        (MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE)
         ([], 200, []),  # Test empty list case
-    ],
+    ]
 )
 @patch("interface.orchestrator_comm.send_orchestrator_request")
 def test_list_agents(mock_send_request, mock_response, expected_status, expected_json):
@@ -66,12 +66,12 @@ def test_list_agents(mock_send_request, mock_response, expected_status, expected
 
 
 @pytest.mark.parametrize(
-    "agent_name, mock_response, expected_status, expected_json",
+    "agent_name, mock_response, expected_status, expected_json"
     [
-        ("Doctor", MOCK_DOCTOR_STATUS, 200, MOCK_DOCTOR_STATUS),
-        ("NonExistent", MOCK_NOT_FOUND_RESPONSE, 404, MOCK_NOT_FOUND_RESPONSE),
-        ("Doctor", MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE),
-    ],
+        ("Doctor", MOCK_DOCTOR_STATUS, 200, MOCK_DOCTOR_STATUS)
+        ("NonExistent", MOCK_NOT_FOUND_RESPONSE, 404, MOCK_NOT_FOUND_RESPONSE)
+        ("Doctor", MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE)
+    ]
 )
 @patch("interface.orchestrator_comm.send_orchestrator_request")
 def test_get_agent_status(
@@ -97,12 +97,12 @@ def test_get_agent_status(
 
 
 @pytest.mark.parametrize(
-    "agent_name, mock_response, expected_status, expected_json",
+    "agent_name, mock_response, expected_status, expected_json"
     [
-        ("Doctor", MOCK_DOCTOR_CONFIG, 200, MOCK_DOCTOR_CONFIG),
-        ("NonExistent", MOCK_NOT_FOUND_RESPONSE, 404, MOCK_NOT_FOUND_RESPONSE),
-        ("Doctor", MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE),
-    ],
+        ("Doctor", MOCK_DOCTOR_CONFIG, 200, MOCK_DOCTOR_CONFIG)
+        ("NonExistent", MOCK_NOT_FOUND_RESPONSE, 404, MOCK_NOT_FOUND_RESPONSE)
+        ("Doctor", MOCK_COMM_FAILURE_RESPONSE, 503, MOCK_COMM_FAILURE_RESPONSE)
+    ]
 )
 @patch("interface.orchestrator_comm.send_orchestrator_request")
 def test_get_agent_config(
@@ -133,13 +133,13 @@ def test_start_agent_success(client: TestClient, superuser_token_headers: dict):
     agent_name = "test_agent"
     # Mock the crud function to return a successful response
     with patch(
-        "interface.crud.crud_agent.control_agent_lifecycle",
+        "interface.crud.crud_agent.control_agent_lifecycle"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="start_agent",
-            status="success",
-            detail="Agent started.",
-        ),
+            agent_name=agent_name
+            action="start_agent"
+            status="success"
+            detail="Agent started."
+        )
     ):
         response = client.post(
             f"/api/v1/agents/{agent_name}/start", headers=superuser_token_headers
@@ -156,13 +156,13 @@ def test_start_agent_not_found(client: TestClient, superuser_token_headers: dict
     """Test starting an agent that doesn't exist."""
     agent_name = "non_existent_agent"
     with patch(
-        "interface.crud.crud_agent.control_agent_lifecycle",
+        "interface.crud.crud_agent.control_agent_lifecycle"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="start_agent",
-            status="error",
-            detail=f"Agent '{agent_name}' not found.",
-        ),
+            agent_name=agent_name
+            action="start_agent"
+            status="error"
+            detail=f"Agent '{agent_name}' not found."
+        )
     ):
         response = client.post(
             f"/api/v1/agents/{agent_name}/start", headers=superuser_token_headers
@@ -176,13 +176,13 @@ def test_start_agent_orchestrator_error(
     """Test orchestrator error when starting agent."""
     agent_name = "error_agent"
     with patch(
-        "interface.crud.crud_agent.control_agent_lifecycle",
+        "interface.crud.crud_agent.control_agent_lifecycle"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="start_agent",
-            status="error",
-            detail="Orchestrator internal error.",
-        ),
+            agent_name=agent_name
+            action="start_agent"
+            status="error"
+            detail="Orchestrator internal error."
+        )
     ):
         response = client.post(
             f"/api/v1/agents/{agent_name}/start", headers=superuser_token_headers
@@ -204,13 +204,13 @@ def test_stop_agent_success(client: TestClient, superuser_token_headers: dict):
     """Test stopping an agent successfully."""
     agent_name = "test_agent"
     with patch(
-        "interface.crud.crud_agent.control_agent_lifecycle",
+        "interface.crud.crud_agent.control_agent_lifecycle"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="stop_agent",
-            status="success",
-            detail="Agent stopped.",
-        ),
+            agent_name=agent_name
+            action="stop_agent"
+            status="success"
+            detail="Agent stopped."
+        )
     ):
         response = client.post(
             f"/api/v1/agents/{agent_name}/stop", headers=superuser_token_headers
@@ -224,13 +224,13 @@ def test_restart_agent_success(client: TestClient, superuser_token_headers: dict
     """Test restarting an agent successfully."""
     agent_name = "test_agent"
     with patch(
-        "interface.crud.crud_agent.control_agent_lifecycle",
+        "interface.crud.crud_agent.control_agent_lifecycle"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="restart_agent",
-            status="success",
-            detail="Agent restarted.",
-        ),
+            agent_name=agent_name
+            action="restart_agent"
+            status="success"
+            detail="Agent restarted."
+        )
     ):
         response = client.post(
             f"/api/v1/agents/{agent_name}/restart", headers=superuser_token_headers
@@ -247,13 +247,13 @@ def test_reload_configs_success(client: TestClient, superuser_token_headers: dic
     """Test reloading agent configs successfully (mocked orchestrator)."""
     # Mock the crud function to return a successful response
     with patch(
-        "interface.crud.crud_agent.reload_agent_configurations",
+        "interface.crud.crud_agent.reload_agent_configurations"
         return_value=AgentActionResponse(
-            agent_name="all",
-            action="reload_configs",
-            status="success",
-            detail="Agent configurations reloaded successfully.",
-        ),
+            agent_name="all"
+            action="reload_configs"
+            status="success"
+            detail="Agent configurations reloaded successfully."
+        )
     ) as mock_reload:
         response = client.post("/api/v1/agents/reload", headers=superuser_token_headers)
 
@@ -272,13 +272,13 @@ def test_reload_configs_orchestrator_error(
     """Test orchestrator error during reload configs."""
     # Mock the crud function to return an error response
     with patch(
-        "interface.crud.crud_agent.reload_agent_configurations",
+        "interface.crud.crud_agent.reload_agent_configurations"
         return_value=AgentActionResponse(
-            agent_name="all",
-            action="reload_configs",
-            status="error",
-            detail="Orchestrator communication failed.",
-        ),
+            agent_name="all"
+            action="reload_configs"
+            status="error"
+            detail="Orchestrator communication failed."
+        )
     ) as mock_reload:
         response = client.post("/api/v1/agents/reload", headers=superuser_token_headers)
 
@@ -305,18 +305,18 @@ def test_update_agent_config_success(client: TestClient, superuser_token_headers
     agent_name = "test_agent"
     config_data = {"model": "gpt-4", "temperature": 0.7, "max_tokens": 2000}
     with patch(
-        "interface.crud.crud_agent.update_agent_config",
+        "interface.crud.crud_agent.update_agent_config"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="update_config",
-            status="success",
-            detail="Configuration updated successfully.",
-        ),
+            agent_name=agent_name
+            action="update_config"
+            status="success"
+            detail="Configuration updated successfully."
+        )
     ) as mock_update:
         response = client.put(
-            f"/api/v1/agents/{agent_name}/config",
-            json=config_data,
-            headers=superuser_token_headers,
+            f"/api/v1/agents/{agent_name}/config"
+            json=config_data
+            headers=superuser_token_headers
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -335,18 +335,18 @@ def test_update_agent_config_not_found(
     agent_name = "non_existent_agent"
     config_data = {"model": "gpt-4", "temperature": 0.7, "max_tokens": 2000}
     with patch(
-        "interface.crud.crud_agent.update_agent_config",
+        "interface.crud.crud_agent.update_agent_config"
         return_value=AgentActionResponse(
-            agent_name=agent_name,
-            action="update_config",
-            status="error",
-            detail=f"Agent '{agent_name}' not found.",
-        ),
+            agent_name=agent_name
+            action="update_config"
+            status="error"
+            detail=f"Agent '{agent_name}' not found."
+        )
     ) as mock_update:
         response = client.put(
-            f"/api/v1/agents/{agent_name}/config",
-            json=config_data,
-            headers=superuser_token_headers,
+            f"/api/v1/agents/{agent_name}/config"
+            json=config_data
+            headers=superuser_token_headers
         )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -360,9 +360,9 @@ def test_update_agent_config_no_permission(
     agent_name = "test_agent"
     config_data = {"model": "gpt-4", "temperature": 0.7, "max_tokens": 2000}
     response = client.put(
-        f"/api/v1/agents/{agent_name}/config",
-        json=config_data,
-        headers=normal_user_token_headers,
+        f"/api/v1/agents/{agent_name}/config"
+        json=config_data
+        headers=normal_user_token_headers
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -375,18 +375,18 @@ def test_dispatch_message_success(client: TestClient, normal_user_token_headers:
     agent_name = "test_agent"
     dispatch_data = {"message": "Hello, agent!", "context": {"key": "value"}}
     mock_response = {
-        "agent_name": agent_name,
-        "response": "Hello, user!",
-        "request_id": "12345",
+        "agent_name": agent_name
+        "response": "Hello, user!"
+        "request_id": "12345"
     }
     with patch(
-        "interface.api.v1.endpoints.system._call_orchestrator",
-        return_value=mock_response,
+        "interface.api.v1.endpoints.system._call_orchestrator"
+        return_value=mock_response
     ) as mock_call:
         response = client.post(
-            f"/api/v1/agents/{agent_name}/dispatch",
-            json=dispatch_data,
-            headers=normal_user_token_headers,
+            f"/api/v1/agents/{agent_name}/dispatch"
+            json=dispatch_data
+            headers=normal_user_token_headers
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -404,17 +404,17 @@ def test_dispatch_message_not_found(
     agent_name = "non_existent_agent"
     dispatch_data = {"message": "Hello, agent!", "context": {"key": "value"}}
     mock_response = {
-        "status": "not_found",
-        "detail": f"Agent '{agent_name}' not found.",
+        "status": "not_found"
+        "detail": f"Agent '{agent_name}' not found."
     }
     with patch(
-        "interface.api.v1.endpoints.system._call_orchestrator",
-        return_value=mock_response,
+        "interface.api.v1.endpoints.system._call_orchestrator"
+        return_value=mock_response
     ) as mock_call:
         response = client.post(
-            f"/api/v1/agents/{agent_name}/dispatch",
-            json=dispatch_data,
-            headers=normal_user_token_headers,
+            f"/api/v1/agents/{agent_name}/dispatch"
+            json=dispatch_data
+            headers=normal_user_token_headers
         )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -428,14 +428,14 @@ def test_assess_agent_success(client: TestClient, superuser_token_headers: dict)
     """Test triggering self-assessment for an agent successfully (mocked orchestrator)."""
     agent_name = "test_agent"
     mock_response = {
-        "status": "assessment_triggered",
-        "message": "Assessment started for test_agent.",
-        "agent_name": agent_name,
-        "request_id": "12345",
+        "status": "assessment_triggered"
+        "message": "Assessment started for test_agent."
+        "agent_name": agent_name
+        "request_id": "12345"
     }
     with patch(
-        "interface.api.v1.endpoints.system._call_orchestrator",
-        return_value=mock_response,
+        "interface.api.v1.endpoints.system._call_orchestrator"
+        return_value=mock_response
     ) as mock_call:
         response = client.post(
             f"/api/v1/agents/{agent_name}/assess", headers=superuser_token_headers
@@ -453,13 +453,13 @@ def test_assess_agent_not_found(client: TestClient, superuser_token_headers: dic
     """Test triggering self-assessment for a non-existent agent."""
     agent_name = "non_existent_agent"
     mock_response = {
-        "status": "error",
-        "message": f"Agent '{agent_name}' not found.",
-        "agent_name": agent_name,
+        "status": "error"
+        "message": f"Agent '{agent_name}' not found."
+        "agent_name": agent_name
     }
     with patch(
-        "interface.api.v1.endpoints.system._call_orchestrator",
-        return_value=mock_response,
+        "interface.api.v1.endpoints.system._call_orchestrator"
+        return_value=mock_response
     ) as mock_call:
         response = client.post(
             f"/api/v1/agents/{agent_name}/assess", headers=superuser_token_headers

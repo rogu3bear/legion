@@ -15,8 +15,8 @@ class MetricsEndpointTests(unittest.TestCase):
     def test_metrics_endpoint_basic(self, mock_client):
         fake = MagicMock()
         fake.hgetall.return_value = {
-            "legion_tasks_total": "5",
-            "legion_agents_registered": "2",
+            "legion_tasks_total": "5"
+            "legion_agents_registered": "2"
         }
         mock_client.return_value = fake
         resp = self.client.get("/api/v1/metrics")

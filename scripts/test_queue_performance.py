@@ -111,9 +111,9 @@ def test_queue_performance():
         agent_name = f"agent_{agent_id}"
         for task_id in range(tasks_per_agent):
             task = Task(
-                id=str(uuid.uuid4()),
-                agent=agent_name,
-                payload={"task_number": task_id},
+                id=str(uuid.uuid4())
+                agent=agent_name
+                payload={"task_number": task_id}
                 priority=task_id % 5,  # Vary priorities 0-4
             )
             queue.enqueue(task)
@@ -206,10 +206,10 @@ def test_priority_ordering():
 
     for i, priority in enumerate(priorities):
         task = Task(
-            id=f"task_{i}",
-            agent=agent_name,
-            payload={"priority": priority},
-            priority=priority,
+            id=f"task_{i}"
+            agent=agent_name
+            payload={"priority": priority}
+            priority=priority
         )
         queue.enqueue(task)
         task_ids.append(task.id)

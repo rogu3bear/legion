@@ -54,11 +54,11 @@ class IMemoryManager(ABC):
 
     @abstractmethod
     def retrieve_memories(
-        self,
-        agent_name: str,
-        embedding: List[float],
-        top_k: int,
-        category: Optional[str] = None,
+        self
+        agent_name: str
+        embedding: List[float]
+        top_k: int
+        category: Optional[str] = None
     ) -> List[str]:
         """Retrieve memories based on embedding similarity."""
         pass

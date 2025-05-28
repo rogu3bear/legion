@@ -41,9 +41,9 @@ def get_current_user(
 ) -> User:
     """Dependency to get the current user from the JWT token."""
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        status_code=status.HTTP_401_UNAUTHORIZED
+        detail="Could not validate credentials"
+        headers={"WWW-Authenticate": "Bearer"}
     )
     try:
         payload = security.decode_token(token)
@@ -63,7 +63,7 @@ def get_current_user(
 
 
 def get_current_active_user(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user)
 ) -> User:
     """Dependency to get the current active user."""
     if not current_user.is_active:
@@ -72,7 +72,7 @@ def get_current_active_user(
 
 
 def get_current_active_superuser(
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user)
 ) -> User:
     """Dependency to ensure the user is an active superuser."""
     if not current_user.is_superuser:
@@ -92,12 +92,12 @@ def require_role(required_role: UserRole) -> Callable[[User], User]:
 
         # TODO: More granular role hierarchy could be implemented here
         # For now, check if the user has the *exact* required role.
-        # If a hierarchy is needed (e.g., ADMIN > AGENT_OPERATOR > VIEWER),
+        # If a hierarchy is needed (e.g., ADMIN > AGENT_OPERATOR > VIEWER)
         # this logic needs expansion.
         if current_user.role != required_role.value:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"User does not have the required '{required_role.value}' role",
+                status_code=status.HTTP_403_FORBIDDEN
+                detail=f"User does not have the required '{required_role.value}' role"
             )
         return current_user
 
@@ -110,7 +110,7 @@ def require_admin_role(user: User = Depends(require_role(UserRole.ADMIN))) -> Us
 
 
 def require_agent_operator_role(
-    user: User = Depends(require_role(UserRole.AGENT_OPERATOR)),
+    user: User = Depends(require_role(UserRole.AGENT_OPERATOR))
 ) -> User:
     return user
 

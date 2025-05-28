@@ -28,9 +28,9 @@ def parse_env() -> Dict[str, str]:
 
 def generate_table(ports: Dict[str, str]) -> str:
     lines = [
-        f"{PORT_MAP_HEADER}\n",
-        "| Service        | Host Port |\n",
-        "| -------------- | --------- |\n",
+        f"{PORT_MAP_HEADER}\n"
+        "| Service        | Host Port |\n"
+        "| -------------- | --------- |\n"
     ]
     for svc, port in sorted(ports.items()):
         lines.append(f"| {svc:<14} | {port:<9} |\n")

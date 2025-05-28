@@ -4,12 +4,12 @@ import discord
 import pytest
 
 from integration.discord.cogs.ux_feed import (
-    MessageType,
-    render_error,
-    render_info,
-    render_message,
-    render_success,
-    render_warning,
+    MessageType
+    render_error
+    render_info
+    render_message
+    render_success
+    render_warning
 )
 
 
@@ -80,10 +80,10 @@ async def test_render_success():
 async def test_render_message_all_types():
     """Test render_message with all message types."""
     test_cases = [
-        (MessageType.INFO, render_info),
-        (MessageType.WARNING, render_warning),
-        (MessageType.ERROR, render_error),
-        (MessageType.SUCCESS, render_success),
+        (MessageType.INFO, render_info)
+        (MessageType.WARNING, render_warning)
+        (MessageType.ERROR, render_error)
+        (MessageType.SUCCESS, render_success)
     ]
 
     message = "Test message"

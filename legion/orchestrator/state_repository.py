@@ -43,11 +43,11 @@ def update_task_status(task_id: str, status: TaskState) -> bool:
 
 
 def update_task(
-    task_id: str,
-    *,
-    status: Optional[TaskState] = None,
-    tags: Optional[List[str]] = None,
-    owner: Optional[str] = None,
+    task_id: str
+    *
+    status: Optional[TaskState] = None
+    tags: Optional[List[str]] = None
+    owner: Optional[str] = None
 ) -> Optional[TaskRecord]:
     """Update fields on an existing task record."""
 
@@ -70,10 +70,10 @@ def get_task(task_id: str) -> Optional[TaskRecord]:
 
 
 def list_tasks(
-    *,
-    status: Optional[TaskState] = None,
-    owner: Optional[str] = None,
-    tag: Optional[str] = None,
+    *
+    status: Optional[TaskState] = None
+    owner: Optional[str] = None
+    tag: Optional[str] = None
 ) -> Iterable[TaskRecord]:
     """List tasks matching optional filters."""
 

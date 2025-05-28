@@ -39,8 +39,8 @@ class EchoSearchFilters(BaseModel):
 def send_echo(payload: EchoPayload) -> Dict[str, str]:
     """Proxy a message to the Echo agent via the orchestrator."""
     command_payload = {
-        "agent_name": "echo_agent",
-        "message": payload.message,
+        "agent_name": "echo_agent"
+        "message": payload.message
     }
     response = _call_orchestrator(
         action="dispatch_agent_message", payload=command_payload
@@ -53,16 +53,16 @@ def send_echo(payload: EchoPayload) -> Dict[str, str]:
 
 @router.get("/search", summary="Search Echo events with advanced filtering")
 def search_echo(
-    query: Optional[str] = Query(None, description="Text search in log content"),
-    level: Optional[str] = Query(None, description="Log level filter (INFO, DEBUG, ERROR, etc.)"),
-    agent_id: Optional[str] = Query(None, description="Filter by specific agent ID"),
-    start_time: Optional[str] = Query(None, description="Start time (ISO format)"),
-    end_time: Optional[str] = Query(None, description="End time (ISO format)"),
-    limit: int = Query(100, ge=1, le=1000, description="Maximum number of results"),
-    offset: int = Query(0, ge=0, description="Offset for pagination"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order by timestamp"),
-    include_payload: bool = Query(True, description="Include full payload in results"),
-    format: str = Query("json", regex="^(json|csv)$", description="Response format"),
+    query: Optional[str] = Query(None, description="Text search in log content")
+    level: Optional[str] = Query(None, description="Log level filter (INFO, DEBUG, ERROR, etc.)")
+    agent_id: Optional[str] = Query(None, description="Filter by specific agent ID")
+    start_time: Optional[str] = Query(None, description="Start time (ISO format)")
+    end_time: Optional[str] = Query(None, description="End time (ISO format)")
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of results")
+    offset: int = Query(0, ge=0, description="Offset for pagination")
+    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order by timestamp")
+    include_payload: bool = Query(True, description="Include full payload in results")
+    format: str = Query("json", regex="^(json|csv)$", description="Response format")
 ) -> Any:
     """Search logged Echo events with advanced filtering and export options."""
     client = get_redis_client()
@@ -153,25 +153,25 @@ def search_echo(
     next_offset = offset + len(paginated_events) if len(events) > offset + limit else None
     
     return {
-        "events": paginated_events,
-        "total": len(events),
-        "returned": len(paginated_events),
-        "offset": offset,
-        "next_offset": next_offset,
+        "events": paginated_events
+        "total": len(events)
+        "returned": len(paginated_events)
+        "offset": offset
+        "next_offset": next_offset
         "filters_applied": {
-            "query": query,
-            "level": level,
-            "agent_id": agent_id,
-            "start_time": start_time,
-            "end_time": end_time,
+            "query": query
+            "level": level
+            "agent_id": agent_id
+            "start_time": start_time
+            "end_time": end_time
         }
     }
 
 
 @router.get("/stream", summary="Real-time Echo event stream")
 async def stream_echo_events(
-    level: Optional[str] = Query(None, description="Filter by log level"),
-    agent_id: Optional[str] = Query(None, description="Filter by agent ID"),
+    level: Optional[str] = Query(None, description="Filter by log level")
+    agent_id: Optional[str] = Query(None, description="Filter by agent ID")
 ):
     """Stream Echo events in real-time using Server-Sent Events."""
     async def event_generator():
@@ -206,12 +206,12 @@ async def stream_echo_events(
             pubsub.close()
     
     return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
+        event_generator()
+        media_type="text/event-stream"
         headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
+            "Cache-Control": "no-cache"
+            "Connection": "keep-alive"
+            "Access-Control-Allow-Origin": "*"
         }
     )
 
@@ -256,14 +256,14 @@ def get_echo_stats() -> Dict[str, Any]:
                 active_agents.add(agent_id)
         
         return {
-            "total_events": total_events,
-            "events_by_level": level_counts,
+            "total_events": total_events
+            "events_by_level": level_counts
             "recent_activity": {
-                "last_hour": recent_events,
-                "timestamp": datetime.now().isoformat(),
-            },
-            "active_agents": list(active_agents),
-            "agent_count": len(active_agents),
+                "last_hour": recent_events
+                "timestamp": datetime.now().isoformat()
+            }
+            "active_agents": list(active_agents)
+            "agent_count": len(active_agents)
         }
     except Exception as e:
         logger.error(f"Error getting Echo stats: {e}")
@@ -272,9 +272,9 @@ def get_echo_stats() -> Dict[str, Any]:
 
 @router.delete("/clear", summary="Clear Echo event logs")
 def clear_echo_logs(
-    level: Optional[str] = Query(None, description="Clear only specific level"),
-    agent_id: Optional[str] = Query(None, description="Clear only specific agent"),
-    older_than_hours: Optional[int] = Query(None, description="Clear events older than N hours"),
+    level: Optional[str] = Query(None, description="Clear only specific level")
+    agent_id: Optional[str] = Query(None, description="Clear only specific agent")
+    older_than_hours: Optional[int] = Query(None, description="Clear events older than N hours")
 ) -> Dict[str, Any]:
     """Clear Echo event logs with optional filtering."""
     client = get_redis_client()
@@ -325,13 +325,13 @@ def clear_echo_logs(
                     client.delete(key)
         
         return {
-            "cleared_count": cleared_count,
+            "cleared_count": cleared_count
             "filters": {
-                "level": level,
-                "agent_id": agent_id,
-                "older_than_hours": older_than_hours,
-            },
-            "timestamp": datetime.now().isoformat(),
+                "level": level
+                "agent_id": agent_id
+                "older_than_hours": older_than_hours
+            }
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         logger.error(f"Error clearing Echo logs: {e}")
@@ -361,10 +361,10 @@ def _export_events_csv(events: List[Dict[str, Any]]) -> StreamingResponse:
         
         for event in events:
             row = {
-                "timestamp": datetime.fromtimestamp(event.get("timestamp", 0)).isoformat(),
-                "level": event.get("level", ""),
-                "agent_id": event.get("agent_id", ""),
-                "message": event.get("message", ""),
+                "timestamp": datetime.fromtimestamp(event.get("timestamp", 0)).isoformat()
+                "level": event.get("level", "")
+                "agent_id": event.get("agent_id", "")
+                "message": event.get("message", "")
             }
             
             # Add payload fields
@@ -377,7 +377,7 @@ def _export_events_csv(events: List[Dict[str, Any]]) -> StreamingResponse:
         yield output.getvalue()
     
     return StreamingResponse(
-        generate_csv(),
-        media_type="text/csv",
+        generate_csv()
+        media_type="text/csv"
         headers={"Content-Disposition": "attachment; filename=echo_logs.csv"}
     )

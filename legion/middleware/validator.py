@@ -57,8 +57,8 @@ def validate_directive(payload: dict) -> dict:
 
     if not agent_name or not directive_name:
         result = {
-            "is_valid": False,
-            "reason": "Missing 'agent' or 'directive' in payload.",
+            "is_valid": False
+            "reason": "Missing 'agent' or 'directive' in payload."
         }
         logger.warning("Directive payload missing keys", extra={"payload": payload})
         return result
@@ -72,8 +72,8 @@ def validate_directive(payload: dict) -> dict:
         return result
     else:
         result = {
-            "is_valid": False,
-            "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'.",
+            "is_valid": False
+            "reason": f"Directive '{directive_name}' not allowed for agent '{agent_name}'."
         }
         logger.info("Directive invalid", extra={"agent": agent_name, "directive": directive_name})
         return result

@@ -17,8 +17,8 @@ class AgentRegisterTests(unittest.TestCase):
 
     def test_register_and_status(self):
         resp = self.client.post(
-            "/agent/register",
-            json={"id": "a1", "role": "worker", "caps": ["do"]},
+            "/agent/register"
+            json={"id": "a1", "role": "worker", "caps": ["do"]}
         )
         self.assertEqual(resp.status_code, 200)
         token = resp.json()["token"]

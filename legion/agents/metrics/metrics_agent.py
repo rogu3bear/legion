@@ -30,8 +30,8 @@ class MetricsAgent:
             if ts is not None:
                 agents[aid] = int(time.time()) - int(ts)
         payload: Dict[str, Any] = {
-            "ts": int(time.time()),
-            "queue_depth": q_depth,
-            "agent_heartbeat_age": agents,
+            "ts": int(time.time())
+            "queue_depth": q_depth
+            "agent_heartbeat_age": agents
         }
         self.r.set(self.KEY, json.dumps(payload))

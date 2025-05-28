@@ -31,8 +31,8 @@ class MiddlewareTestResponse(BaseModel):
 
 
 @router.get(
-    "/health",
-    response_model=Dict[str, Any],
+    "/health"
+    response_model=Dict[str, Any]
     summary="Middleware Health Check"
 )
 def middleware_health_check() -> Dict[str, Any]:
@@ -48,42 +48,42 @@ def middleware_health_check() -> Dict[str, Any]:
         from legion.agents.therapist.validation import therapist_validate
         
         return {
-            "status": "healthy",
-            "components_available": True,
+            "status": "healthy"
+            "components_available": True
             "pipeline_ready": True
         }
         
     except ImportError as e:
         logger.warning(f"Middleware component import error during health check: {e}")
         return {
-            "status": "degraded",
-            "components_available": False,
-            "pipeline_ready": False,
+            "status": "degraded"
+            "components_available": False
+            "pipeline_ready": False
             "error": str(e)
         }
     except Exception as e:
         logger.error(f"Unexpected error during middleware health check: {e}")
         return {
-            "status": "error",
-            "components_available": False,
-            "pipeline_ready": False,
+            "status": "error"
+            "components_available": False
+            "pipeline_ready": False
             "error": str(e)
         }
 
 
 @router.post(
-    "/test",
-    response_model=MiddlewareTestResponse,
+    "/test"
+    response_model=MiddlewareTestResponse
     summary="Test Middleware Pipeline"
 )
 def test_middleware_pipeline(
-    request: MiddlewareTestRequest,
-    current_user: User = Depends(dependencies.get_current_active_user),
+    request: MiddlewareTestRequest
+    current_user: User = Depends(dependencies.get_current_active_user)
 ) -> MiddlewareTestResponse:
     """
     Test the middleware pipeline with a given request payload.
     
-    This endpoint allows testing the directive validation, hallucination guard,
+    This endpoint allows testing the directive validation, hallucination guard
     and therapist validation components of the middleware pipeline.
     
     - **agent**: The agent name to test with
@@ -99,8 +99,8 @@ def test_middleware_pipeline(
     
     # Prepare the request payload for middleware
     middleware_payload = {
-        "agent": request.agent,
-        "directive": request.directive,
+        "agent": request.agent
+        "directive": request.directive
     }
     
     if request.confidence is not None:
@@ -118,30 +118,30 @@ def test_middleware_pipeline(
         )
         
         return MiddlewareTestResponse(
-            final_valid=result.get("final_valid", False),
-            reason=result.get("reason"),
-            source=result.get("source", "unknown"),
+            final_valid=result.get("final_valid", False)
+            reason=result.get("reason")
+            source=result.get("source", "unknown")
             directive=result.get("directive")
         )
         
     except Exception as e:
         logger.error(
-            f"Error testing middleware pipeline for user '{current_user.username}': {e}",
+            f"Error testing middleware pipeline for user '{current_user.username}': {e}"
             exc_info=True
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             detail=f"Middleware pipeline test failed: {str(e)}"
         )
 
 
 @router.get(
-    "/status",
-    response_model=Dict[str, Any],
+    "/status"
+    response_model=Dict[str, Any]
     summary="Get Middleware Status"
 )
 def get_middleware_status(
-    current_user: User = Depends(dependencies.get_current_active_user),
+    current_user: User = Depends(dependencies.get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Get the current status and configuration of the middleware pipeline.
@@ -157,22 +157,22 @@ def get_middleware_status(
         from legion.agents.therapist.validation import therapist_validate
         
         status_info = {
-            "status": "operational",
+            "status": "operational"
             "components": {
                 "directive_validator": {
-                    "available": True,
+                    "available": True
                     "function": "validate_directive"
-                },
+                }
                 "hallucination_guard": {
-                    "available": True,
+                    "available": True
                     "function": "guard_response"
-                },
+                }
                 "therapist_validator": {
-                    "available": True,
+                    "available": True
                     "function": "therapist_validate"
                 }
-            },
-            "pipeline_function": "run_middleware_pipeline",
+            }
+            "pipeline_function": "run_middleware_pipeline"
             "default_confidence_threshold": 0.75
         }
         
@@ -181,24 +181,24 @@ def get_middleware_status(
     except ImportError as e:
         logger.error(f"Middleware component import error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE
             detail=f"Middleware components not available: {str(e)}"
         )
     except Exception as e:
         logger.error(f"Error getting middleware status: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             detail=f"Failed to get middleware status: {str(e)}"
         )
 
 
 @router.get(
-    "/config",
-    response_model=Dict[str, Any],
+    "/config"
+    response_model=Dict[str, Any]
     summary="Get Middleware Configuration"
 )
 def get_middleware_config(
-    current_user: User = Depends(dependencies.get_current_active_user),
+    current_user: User = Depends(dependencies.get_current_active_user)
 ) -> Dict[str, Any]:
     """
     Get the current middleware configuration settings.
@@ -209,22 +209,22 @@ def get_middleware_config(
     
     try:
         config = {
-            "default_confidence_threshold": 0.75,
+            "default_confidence_threshold": 0.75
             "pipeline_steps": [
-                "directive_validation",
+                "directive_validation"
                 "hallucination_guard", 
                 "therapist_validation"
-            ],
+            ]
             "validation_sources": [
-                "validator",
-                "hallucination_guard",
-                "therapist",
+                "validator"
+                "hallucination_guard"
+                "therapist"
                 "all_middleware_approved"
-            ],
+            ]
             "required_payload_fields": [
-                "agent",
+                "agent"
                 "directive"
-            ],
+            ]
             "optional_payload_fields": [
                 "confidence"
             ]
@@ -235,6 +235,6 @@ def get_middleware_config(
     except Exception as e:
         logger.error(f"Error getting middleware config: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             detail=f"Failed to get middleware configuration: {str(e)}"
         ) 
