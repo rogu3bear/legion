@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from core.utils.network import get_redis_client
+from interface.api.v1.endpoints.metrics import get_redis_client
 from legion.orchestrator import _call_orchestrator
 
 logger = logging.getLogger(__name__)
