@@ -40,5 +40,5 @@
     "function_tags": ["echo_task", "log_payload"],
     "max_retries": 1,
     "cooldown": 0
-  },
+  }
 }
