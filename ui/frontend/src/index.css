@@ -66,3 +66,9 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.cua-placeholder {
+  border: 2px dashed #888;
+  padding: 1rem;
+  margin-top: 2rem;
+}
