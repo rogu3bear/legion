@@ -9,7 +9,7 @@ export default function PortMapDisplay() {
     fetch(`http://localhost:${apiPort}/ports`)
       .then(res => res.json())
       .then(data => setPorts(data))
-  }, [])
+  }, [apiPort])
 
   return (
     <div className="my-2">
