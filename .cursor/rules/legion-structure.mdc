@@ -16,7 +16,7 @@ This document defines the canonical scaffold for the Legion repository, mapping 
    - The "brain" that loads configs, spins up agents, routes messages, and schedules tasks
    - Must include: `legion/orchestrator.py`
 3. **Agent Layer**
-   - Persona runtime code (Architect, Doctor, Researcher, Ping, Echo, Healthcheck, etc.)
+   - Persona runtime code (Architect, Doctor, Researcher, Ping, Echo, etc.)
    - Must include: `legion/agents/`
 4. **Skill & Utility Layer**
    - Reusable helpers: search engines, summarizers, networking, indexing, retry logic

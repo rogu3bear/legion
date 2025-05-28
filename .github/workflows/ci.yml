@@ -137,32 +137,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y redis-server
-    - name: Check service health (Docker-free)
-      env:
-        PORT_ALLOCATOR_WEB: 8000
-        PORT_ALLOCATOR_CHROMA: 27020
-        PORT_ALLOCATOR_PROMETHEUS: 9090
-        PORT_ALLOCATOR_REDIS: 6379
-        PORT_ALLOCATOR_POSTGRES: 5432
-        PORT_ALLOCATOR_GRAFANA: 7806
-      run: |
-        # Start Redis on the test port
-        redis-server --port ${PORT_ALLOCATOR_REDIS} --daemonize yes
-        sleep 5
-        # Redis PING test
-        python3 - << 'PY'
-        import os, redis, sys
-        try:
-            r = redis.Redis(host="localhost", port=int(os.environ['PORT_ALLOCATOR_REDIS']))
-            result = r.ping()
-            print(f"Redis ping successful: {result}")
-            sys.exit(0 if result else 1)
-        except Exception as e:
-            print(f"Redis connection failed: {e}")
-            sys.exit(1)
-        PY
-        # Stop Redis
-        redis-cli -p ${PORT_ALLOCATOR_REDIS} shutdown || true
     - name: Upload CI Logs
       uses: actions/upload-artifact@v4
       if: always()

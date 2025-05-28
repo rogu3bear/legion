@@ -131,7 +131,6 @@ class LegionBot(commands.Bot):
             "therapist_agent": "🗣️",
             "ping_agent": "📶",
             "echo_agent": "🔁",
-            "healthcheck_agent": "✅",
         }
 
         agent_names = list(self.orchestrator._agent_objects.keys())

@@ -30,7 +30,6 @@ AGENT_EMOJIS = {
     "therapist_agent": "🗣️",
     "ping_agent": "📶",
     "echo_agent": "🔁",
-    "healthcheck_agent": "✅",
 }
 
 

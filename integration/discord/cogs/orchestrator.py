@@ -90,18 +90,6 @@ class OrchestratorCog(commands.Cog):
         await interaction.response.send_message(echoed)
 
     @app_commands.command(
-        name="healthcheck", description="Run a health check on core services."
-    )
-    async def healthcheck(self, interaction: discord.Interaction):
-        agents = interaction.client.orchestrator._agent_objects
-        if "healthcheck_agent" not in agents:
-            return await interaction.response.send_message(
-                "[Error: healthcheck_agent not available]"
-            )
-        await agents["healthcheck_agent"].handle_healthcheck()
-        await interaction.response.send_message("Health check posted to channel.")
-
-    @app_commands.command(
         name="reload_configs", description="Reload agent configurations from YAML."
     )
     async def reload_configs(self, interaction: discord.Interaction):

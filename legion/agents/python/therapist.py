@@ -1,5 +1,12 @@
 import json
 import os
+import threading
+import time
+
+try:
+    import redis  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    redis = None
 
 from legion.agents.base import BaseAgent
 from core.therapist import therapist_guard
@@ -16,6 +23,36 @@ class TherapistAgent(BaseAgent):
         super().__init__(name, config or {}, llm_client=llm_client)
         # retain orchestrator reference
         self.orchestrator = orchestrator_ref
+        self._redis = self._get_redis()
+        self._heartbeat_thread = None
+        self.start_heartbeat()
+
+    def _get_redis(self):
+        if redis is None:
+            return None
+        try:
+            port = int(os.getenv("REDIS_PORT", 7810))
+            return redis.Redis(host="localhost", port=port, decode_responses=True)
+        except Exception:
+            return None
+
+    def start_heartbeat(self) -> None:
+        if self._heartbeat_thread is None:
+            self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
+            self._heartbeat_thread.start()
+
+    def _heartbeat_loop(self) -> None:
+        while True:
+            self.heartbeat()
+            time.sleep(30)
+
+    def heartbeat(self) -> None:
+        if self._redis is None:
+            return
+        try:
+            self._redis.set("therapist:heartbeat", int(time.time()))
+        except Exception:
+            pass
 
     def set_log_paths(self, log_path=None):
         self._log_path = log_path

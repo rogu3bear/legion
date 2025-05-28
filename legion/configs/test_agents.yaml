@@ -11,5 +11,3 @@ ping_agent:
   discord_channel_id: 123
 echo_agent:
   discord_channel_id: 123
-healthcheck_agent:
-  discord_channel_id: 123

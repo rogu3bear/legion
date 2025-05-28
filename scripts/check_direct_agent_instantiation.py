@@ -15,7 +15,6 @@ AGENT_CLASSES = {
     "UxDesignerAgent",
     "PingAgent",
     "EchoAgent",
-    "HealthcheckAgent",
 }
 
 IGNORED_DIRS = {"tests", "test", "__pycache__"}

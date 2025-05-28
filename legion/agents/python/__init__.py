@@ -2,7 +2,6 @@
 
 from .architect import ArchitectAgent
 from .echo import EchoAgent
-from .healthcheck import HealthcheckAgent
 from .metrics import MetricsAgent
 from .ping import PingAgent
 from .therapist import TherapistAgent
@@ -17,7 +16,6 @@ from .researcher import ResearcherAgent
 __all__ = [
     "ArchitectAgent",
     "EchoAgent",
-    "HealthcheckAgent",
     "MetricsAgent",
     "PingAgent",
     "TherapistAgent",

@@ -121,21 +121,6 @@ class ITherapistAgent(ABC):
         pass
 
 
-class IHealthcheckAgent(ABC):
-    """
-    Contract for HealthcheckAgent:
-    - handle_healthcheck() -> Any
-
-    Config:
-    - system_prompt: str
-
-    Errors:
-    - None (stub always returns OK)
-    """
-
-    @abstractmethod
-    async def handle_healthcheck(self) -> Any:
-        pass
 
 
 class IEchoAgent(ABC):
@@ -160,7 +145,6 @@ AGENT_CONTRACTS = {
     "architect_agent": IArchitectAgent,
     "metrics_agent": IMetricsAgent,
     "therapist_agent": ITherapistAgent,
-    "healthcheck_agent": IHealthcheckAgent,
     "echo_agent": IEchoAgent,
 }
 

@@ -87,18 +87,6 @@ async def test_agent_simulation():
         ]
     )
 
-    # Simulate healthcheck agent
-    await send_discord_embed(
-        "HealthcheckAgent",
-        "All systems operational",
-        MessageType.SUCCESS,
-        fields=[
-            ("Database", "✅ Connected"),
-            ("API Endpoints", "✅ Responding"),
-            ("Discord Bot", "✅ Online"),
-            ("Memory Usage", "✅ Normal")
-        ]
-    )
 
     # Simulate error scenario
     await send_discord_embed(

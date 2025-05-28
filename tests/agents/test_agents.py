@@ -7,7 +7,6 @@ import pytest
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
-from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.metrics import MetricsAgent
 from legion.agents.python.ping import PingAgent
 from legion.agents.python.therapist import TherapistAgent
@@ -113,7 +112,6 @@ class DummyOrchestrator:
     agent_channel_ids = {
         "architect_agent": 1,
         "echo_agent": 3,
-        "healthcheck_agent": 4,
         "ping_agent": 5,
         "therapist_agent": 7,
         "ux_designer_agent": 8,
@@ -134,7 +132,6 @@ def test_agent_instantiation_and_properties():
     agent_classes = [
         ArchitectAgent,
         EchoAgent,
-        HealthcheckAgent,
         PingAgent,
         TherapistAgent,
         UxDesignerAgent,
@@ -142,7 +139,6 @@ def test_agent_instantiation_and_properties():
     names = [
         "architect_agent",
         "echo_agent",
-        "healthcheck_agent",
         "ping_agent",
         "therapist_agent",
         "ux_designer_agent",

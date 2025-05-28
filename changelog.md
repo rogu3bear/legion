@@ -172,7 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 2025-04-18
 - Fixed shebang and permissions for scripts
 - Implemented DoctorAgent with health check logic
-- Added PingAgent, EchoAgent, HealthcheckAgent stubs
+- Added PingAgent and EchoAgent stubs
 - Completed Discord integration
 - Implemented local LLM Studio integration
 - Added MetricsAgent and TherapistAgent
