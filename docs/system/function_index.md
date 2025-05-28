@@ -1,3 +1,5 @@
+<!-- File: docs/system/function_index.md -->
+
 | Path | Module/Class | Function | Signature | Summary |
 |------|-------------|----------|-----------|---------|
 | legion/core/utils/chroma_client.py | AsyncChromaClient | __init__ | (self, api_url, api_key) | Needs Documentation |

@@ -1,3 +1,5 @@
+<!-- File: docs/system/startup.md -->
+
 # System Startup
 
 The orchestrator reads an optional `.env.ports` file during startup. Each line defines a port assignment as `PORT_ALLOCATOR_<SERVICE>=<port>`.

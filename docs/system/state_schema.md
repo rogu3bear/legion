@@ -1,3 +1,5 @@
+<!-- File: docs/system/state_schema.md -->
+
 # State Repository Schema
 
 The persistent state repository stores two primary tables in `memory/state/repo.json`.

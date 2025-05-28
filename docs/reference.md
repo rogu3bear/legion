@@ -1,3 +1,5 @@
+<!-- File: docs/reference.md -->
+
 # Legion System Reference Guide
 
 ## Table of Contents

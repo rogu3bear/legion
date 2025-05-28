@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/orchestrator.md -->
+
 # Orchestrator Prompt Template
 
 **Description:**

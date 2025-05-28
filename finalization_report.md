@@ -1,3 +1,5 @@
+<!-- File: finalization_report.md -->
+
 # Legion Finalization Report
 **Date**: 2024-12-30
 **Branch**: `chore/ci-docs-finalize`

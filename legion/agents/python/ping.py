@@ -1,4 +1,5 @@
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class PingAgent(BaseAgent):
@@ -13,6 +14,7 @@ class PingAgent(BaseAgent):
 
     # All message handling is now inherited from BaseAgent.
 
+    @therapist_guard("directive")
     async def handle_ping(self):
         return await self.handle_message(
             content="ping", author=self.name, timestamp=None

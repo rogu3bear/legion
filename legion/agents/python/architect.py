@@ -2,6 +2,7 @@ import json
 import os
 
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class ArchitectAgent(BaseAgent):
@@ -41,6 +42,7 @@ class ArchitectAgent(BaseAgent):
         self.log_paths = []
         self.set_log_paths()
 
+    @therapist_guard("directive")
     async def handle_review(self, pr_diff=None):
         """Review code changes and provide feedback."""
         # Get file tree

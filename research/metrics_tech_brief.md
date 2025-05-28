@@ -1,3 +1,5 @@
+<!-- File: research/metrics_tech_brief.md -->
+
 # Metrics Agent & Observability Design Brief
 
 ## Overview

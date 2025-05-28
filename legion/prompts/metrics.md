@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/metrics.md -->
+
 # Metrics Prompt Template
 
 **Description:**

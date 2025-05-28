@@ -1,3 +1,5 @@
+<!-- File: docs/system/queue_protocol.md -->
+
 # Workload Queue Protocol
 
 This document describes how agents interact with the Legion Orchestrator's persistent workload queue.

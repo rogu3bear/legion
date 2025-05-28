@@ -1,3 +1,5 @@
+<!-- File: changelog.md -->
+
 # Changelog
 
 All notable changes to Legion will be documented in this file.
@@ -34,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Established clear precedence for directive compliance results over embedding validation outcomes.
 - Updated `tests/core/test_middleware_directive.py` with comprehensive test cases covering all new logic pathways and threshold boundaries.
 - Documented therapist agent integration plan in `docs/therapist_integration_plan.md` outlining trigger conditions, data payloads, and expected agent responses.
+- Therapist guard decorator for agent calls and smoke test script.
 
 ### Changed
 - Improved orchestrator initialization with proper error handling

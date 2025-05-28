@@ -2,6 +2,7 @@ import json
 import os
 
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 from memory.legion_memory import LegionAgentMemory
 
 
@@ -74,6 +75,7 @@ class TherapistAgent(BaseAgent):
         """
         return f"🗣️ Sorry, I can't process that request: {reason} If you need agent well-being support, please rephrase or contact an admin."
 
+    @therapist_guard("directive")
     async def handle_self_assessment(self, content=None, context=None):
         # Use default content if not provided
         if content is None:

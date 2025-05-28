@@ -19,6 +19,7 @@ except Exception:  # pragma: no cover - optional dependency
 from legion.task_queue import queue as task_queue
 
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class MetricsAgent(BaseAgent):
@@ -166,6 +167,7 @@ class MetricsAgent(BaseAgent):
             report_text = "\n".join(lines)
             await self.post_to_discord("**Usage Metrics**\n" + report_text)
 
+    @therapist_guard("directive")
     async def handle_report(self):
         return await self.handle_message(
             content="Please generate a metrics report for the system.",

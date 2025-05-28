@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class EchoAgent(BaseAgent):
@@ -33,6 +34,7 @@ class EchoAgent(BaseAgent):
                 f.write(json.dumps(entry) + "\n")
         self.log_buffer.clear()
 
+    @therapist_guard("directive")
     async def handle_echo(self, message: str) -> str:
         """Echo the provided message and persist a structured log."""
         entry = {
