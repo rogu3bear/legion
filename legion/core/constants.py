@@ -28,5 +28,19 @@ class AgentRole(str, Enum):
     ECHO = "echo"
 
 
+# Agent name literals used throughout the codebase
+ORCHESTRATOR_AGENT = "orchestrator"
+ECHO_AGENT = "echo"
+THERAPIST_AGENT = "therapist"
+MIDDLEWARE_AGENT = "middleware"
+METRICS_AGENT = "metrics"
+PING_AGENT = "ping"
+RESEARCHER_AGENT = "researcher"
+INTERFACE_API_AGENT = "interface_api"
+
+# Default conversational roles
+DEFAULT_ROLES = {"user": "human", "agent": "ai"}
+
+
 # Default port mapping reused across the project
 DEFAULT_PORT_MAP: Dict[str, int] = DEFAULT_PORTS

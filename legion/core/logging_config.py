@@ -6,7 +6,7 @@ import sys
 from typing import Any, Dict
 
 
-def setup_logging(log_level: str = "INFO") -> None:
+def setup_logging(log_level: str = "INFO") -> logging.Logger:
     """
     Configure structured JSON logging for the Legion system.
 
@@ -19,13 +19,13 @@ def setup_logging(log_level: str = "INFO") -> None:
     class JsonFormatter(logging.Formatter):
         def format(self, record: logging.LogRecord) -> str:
             log_data: Dict[str, Any] = {
-                "timestamp": self.formatTime(record, self.datefmt)
-                "level": record.levelname
-                "name": record.name
-                "message": record.getMessage()
-                "filename": record.filename
-                "funcName": record.funcName
-                "lineno": record.lineno
+                "timestamp": self.formatTime(record, self.datefmt),
+                "level": record.levelname,
+                "name": record.name,
+                "message": record.getMessage(),
+                "filename": record.filename,
+                "funcName": record.funcName,
+                "lineno": record.lineno,
             }
             if record.exc_info:
                 log_data["exception"] = self.formatException(record.exc_info)
@@ -41,7 +41,14 @@ def setup_logging(log_level: str = "INFO") -> None:
 
     # Add console handler with JSON formatter
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(JsonFormatter())
+    try:
+        console_handler.setFormatter(JsonFormatter())
+    except Exception as exc:  # fallback if formatter fails
+        logging.basicConfig(level=level)
+        logging.getLogger(__name__).exception("Failed JSON logger setup", exc_info=exc)
+        return logging.getLogger(__name__)
+
     logger.addHandler(console_handler)
 
     logging.info("Logging initialized with JSON format", extra={"log_level": log_level})
+    return logging.getLogger(__name__)

@@ -1,5 +1,6 @@
-import sys # sys must be imported first for path modifications
-from pathlib import Path # pathlib for path manipulations
+import sys  # sys must be imported first for path modifications
+from pathlib import Path  # pathlib for path manipulations
+import logging
 
 # Ensure the project root directory is in the Python path very early.
 # This must be done before any other imports that might rely on this path.
@@ -24,7 +25,8 @@ from starlette.responses import Response
 from legion.core.logging_config import setup_logging
 from legion import Orchestrator
 
-logger = setup_logging(__name__)
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
@@ -33,18 +35,18 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 # Include API routers
 from interface.api.v1.endpoints import (  # noqa: E402
-    agents_router
-    auth_router
-    login_router
-    memory_router
-    echo_router
-    system_router
-    task_registry_router
-    tasks_router
-    lmstudio_proxy_router
-    queue_router
-    metrics_router
-    middleware_router
+    agents_router,
+    auth_router,
+    login_router,
+    memory_router,
+    echo_router,
+    system_router,
+    task_registry_router,
+    tasks_router,
+    lmstudio_proxy_router,
+    queue_router,
+    metrics_router,
+    middleware_router,
 )
 
 # Router guards - ensure all routers are properly initialized
@@ -161,7 +163,7 @@ def health_check() -> dict[str, str]:
 async def send_to_all(message: str):
     """Sends a message to all connected WebSocket clients."""
     logger.debug(
-        f"Broadcasting message to {len(active_connections)} clients"
+        f"Broadcasting message to {len(active_connections)} clients",
         extra={
             "message_content": message[:50] + "..." if len(message) > 50 else message
         }
