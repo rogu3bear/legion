@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/therapist.md -->
+
 # Therapist Prompt Template
 
 **Description:**

@@ -1,3 +1,5 @@
+<!-- File: docs/system/config.md -->
+
 # Project Configuration
 tech_stack: "Python, Discord.py, Ruff, Pytest, FastAPI, Go, OpenAI"
 coding_style:

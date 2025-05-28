@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/ping.md -->
+
 # Ping Prompt Template
 
 **Description:**

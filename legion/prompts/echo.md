@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/echo.md -->
+
 # Echo Prompt Template
 
 **Description:**

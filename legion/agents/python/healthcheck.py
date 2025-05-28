@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class HealthcheckAgent(BaseAgent):
@@ -174,6 +175,7 @@ class HealthcheckAgent(BaseAgent):
 
         return "\n".join(report)
 
+    @therapist_guard("directive")
     async def handle_healthcheck(self):
         return await self.handle_message(
             content="Please perform a health check and report system status.",

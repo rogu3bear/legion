@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/healthcheck.md -->
+
 # Healthcheck Prompt Template
 
 **Description:**

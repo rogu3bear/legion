@@ -1,3 +1,5 @@
+<!-- File: README.md -->
+
 # Legion: Modular Agent Orchestration System
 
 ## Overview

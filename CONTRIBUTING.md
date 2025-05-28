@@ -1,3 +1,5 @@
+<!-- File: CONTRIBUTING.md -->
+
 # Contributing
 
 ## Code Quality

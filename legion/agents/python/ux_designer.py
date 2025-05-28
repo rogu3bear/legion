@@ -1,4 +1,5 @@
 from legion.agents.base import BaseAgent
+from core.therapist import therapist_guard
 
 
 class UxDesignerAgent(BaseAgent):
@@ -13,6 +14,7 @@ class UxDesignerAgent(BaseAgent):
 
     # All message handling is now inherited from BaseAgent.
 
+    @therapist_guard("directive")
     async def handle_critique(self):
         return await self.handle_message(
             content="Please critique the current user experience and suggest improvements.",

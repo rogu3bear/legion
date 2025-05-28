@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/ux_designer.md -->
+
 # UX Designer Prompt Template
 
 **Description:**

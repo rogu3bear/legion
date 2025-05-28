@@ -1,3 +1,5 @@
+<!-- File: docs/architecture/ports.md -->
+
 # Legion Port Map
 
 The following ports are reserved for Legion services. Values are fixed and

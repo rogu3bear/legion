@@ -1,3 +1,5 @@
+<!-- File: legion/prompts/architect.md -->
+
 # Architect Prompt Template
 
 **Description:**

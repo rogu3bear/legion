@@ -1,3 +1,5 @@
+<!-- File: docs/agents/index.md -->
+
 # Agents
 
 Legion includes several specialized agents coordinated by the orchestrator.

@@ -1,3 +1,5 @@
+<!-- File: docs/README.md -->
+
 # Legion Documentation
 
 This directory centralizes architecture and system documentation.
