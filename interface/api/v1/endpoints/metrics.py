@@ -16,7 +16,7 @@ def get_redis_client() -> "redis.Redis | None":
     if redis is None:
         return None
     try:
-        port = int(os.getenv("REDIS_PORT", 7810))
+        port = int(os.getenv("REDIS_PORT", 7600))
         return redis.Redis(host="localhost", port=port, decode_responses=True)
     except Exception:
         return None

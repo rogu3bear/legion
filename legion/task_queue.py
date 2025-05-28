@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Dict, Optional
 import time
+import os
 
 import logging
 
@@ -31,7 +32,7 @@ class TaskQueue:
     def __init__(
         self,
         host: str = "localhost",
-        port: int = 7810,
+        port: int = None,
         max_retries: int = 5,
         base_delay: int = 5,
     ) -> None:
@@ -44,6 +45,7 @@ class TaskQueue:
             self.dead_letter_key = "dead_tasks"
         self.max_retries = max_retries
         self.base_delay = base_delay
+        self.port = port if port is not None else int(os.getenv("REDIS_PORT", 7600))
 
     def enqueue(self, task: Task) -> None:
         logger = logging.getLogger(__name__)

@@ -39,7 +39,7 @@ class MetricsAgent(BaseAgent):
         if redis is None:
             return None
         try:
-            port = int(os.getenv("REDIS_PORT", 7810))
+            port = int(os.getenv("REDIS_PORT", 7600))
             return redis.Redis(host="localhost", port=port, decode_responses=True)
         except Exception:
             return None
@@ -319,7 +319,7 @@ class MetricsAgent(BaseAgent):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
         self,
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord

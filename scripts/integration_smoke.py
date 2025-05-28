@@ -42,7 +42,7 @@ def main() -> None:
     ctx = zmq.Context.instance()
     sock = ctx.socket(zmq.PUB)
     # Use environment variable or default port
-    port = os.getenv('PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_PUB', '7808')
+    port = os.getenv('PORT_ALLOCATOR_ORCHESTRATOR_ZMQ_PUB', os.getenv('ZMQ_PUB_PORT', '7608'))
     sock.bind(f"tcp://127.0.0.1:{port}")
     sock.send_json({"type": "health_ping"})
     sock.close()

@@ -35,7 +35,7 @@ class DoctorAgent(BaseAgent):
             pass
         if redis is not None:
             try:
-                port = int(os.getenv("REDIS_PORT", 7810))
+                port = int(os.getenv("REDIS_PORT", 7600))
                 self.redis = redis.Redis(host="localhost", port=port, decode_responses=True)
             except Exception:  # pragma: no cover - redis unavailable
                 self.redis = None
