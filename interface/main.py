@@ -10,7 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
 # Standard library imports
 import asyncio
 import json
-# import os # No longer needed for os.path
+import os # No longer needed for os.path
 
 # Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -93,7 +93,7 @@ def on_startup():
 
     if redis is not None:
         try:
-            r = redis.Redis(host="localhost", port=7810, decode_responses=True)
+            r = redis.Redis(host="localhost", port=int(os.getenv("REDIS", 7600)), decode_responses=True)
             recovered = restore_agent_state_from_redis(r)
             logger.info(
                 "Recovered %d agent(s) from Redis", len(recovered)
