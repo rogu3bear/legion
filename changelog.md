@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency injection for `StateManager` and `LLMClient` in `Orchestrator` and `BaseAgent` for improved modularity and testability
 - New tests for custom dependency injection and error handling coverage in agents and orchestrator
 - Stub file `legion/core/utils/indexing.py` for core indexing logic.
+- Echo Nexus log panel with search, filter and streaming results in React UI.
 - Stub file `legion/agents/python/developer.py` for Python Developer Agent.
 - Stub migration script `legion/core/db/migrations/0001_initial.py`.
 - Initial tests with mocks for `legion.core.utils.network.fetch_with_retries` in `tests/core/test_network.py`.

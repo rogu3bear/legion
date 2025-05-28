@@ -36,6 +36,7 @@ Dependencies from `ui/frontend/package.json`:
 ```
 react@^19.1.0
 react-dom@^19.1.0
+react-window@^1.8.7
 @eslint/js@^9.25.0
 @types/react@^19.1.2
 @types/react-dom@^19.1.2
