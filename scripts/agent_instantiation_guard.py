@@ -30,7 +30,6 @@ AGENT_CLASSES: Set[str] = {
     "UxDesignerAgent",  # Assuming 'Ux' not 'UX' based on previous interaction
     "PingAgent",
     "EchoAgent",
-    "HealthcheckAgent",
 }
 
 # Path to the orchestrator module, relative to repo root, using OS-specific separators

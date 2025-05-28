@@ -19,14 +19,10 @@
 | integration/discord/bot.py | LegionBot | on_message | (self, message) | Needs Documentation |
 | integration/discord/bot.py | LegionBot | on_ready | (self) | Needs Documentation |
 | integration/discord/bot.py | LegionBot | setup_hook | (self) | Needs Documentation |
-| integration/discord/cogs/health.py | HealthcheckAgent | __init__ | (self, name, config, channel) | Initializes healthcheck agent and records start time. |
-| integration/discord/cogs/health.py | HealthcheckAgent | _health_loop | (self) | Periodically checks uptime and logs health status. |
-| integration/discord/cogs/health.py | HealthcheckAgent | start | (self) | Starts the health check loop. |
 | integration/discord/cogs/orchestrator.py | - | setup | (bot) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | __init__ | (self, bot, orchestrator) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | ask | (self, interaction, agent_name, question) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | echo | (self, interaction, message) | Needs Documentation |
-| integration/discord/cogs/orchestrator.py | OrchestratorCog | healthcheck | (self, interaction) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | llm_test | (self, interaction) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | metrics_report | (self, interaction) | Needs Documentation |
 | integration/discord/cogs/orchestrator.py | OrchestratorCog | reload_configs | (self, interaction) | Slash command to reload agent configurations at runtime. |
@@ -170,7 +166,6 @@
 | legion/agents/contracts.py | IArchitectAgent | read_logs | (self) | Needs Documentation |
 | legion/agents/contracts.py | IArchitectAgent | set_log_paths | (self, log_path, report_path) | Needs Documentation |
 | legion/agents/contracts.py | IEchoAgent | handle_echo | (self, message) | Needs Documentation |
-| legion/agents/contracts.py | IHealthcheckAgent | handle_healthcheck | (self) | Needs Documentation |
 | legion/agents/contracts.py | IMetricsAgent | compose_summary | (self) | Needs Documentation |
 | legion/agents/contracts.py | IMetricsAgent | get_agent_channels | (self) | Needs Documentation |
 | legion/agents/contracts.py | IMetricsAgent | handle_report | (self) | Needs Documentation |
@@ -202,14 +197,6 @@
 | legion/agents/python/architect.py | ArchitectAgent | set_log_paths | (self, log_path, report_path) | Set paths to task log and report log for reading logs and metrics. |
 | legion/agents/python/echo.py | EchoAgent | __init__ | (self, orchestrator) | Needs Documentation |
 | legion/agents/python/echo.py | EchoAgent | handle_echo | (self, message) | Needs Documentation |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | __init__ | (self, orchestrator, llm_client) | Needs Documentation |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | check_dependencies | (self) | Check status of system dependencies. |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | generate_report | (self) | Generate comprehensive health report. |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | get_status | (self) | Get current system status. |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | handle_healthcheck | (self) | Needs Documentation |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | health_loop | (self) | Main health monitoring loop. |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | start | (self) | Start the health monitoring loop. |
-| legion/agents/python/healthcheck.py | HealthcheckAgent | stop | (self) | Stop the health monitoring loop. |
 | legion/agents/python/metrics.py | MetricsAgent | __init__ | (self, name, config, orchestrator_ref, llm_client) | Initialize the MetricsAgent with name, config, orchestrator reference, and [...] |
 | legion/agents/python/metrics.py | MetricsAgent | _default_prompt | (self) | Return the default system prompt for the MetricsAgent. |
 | legion/agents/python/metrics.py | MetricsAgent | analyze_feedback | (self) | Needs Documentation |
@@ -583,18 +570,6 @@
 | tests/agents/test_base_agent.py | DummyLLMClient | __init__ | (self) | Needs Documentation |
 | tests/agents/test_base_agent.py | DummyLLMClient | generate | (self, *a, **k) | Needs Documentation |
 | tests/agents/test_base_agent.py | DummyMsg | __init__ | (self, content) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | health_agent | (mock_orchestrator, mock_llm_client) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | mock_llm_client | () | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | mock_memory | () | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | mock_orchestrator | () | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_check_dependencies | (health_agent, mock_memory) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_error_handling | (health_agent) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_generate_report | (health_agent, mock_memory, mock_llm_client) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_get_status | (health_agent) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_health_agent_initialization | (health_agent) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_health_agent_start_stop | (health_agent) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_health_loop_above_threshold | (health_agent) | Needs Documentation |
-| tests/agents/test_healthcheck.py | - | test_health_loop_below_threshold | (health_agent) | Needs Documentation |
 | tests/agents/test_memory_helpers.py | - | agent | () | Needs Documentation |
 | tests/agents/test_memory_helpers.py | - | fake_retrieve | (agent_name, embedding, top_k, base_dir) | Needs Documentation |
 | tests/agents/test_memory_helpers.py | - | fake_store | (agent_name, snippets, base_dir) | Needs Documentation |

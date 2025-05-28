@@ -26,7 +26,6 @@ class AgentRole(str, Enum):
     THERAPIST = "therapist"
     PING = "ping"
     ECHO = "echo"
-    HEALTHCHECK = "healthcheck"
 
 
 # Default port mapping reused across the project

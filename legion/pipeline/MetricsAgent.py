@@ -18,8 +18,6 @@ class MetricsAgent(BaseAgent):
     def perform_task(self, request: InternalRequest, context: list[Any]) -> Any:
         # Stub metrics gathering based on the action
         action = request.args.get("action")
-        if action == "healthcheck":
-            return {"status": "ok"}
         return {"action": action, "detail": "no-op"}
 
     def build_response(self, result: Any) -> str:

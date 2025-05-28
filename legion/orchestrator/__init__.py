@@ -27,7 +27,6 @@ from integration.discord.cogs.ux_feed import render_feed_item
 from legion.agents.python import (
     ArchitectAgent,
     EchoAgent,
-    HealthcheckAgent,
     MetricsAgent,
     PingAgent,
     TherapistAgent,
@@ -89,7 +88,6 @@ CHANNEL_ID_MAP = {
     "ux_designer_agent": DESIGN_CHANNEL_ID,
     "ping_agent": GENERAL_CHANNEL_ID,
     "echo_agent": GENERAL_CHANNEL_ID,
-    "healthcheck_agent": GENERAL_CHANNEL_ID,
     # New channels
     "bot_commands": BOT_COMMANDS_CHANNEL_ID,
     "agent_logs": AGENT_LOGS_CHANNEL_ID,
@@ -107,7 +105,6 @@ CLASS_MAP = {
     "TherapistAgent": TherapistAgent,
     "PingAgent": PingAgent,
     "EchoAgent": EchoAgent,
-    "HealthcheckAgent": HealthcheckAgent,
 }
 
 PID_FILE = "/tmp/legion_orchestrator.pid"

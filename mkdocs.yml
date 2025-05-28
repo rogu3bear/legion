@@ -13,7 +13,6 @@ nav:
       - UX Designer: docs/agents/ux_designer.md
       - Ping: docs/agents/ping.md
       - Echo: docs/agents/echo.md
-      - Healthcheck: docs/agents/healthcheck.md
   - API:
       - OpenAPI: docs/api/openapi.yaml
       - Endpoints: docs/api/endpoints.md

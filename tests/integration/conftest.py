@@ -217,4 +217,4 @@ def agent_keys():
     # For test_agent_roundtrip, it might iterate these.
     # Let's assume the `orchestrator` fixture ensures these are available.
     return ["echo"]  # For now, align with what orchestrator fixture sets up.
-    # return ["architect", "metrics", "ux_designer", "therapist", "ping", "echo", "healthcheck"]
+    # return ["architect", "metrics", "ux_designer", "therapist", "ping", "echo"]

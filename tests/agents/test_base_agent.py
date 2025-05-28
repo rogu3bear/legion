@@ -8,7 +8,6 @@ from integration.discord.bot import fetch_thread_history
 from legion.agents.base import BaseAgent
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
-from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.ping import PingAgent
 from legion.agents.python.therapist import TherapistAgent
 from legion.agents.python.ux_designer import UxDesignerAgent
@@ -214,7 +213,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
                 [
                     "architect_agent",
                     "echo_agent",
-                    "healthcheck_agent",
                     "ping_agent",
                     "therapist_agent",
                     "ux_designer_agent",
@@ -225,7 +223,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     agents = [
         ArchitectAgent(DummyOrchestrator()),
         EchoAgent(DummyOrchestrator()),
-        HealthcheckAgent(DummyOrchestrator()),
         PingAgent(DummyOrchestrator()),
         TherapistAgent(DummyOrchestrator()),
         UxDesignerAgent(DummyOrchestrator()),
@@ -233,7 +230,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     names = [
         "architect_agent",
         "echo_agent",
-        "healthcheck_agent",
         "ping_agent",
         "therapist_agent",
         "ux_designer_agent",
@@ -249,9 +245,6 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     )
     monkeypatch.setattr(
         EchoAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
-    )
-    monkeypatch.setattr(
-        HealthcheckAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]
     )
     monkeypatch.setattr(
         PingAgent, "get_message_embedding", lambda self, text: [0.1, 0.2]

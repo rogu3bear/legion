@@ -3,7 +3,6 @@ import unittest
 import pytest
 from legion.agents.python.architect import ArchitectAgent
 from legion.agents.python.echo import EchoAgent
-from legion.agents.python.healthcheck import HealthcheckAgent
 from legion.agents.python.metrics import MetricsAgent
 from legion.agents.python.ping import PingAgent
 from legion.agents.python.therapist import TherapistAgent
@@ -13,7 +12,6 @@ from memory.legion_memory import LegionAgentMemory
 AGENT_CLASSES = [
     ArchitectAgent,
     EchoAgent,
-    HealthcheckAgent,
     PingAgent,
     TherapistAgent,
     UxDesignerAgent,
