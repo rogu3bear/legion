@@ -44,6 +44,7 @@ from interface.api.v1.endpoints import (  # noqa: E402
     lmstudio_proxy_router,
     queue_router,
     metrics_router,
+    middleware_router,
 )
 
 # Router guards - ensure all routers are properly initialized
@@ -59,6 +60,7 @@ assert isinstance(memory_router, APIRouter), f"memory_router is {type(memory_rou
 assert isinstance(lmstudio_proxy_router, APIRouter), f"lmstudio_proxy_router is {type(lmstudio_proxy_router)}, expected APIRouter"
 assert isinstance(echo_router, APIRouter), f"echo_router is {type(echo_router)}, expected APIRouter"
 assert isinstance(metrics_router, APIRouter), f"metrics_router is {type(metrics_router)}, expected APIRouter"
+assert isinstance(middleware_router, APIRouter), f"middleware_router is {type(middleware_router)}, expected APIRouter"
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
@@ -71,6 +73,7 @@ app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["metrics"])
+app.include_router(middleware_router, prefix="/api/v1/middleware", tags=["middleware"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []
