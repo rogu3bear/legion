@@ -1,17 +1,21 @@
-name: build-base-image
-on:
-  push:
-    branches: [main]
-    paths: [Dockerfile, requirements.txt, requirements.dev.txt]
-jobs:
-  base:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v4
-      - name: Log in to ghcr
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Build & push
-        run: |
-          docker build --target builder -t ghcr.io/${{ github.repository_owner }}/legion-base:py310 .
-          docker push ghcr.io/${{ github.repository_owner }}/legion-base:py310
+# LEGACY WORKFLOW - DISABLED
+# This workflow is disabled as part of Docker removal mandate
+# Original functionality: Build and push Docker base images
+# Date disabled: 2025-05-27 (M27.6 sync)
+
+# name: Build Base Image
+# 
+# on:
+#   workflow_dispatch:
+# 
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - name: Login to GitHub Container Registry
+#         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+#       - name: Build and push base image
+#         run: |
+#           docker build --target builder -t ghcr.io/${{ github.repository_owner }}/legion-base:py310 .
+#           docker push ghcr.io/${{ github.repository_owner }}/legion-base:py310

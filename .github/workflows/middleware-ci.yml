@@ -1,47 +1,44 @@
 name: Middleware CI
+
 on:
   push:
-    paths:
-      - 'middleware/**'
+    branches: [main]
   pull_request:
-    paths:
-      - 'middleware/**'
+    branches: [main]
 
 jobs:
-  test:
+  middleware-test:
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
-      - name: Install middleware deps
+          python-version: '3.9'
+          
+      - name: Install dependencies
         run: |
-          cd middleware
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run pytest
+          pip install -e .
+          
+      - name: Install Redis for middleware tests
         run: |
-          cd middleware
-          if command -v pytest >/dev/null; then
-            pytest -q
-          else
-            echo "\u26a0 Pytest not installed; skipping tests"
-          fi
-      - name: Start middleware service
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          
+      - name: Test middleware with native Redis
+        env:
+          REDIS: 6379
         run: |
-          cd middleware
-          scripts/gen_ports_env.sh
-          docker-compose up -d --build
-      - name: Wait for health
-        run: |
-          sleep 5
-          curl -f http://localhost:$SERVICE_PORT/health
-      - name: Invoke sample
-        run: |
-          curl -X POST -H "Authorization: Bearer $API_TOKEN" -H "Content-Type: application/json" \
-            -d '{"data": {"agent_name":"test","interaction_id":"1","role":"user","tokens":1,"embedding":[0.1,0.2],"timestamp":"2025-01-01T00:00:00Z","tags":[]}}' \
-            http://localhost:$SERVICE_PORT/invoke
-      - name: Fetch context
-        run: |
-          curl -f http://localhost:$SERVICE_PORT/context/test/1
+          # Start Redis on test port
+          redis-server --port ${REDIS} --daemonize yes
+          sleep 3
+          
+          # Run middleware tests
+          python -m pytest tests/middleware/ -v
+          
+          # Cleanup
+          redis-cli -p ${REDIS} shutdown || true
