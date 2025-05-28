@@ -55,6 +55,10 @@ function App() {
           <button onClick={sendDirective} className="mt-2 px-2 py-1 bg-blue-500 text-white rounded">Send</button>
         </div>
       )}
+
+      <section className="cua-placeholder">
+        Coming Soon – Custom User Actions
+      </section>
     </div>
   )
 }
