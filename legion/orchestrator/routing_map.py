@@ -10,7 +10,7 @@ _CAPABILITY_ROUTING: Dict[str, List[str]] = {}
 
 
 def rebuild_routing_map(
-    agent_statuses: Iterable[AgentStatusInfo],
+    agent_statuses: Iterable[AgentStatusInfo]
 ) -> Dict[str, List[str]]:
     """Build the routing map from agent status information."""
     capability_map: Dict[str, List[str]] = defaultdict(list)

@@ -1,18 +1,18 @@
 import sys
 import types
 missing = [
-    "yaml",
-    "sqlalchemy",
-    "pydantic_settings",
-    "email_validator",
-    "openai",
-    "zmq",
-    "httpx",
-    "pytest",
-    "jose",
-    "discord",
-    "dotenv",
-    "passlib",
+    "yaml"
+    "sqlalchemy"
+    "pydantic_settings"
+    "email_validator"
+    "openai"
+    "zmq"
+    "httpx"
+    "pytest"
+    "jose"
+    "discord"
+    "dotenv"
+    "passlib"
 ]
 for name in missing:
     if name not in sys.modules:
@@ -25,12 +25,12 @@ for name in missing:
 
 # Prevent expensive imports during unittest discovery
 placeholder_packages = [
-    "core",
-    "legion.orchestrator",
-    "interface.api.v1.endpoints",
-    "interface.core",
-    "interface.db",
-    "interface.models",
+    "core"
+    "legion.orchestrator"
+    "interface.api.v1.endpoints"
+    "interface.core"
+    "interface.db"
+    "interface.models"
 ]
 for pkg in placeholder_packages:
     if pkg not in sys.modules:

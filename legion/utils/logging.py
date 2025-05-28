@@ -16,13 +16,13 @@ class JsonFormatter(logging.Formatter):
         log_record = {
             "timestamp": datetime.fromtimestamp(
                 record.created, tz=timezone.utc
-            ).isoformat(),
-            "level": record.levelname,
-            "name": record.name,
-            "message": record.getMessage(),
-            "pathname": record.pathname,
-            "lineno": record.lineno,
-            "funcName": record.funcName,
+            ).isoformat()
+            "level": record.levelname
+            "name": record.name
+            "message": record.getMessage()
+            "pathname": record.pathname
+            "lineno": record.lineno
+            "funcName": record.funcName
         }
         if record.exc_info:
             log_record["exc_info"] = self.formatException(record.exc_info)
@@ -33,30 +33,30 @@ class JsonFormatter(logging.Formatter):
         # to avoid duplication
         for key, value in record.__dict__.items():
             if key not in (
-                "args",
-                "asctime",
-                "created",
-                "exc_info",
-                "exc_text",
-                "filename",
-                "funcName",
-                "id",
-                "levelname",
-                "levelno",
-                "lineno",
-                "module",
-                "msecs",
-                "message",
-                "msg",
-                "name",
-                "pathname",
-                "process",
-                "processName",
-                "relativeCreated",
-                "stack_info",
-                "thread",
-                "threadName",
-                "props",
+                "args"
+                "asctime"
+                "created"
+                "exc_info"
+                "exc_text"
+                "filename"
+                "funcName"
+                "id"
+                "levelname"
+                "levelno"
+                "lineno"
+                "module"
+                "msecs"
+                "message"
+                "msg"
+                "name"
+                "pathname"
+                "process"
+                "processName"
+                "relativeCreated"
+                "stack_info"
+                "thread"
+                "threadName"
+                "props"
             ) and not key.startswith("_"):
                 log_record[key] = value
 
@@ -64,9 +64,9 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_legion_logging(
-    log_level_str: str = "INFO",
-    log_to_console: bool = True,
-    log_file_path: Optional[str] = None,
+    log_level_str: str = "INFO"
+    log_to_console: bool = True
+    log_file_path: Optional[str] = None
 ):
     """
     Configures structured JSON logging for the Legion application.
@@ -109,8 +109,8 @@ def setup_legion_logging(
         except Exception as e:
             # Fallback to console logging if file handler setup fails
             print(
-                f"Error setting up file logger at {log_file_path}: {e}. Logging to console only.",
-                file=sys.stderr,
+                f"Error setting up file logger at {log_file_path}: {e}. Logging to console only."
+                file=sys.stderr
             )
             if not log_to_console:  # If console wasn't primary, ensure it's added now
                 console_handler = logging.StreamHandler(sys.stdout)
@@ -126,8 +126,8 @@ def setup_legion_logging(
     # Ensure at least one handler exists
     if not handlers:
         print(
-            "Warning: No log handlers explicitly configured. Defaulting to console output.",
-            file=sys.stderr,
+            "Warning: No log handlers explicitly configured. Defaulting to console output."
+            file=sys.stderr
         )
 
     for handler in handlers:
@@ -149,20 +149,20 @@ def setup_legion_logging(
     logging.getLogger("httpcore").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)  # Can be very noisy
 
-    # If using specific libraries that log a lot, you might want to attach your formatter to their loggers too,
+    # If using specific libraries that log a lot, you might want to attach your formatter to their loggers too
     # or ensure they propagate to the root logger correctly.
     # For example, to ensure 'openai' logs also use JsonFormatter if they propagate to root:
     # logging.getLogger("openai").propagate = True # Default is True
 
     logging.info(
-        "Structured JSON logging configured.",
+        "Structured JSON logging configured."
         extra={
             "props": {
-                "log_level": log_level_str,
-                "console": log_to_console,
-                "file": log_file_path,
+                "log_level": log_level_str
+                "console": log_to_console
+                "file": log_file_path
             }
-        },
+        }
     )
 
     return root_logger
@@ -192,8 +192,8 @@ def _test_logging(log_level="DEBUG"):
 
     # Custom fields in extra
     logger.info(
-        "Message with custom fields",
-        extra={"taskName": "Task-123", "user_id": 42, "component": "API"},
+        "Message with custom fields"
+        extra={"taskName": "Task-123", "user_id": 42, "component": "API"}
     )
 
     # Example of how error handling would look in real code:

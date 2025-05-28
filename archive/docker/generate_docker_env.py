@@ -24,11 +24,11 @@ def generate_env_file(output_path=".env.docker-compose"):
     port_mappings = {
         "web": "WEB_UI_PORT",  # For the existing web service in docker-compose, maps to its internal port
         "dev_frontend": "PORT_ALLOCATOR_DEV_FRONTEND",  # Used directly in docker-compose.yml
-        "chroma": "CHROMA_PORT",
-        "prometheus": "PROMETHEUS_PORT",
-        "redis": "REDIS_PORT",
-        "postgres": "POSTGRES_PORT",
-        "grafana": "GRAFANA_PORT",
+        "chroma": "CHROMA_PORT"
+        "prometheus": "PROMETHEUS_PORT"
+        "redis": "REDIS_PORT"
+        "postgres": "POSTGRES_PORT"
+        "grafana": "GRAFANA_PORT"
         "orchestrator": "ORCHESTRATOR_PORT",  # Example if orchestrator itself is dockerized or needs exposure
         # Add other services from DEFAULT_PORTS as needed for Docker env
     }
@@ -52,8 +52,8 @@ def generate_env_file(output_path=".env.docker-compose"):
                 f.write(f"{env_var_name}={port}\n")
             else:
                 print(
-                    f"Warning: Port for '{service_key}' not found. {env_var_name} will not be set in {abs_output_path}.",
-                    file=sys.stderr,
+                    f"Warning: Port for '{service_key}' not found. {env_var_name} will not be set in {abs_output_path}."
+                    file=sys.stderr
                 )
 
     print(f"Generated Docker environment file at {abs_output_path}")

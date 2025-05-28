@@ -6,9 +6,9 @@ from skills.summarize import summarize_placeholder
 
 def test_search_placeholder_basic():
     docs = [
-        {"text": "foo", "embedding": [1, 0]},
-        {"text": "bar", "embedding": [0, 1]},
-        {"text": "baz", "embedding": [0.7, 0.7]},
+        {"text": "foo", "embedding": [1, 0]}
+        {"text": "bar", "embedding": [0, 1]}
+        {"text": "baz", "embedding": [0.7, 0.7]}
     ]
     query = [1, 0]
     out = search_placeholder(query, docs, top_k=2)
@@ -18,9 +18,9 @@ def test_search_placeholder_basic():
 
 def test_placeholder_indexing():
     docs = [
-        {"text": "Hello world"},
-        {"text": "world of code"},
-        {"text": "hello again"},
+        {"text": "Hello world"}
+        {"text": "world of code"}
+        {"text": "hello again"}
     ]
     idx = placeholder_indexing(docs)
     assert "hello" in idx and 0 in idx["hello"] and 2 in idx["hello"]

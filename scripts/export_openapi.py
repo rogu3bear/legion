@@ -22,10 +22,10 @@ sys.modules['interface.api.v1.endpoints.handshake'] = handshake_stub
 # during FastAPI startup are defined.
 if 'jinja2' not in sys.modules:
     jinja2_stub = types.SimpleNamespace(
-        FileSystemLoader=lambda directory: None,
-        Environment=lambda **env_options: types.SimpleNamespace(globals={}),
-        pass_context=lambda fn: fn,
-        contextfunction=lambda fn: fn,
+        FileSystemLoader=lambda directory: None
+        Environment=lambda **env_options: types.SimpleNamespace(globals={})
+        pass_context=lambda fn: fn
+        contextfunction=lambda fn: fn
     )
     sys.modules['jinja2'] = jinja2_stub
 

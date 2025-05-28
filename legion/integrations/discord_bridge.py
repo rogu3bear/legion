@@ -16,7 +16,7 @@ def _get_client() -> "redis.StrictRedis | None":
     if redis is None:
         return None
     try:
-        port = int(os.getenv("REDIS_PORT", "7810"))
+        port = int(os.getenv("REDIS_PORT", "7600"))
         return redis.StrictRedis(host="localhost", port=port, decode_responses=True)
     except Exception:
         return None
@@ -45,14 +45,14 @@ def format_embed(metrics: Dict[str, Any]) -> Dict[str, Any]:
         age_str = ", ".join(f"{k}:{v}s" for k, v in ages.items())
         desc_lines.append(f"Agents: {age_str}")
     payload = {
-        "content": None,
+        "content": None
         "embeds": [
             {
-                "title": "Metrics Update",
-                "description": "\\n".join(desc_lines),
-                "color": 5814783,
+                "title": "Metrics Update"
+                "description": "\\n".join(desc_lines)
+                "color": 5814783
             }
-        ],
+        ]
     }
     return payload
 

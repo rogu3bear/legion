@@ -36,11 +36,11 @@ class DiscordAdapter:
         parsed = parse_command(raw_text)
         target_agent = determine_agent(channel_id, parsed.command)
         request = InternalRequest(
-            user_id=parsed.user,
-            command=parsed.command,
-            args=parsed.args,
-            channel=channel_id,
-            agent_key=target_agent,
+            user_id=parsed.user
+            command=parsed.command
+            args=parsed.args
+            channel=channel_id
+            agent_key=target_agent
         )
         Middleware.process(request)
 

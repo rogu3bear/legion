@@ -20,14 +20,14 @@ from interface.core.security import get_password_hash  # Import password hasher
 # DB Imports
 from interface.db.base import Base  # Import Base
 from interface.db.session import (
-    TestingSessionLocal,
-    engine,
+    TestingSessionLocal
+    engine
 )  # Import engine and session factory
 from interface.main import app
 
 # Model Imports
 from interface.models.user import (
-    User as UserModel,
+    User as UserModel
 )  # Rename to avoid confusion with schema
 from sqlalchemy.orm import Session
 
@@ -49,9 +49,9 @@ def unique_user_data(prefix: str) -> dict:
     """Generates unique user data for tests."""
     unique_id = uuid.uuid4().hex[:8]
     return {
-        "username": f"{prefix}_user_{unique_id}",
-        "email": f"{prefix}_{unique_id}@example.com",
-        "password": f"password_{unique_id}",
+        "username": f"{prefix}_user_{unique_id}"
+        "email": f"{prefix}_{unique_id}@example.com"
+        "password": f"password_{unique_id}"
     }
 
 
@@ -78,8 +78,8 @@ def test_login_user_success(client: TestClient):
 
     # 2. Login with correct credentials
     login_payload = {
-        "username": user_data["username"],
-        "password": user_data["password"],
+        "username": user_data["username"]
+        "password": user_data["password"]
     }
     login_response = client.post("/api/v1/login/access-token", data=login_payload)
     assert login_response.status_code == 200, login_response.text
@@ -126,8 +126,8 @@ def test_me_endpoint_authenticated(client: TestClient):
 
     # 2. Login to get token
     login_payload = {
-        "username": user_data["username"],
-        "password": user_data["password"],
+        "username": user_data["username"]
+        "password": user_data["password"]
     }
     login_response = client.post("/api/v1/login/access-token", data=login_payload)
     assert login_response.status_code == 200
@@ -155,10 +155,10 @@ def regular_user_token_headers(
     # Use db_session to create user directly for fixture isolation
     hashed_password = get_password_hash(user_data["password"])
     db_user = UserModel(
-        username=user_data["username"],
-        email=user_data["email"],
-        password_hash=hashed_password,
-        is_active=True,
+        username=user_data["username"]
+        email=user_data["email"]
+        password_hash=hashed_password
+        is_active=True
         is_superuser=False,  # Ensure it's a regular user
     )
     db_session.add(db_user)
@@ -166,8 +166,8 @@ def regular_user_token_headers(
     db_session.refresh(db_user)
 
     login_payload = {
-        "username": user_data["username"],
-        "password": user_data["password"],
+        "username": user_data["username"]
+        "password": user_data["password"]
     }
     login_response = client.post("/api/v1/login/access-token", data=login_payload)
     token = login_response.json()["access_token"]
@@ -183,10 +183,10 @@ def superuser_token_headers(client: TestClient, db_session: Session) -> dict[str
     password = "superpassword"
     hashed_password = get_password_hash(password)
     db_user = UserModel(
-        username=username,
-        email=email,
-        password_hash=hashed_password,
-        is_active=True,
+        username=username
+        email=email
+        password_hash=hashed_password
+        is_active=True
         is_superuser=True,  # Mark as superuser
     )
     db_session.add(db_user)
@@ -319,9 +319,9 @@ def test_update_agent_by_regular_user_forbidden(
     # Attempt update as regular user
     update_data = {"description": "Should not update"}
     update_response = client.put(
-        f"/api/v1/agents/{agent_id}",
-        headers=regular_user_token_headers,
-        json=update_data,
+        f"/api/v1/agents/{agent_id}"
+        headers=regular_user_token_headers
+        json=update_data
     )
     assert update_response.status_code == 400 or update_response.status_code == 403
     assert "enough privileges" in update_response.text
@@ -460,8 +460,8 @@ def test_get_orchestrator_status_send_error(
 ):
     """Test scenario where _call_orchestrator itself raises an unexpected error (e.g. network before ZMQ)."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Internal error communicating with orchestrator.",
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        detail="Internal error communicating with orchestrator."
     )
 
     response = client.get("/api/v1/system/status", headers=regular_user_token_headers)
@@ -522,11 +522,11 @@ def test_get_system_logs_success(
 ):
     """Test successfully retrieving system logs via IPC."""
     expected_logs_payload = {
-        "status": "ok",
+        "status": "ok"
         "logs": [
-            {"timestamp": "2023-01-01T12:00:00", "level": "INFO", "message": "Log 1"},
-            {"timestamp": "2023-01-01T12:00:01", "level": "WARN", "message": "Log 2"},
-        ],
+            {"timestamp": "2023-01-01T12:00:00", "level": "INFO", "message": "Log 1"}
+            {"timestamp": "2023-01-01T12:00:01", "level": "WARN", "message": "Log 2"}
+        ]
     }
     mock_call_orchestrator.return_value = expected_logs_payload
 
@@ -557,8 +557,8 @@ def test_get_system_logs_error_response(
 ):
     """Test system logs retrieval with orchestrator error."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_502_BAD_GATEWAY,
-        detail="Orchestrator error: Log system failure",
+        status_code=status.HTTP_502_BAD_GATEWAY
+        detail="Orchestrator error: Log system failure"
     )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
     assert response.status_code == 502
@@ -574,8 +574,8 @@ def test_get_system_logs_send_error(
 ):
     """Test scenario where _call_orchestrator itself raises an unexpected error for logs."""
     mock_call_orchestrator.side_effect = HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Internal error communicating with orchestrator.",
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        detail="Internal error communicating with orchestrator."
     )
     response = client.get("/api/v1/system/logs", headers=regular_user_token_headers)
     assert response.status_code == 500
@@ -605,31 +605,31 @@ async def test_dispatch_message_success(
     agent_name = "architect"
     message = "Review the latest design doc."
     request_payload = {
-        "message": message,
-        "context": {"user_session": "xyz"},
-        "tags": ["t1"],
-        "task_owner": "tester",
-        "payload": {"k": "v"},
+        "message": message
+        "context": {"user_session": "xyz"}
+        "tags": ["t1"]
+        "task_owner": "tester"
+        "payload": {"k": "v"}
     }
 
     mock_agent_response = "Acknowledged. Reviewing design doc now."
     mock_orchestrator_response_payload = {
-        "status": "success",
-        "agent_name": agent_name,
-        "response": mock_agent_response,
-        "request_id": "mock-req-id",
+        "status": "success"
+        "agent_name": agent_name
+        "response": mock_agent_response
+        "request_id": "mock-req-id"
     }
 
     # Mock the _call_orchestrator helper used by the endpoint
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
-        return_value=mock_orchestrator_response_payload,
+        "interface.api.v1.endpoints.agents._call_orchestrator"
+        return_value=mock_orchestrator_response_payload
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch",
-        headers=regular_user_token_headers,
-        json=request_payload,
+        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch"
+        headers=regular_user_token_headers
+        json=request_payload
     )
 
     assert response.status_code == 200
@@ -659,26 +659,26 @@ async def test_dispatch_message_agent_not_found(
     """Test dispatching a message to an agent that doesn't exist."""
     agent_name = "ghost_agent"
     request_payload = {
-        "message": "Are you there?",
-        "tags": ["t2"],
-        "task_owner": "tester",
+        "message": "Are you there?"
+        "tags": ["t2"]
+        "task_owner": "tester"
     }
 
     mock_orchestrator_response_payload = {
-        "status": "not_found",
-        "detail": f"Agent {agent_name} not found.",
-        "response": None,
+        "status": "not_found"
+        "detail": f"Agent {agent_name} not found."
+        "response": None
     }
 
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
-        return_value=mock_orchestrator_response_payload,
+        "interface.api.v1.endpoints.agents._call_orchestrator"
+        return_value=mock_orchestrator_response_payload
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch",
-        headers=regular_user_token_headers,
-        json=request_payload,
+        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch"
+        headers=regular_user_token_headers
+        json=request_payload
     )
 
     assert response.status_code == 404  # Not Found
@@ -696,16 +696,16 @@ async def test_dispatch_message_orchestrator_error(
 
     # Mock the helper raising an exception
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
+        "interface.api.v1.endpoints.agents._call_orchestrator"
         side_effect=HTTPException(
             status_code=502, detail="Orchestrator error: Dispatch failed"
-        ),
+        )
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch",
-        headers=regular_user_token_headers,
-        json=request_payload,
+        f"{settings.API_V1_STR}/agents/{agent_name}/dispatch"
+        headers=regular_user_token_headers
+        json=request_payload
     )
 
     assert response.status_code == 502  # Bad Gateway
@@ -731,19 +731,19 @@ async def test_trigger_agent_assessment_success(
     """Test successfully triggering agent self-assessment as superuser."""
     agent_name = "architect"
     mock_orchestrator_response_payload = {
-        "agent_name": agent_name,
-        "status": "assessment_triggered",
-        "message": "Assessment started",
-        "request_id": "req-123",
+        "agent_name": agent_name
+        "status": "assessment_triggered"
+        "message": "Assessment started"
+        "request_id": "req-123"
     }
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
-        return_value=mock_orchestrator_response_payload,
+        "interface.api.v1.endpoints.agents._call_orchestrator"
+        return_value=mock_orchestrator_response_payload
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/assess",
-        headers=superuser_token_headers,
+        f"{settings.API_V1_STR}/agents/{agent_name}/assess"
+        headers=superuser_token_headers
     )
     assert response.status_code == 200
     data = response.json()
@@ -764,19 +764,19 @@ async def test_trigger_agent_assessment_agent_not_found(
     """Test triggering assessment for a non-existent agent returns 404."""
     agent_name = "ghost_agent"
     mock_orchestrator_response_payload = {
-        "agent_name": agent_name,
-        "status": "error",
-        "message": "Agent not found",
-        "request_id": "req-404",
+        "agent_name": agent_name
+        "status": "error"
+        "message": "Agent not found"
+        "request_id": "req-404"
     }
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
-        return_value=mock_orchestrator_response_payload,
+        "interface.api.v1.endpoints.agents._call_orchestrator"
+        return_value=mock_orchestrator_response_payload
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/assess",
-        headers=superuser_token_headers,
+        f"{settings.API_V1_STR}/agents/{agent_name}/assess"
+        headers=superuser_token_headers
     )
     assert response.status_code == 404
     assert f"Agent '{agent_name}' not found" in response.json()["detail"]
@@ -790,19 +790,19 @@ async def test_trigger_agent_assessment_orchestrator_error(
     """Test orchestrator error during assessment trigger returns 502."""
     agent_name = "error_agent"
     mock_orchestrator_response_payload = {
-        "agent_name": agent_name,
-        "status": "error",
-        "message": "Internal orchestrator error",
-        "request_id": "req-err",
+        "agent_name": agent_name
+        "status": "error"
+        "message": "Internal orchestrator error"
+        "request_id": "req-err"
     }
     mock_call = mocker.patch(
-        "interface.api.v1.endpoints.agents._call_orchestrator",
-        return_value=mock_orchestrator_response_payload,
+        "interface.api.v1.endpoints.agents._call_orchestrator"
+        return_value=mock_orchestrator_response_payload
     )
 
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/assess",
-        headers=superuser_token_headers,
+        f"{settings.API_V1_STR}/agents/{agent_name}/assess"
+        headers=superuser_token_headers
     )
     assert response.status_code == 502
     assert "Orchestrator failed to trigger assessment" in response.json()["detail"]
@@ -816,8 +816,8 @@ async def test_trigger_agent_assessment_forbidden(
     """Test that a regular user cannot trigger agent assessment (403/400)."""
     agent_name = "architect"
     response = client.post(
-        f"{settings.API_V1_STR}/agents/{agent_name}/assess",
-        headers=regular_user_token_headers,
+        f"{settings.API_V1_STR}/agents/{agent_name}/assess"
+        headers=regular_user_token_headers
     )
     assert response.status_code in (400, 403)
     assert (

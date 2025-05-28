@@ -33,10 +33,10 @@ async def test_dispatch_throughput_benchmark(benchmark, monkeypatch, tmp_path):
 
     async def dispatch_once():
         await orchestrator.dispatch_message(
-            agent_name=agent_name,
-            content=content,
-            author=author,
-            timestamp=str(timestamp),
+            agent_name=agent_name
+            content=content
+            author=author
+            timestamp=str(timestamp)
         )
 
     # Benchmark dispatch throughput (calls per second)

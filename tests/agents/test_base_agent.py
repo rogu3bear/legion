@@ -24,10 +24,10 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
             return None
 
     config = {
-        "default_prompt": "You are a test agent.",
-        "memory_top_k": 2,
-        "history_limit": 3,
-        "embedding_model": "test-embed-model",
+        "default_prompt": "You are a test agent."
+        "memory_top_k": 2
+        "history_limit": 3
+        "embedding_model": "test-embed-model"
     }
 
     class DummyOrchestrator:
@@ -44,14 +44,14 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
     # Stub retrieve_memories
     retrieved = ["mem1", "mem2"]
     monkeypatch.setattr(
-        LegionAgentMemory,
-        "retrieve_memories",
-        staticmethod(lambda name, emb, k, base_dir="memory": retrieved),
+        LegionAgentMemory
+        "retrieve_memories"
+        staticmethod(lambda name, emb, k, base_dir="memory": retrieved)
     )
     # Stub fetch_thread_history
     stub_history = [
-        {"role": "user", "content": "hi"},
-        {"role": "assistant", "content": "hello"},
+        {"role": "user", "content": "hi"}
+        {"role": "assistant", "content": "hello"}
     ]
     fut = asyncio.Future()
     fut.set_result(stub_history)
@@ -87,25 +87,25 @@ async def test_echo_agent_handle_message_payload_and_memory(monkeypatch):
 
     # Call handle_message
     context = {
-        "content": "test content",
-        "author": "user",
-        "timestamp": datetime.datetime(2020, 1, 1, 0, 0),
+        "content": "test content"
+        "author": "user"
+        "timestamp": datetime.datetime(2020, 1, 1, 0, 0)
     }
     await agent.handle_message(context)
 
     # Construct expected payload
     expected_messages = [
         {
-            "role": "system",
-            "content": "You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow.",
-        },
-        {"role": "system", "content": "Previously on our project: mem1\nmem2"},
+            "role": "system"
+            "content": "You are 🔁 the Echo Agent—repeat back any message you receive, useful for diagnostics and testing message flow."
+        }
+        {"role": "system", "content": "Previously on our project: mem1\nmem2"}
         {
-            "role": "system",
-            "content": "Reflection: think step-by-step before answering.",
-        },
-        *stub_history,
-        {"role": "user", "content": context},
+            "role": "system"
+            "content": "Reflection: think step-by-step before answering."
+        }
+        *stub_history
+        {"role": "user", "content": context}
     ]
     assert captured.get("messages") == expected_messages
     # Model and temperature overrides applied
@@ -126,9 +126,9 @@ def test_legion_agent_memory_vector_store(tmp_path, monkeypatch):
     assert res == []
     # 2. Normal store/search
     snippets = [
-        {"text": "foo", "embedding": [1.0, 0.0]},
-        {"text": "bar", "embedding": [0.0, 1.0]},
-        {"text": "baz", "embedding": [0.7, 0.7]},
+        {"text": "foo", "embedding": [1.0, 0.0]}
+        {"text": "bar", "embedding": [0.0, 1.0]}
+        {"text": "baz", "embedding": [0.7, 0.7]}
     ]
     LegionAgentMemory.store_memories(agent_name, snippets, base_dir=str(base_dir))
     # Query for [1,0] should return 'foo' first
@@ -211,28 +211,28 @@ async def test_agent_smoke_all_inherit(monkeypatch):
             k: i
             for i, k in enumerate(
                 [
-                    "architect_agent",
-                    "echo_agent",
-                    "ping_agent",
-                    "therapist_agent",
-                    "ux_designer_agent",
+                    "architect_agent"
+                    "echo_agent"
+                    "ping_agent"
+                    "therapist_agent"
+                    "ux_designer_agent"
                 ]
             )
         }
 
     agents = [
-        ArchitectAgent(DummyOrchestrator()),
-        EchoAgent(DummyOrchestrator()),
-        PingAgent(DummyOrchestrator()),
-        TherapistAgent(DummyOrchestrator()),
-        UxDesignerAgent(DummyOrchestrator()),
+        ArchitectAgent(DummyOrchestrator())
+        EchoAgent(DummyOrchestrator())
+        PingAgent(DummyOrchestrator())
+        TherapistAgent(DummyOrchestrator())
+        UxDesignerAgent(DummyOrchestrator())
     ]
     names = [
-        "architect_agent",
-        "echo_agent",
-        "ping_agent",
-        "therapist_agent",
-        "ux_designer_agent",
+        "architect_agent"
+        "echo_agent"
+        "ping_agent"
+        "therapist_agent"
+        "ux_designer_agent"
     ]
     for agent, name in zip(agents, names):
         agent.name = name
@@ -275,9 +275,9 @@ async def test_agent_smoke_all_inherit(monkeypatch):
     # Should not raise
     for agent in agents:
         context = {
-            "content": "hi",
-            "author": "user",
-            "timestamp": datetime.datetime.now().isoformat(),
+            "content": "hi"
+            "author": "user"
+            "timestamp": datetime.datetime.now().isoformat()
         }
         await agent.handle_message(context)
 
@@ -304,11 +304,11 @@ def test_dispatch_message_with_context(monkeypatch):
     agent.channel_id = 1
     orch._agent_objects["echo_agent"] = agent
     context = {
-        "channel_id": 1,
-        "thread_id": 1,
-        "content": "hi",
-        "author": "user",
-        "timestamp": datetime.datetime.now().isoformat(),
+        "channel_id": 1
+        "thread_id": 1
+        "content": "hi"
+        "author": "user"
+        "timestamp": datetime.datetime.now().isoformat()
     }
     # Should not raise
     result = asyncio.get_event_loop().run_until_complete(
@@ -329,9 +329,9 @@ def test_embedding_fallback(monkeypatch, caplog):
     import openai
 
     monkeypatch.setattr(
-        openai.Embedding,
-        "create",
-        lambda *a, **kw: (_ for _ in ()).throw(Exception("fail")),
+        openai.Embedding
+        "create"
+        lambda *a, **kw: (_ for _ in ()).throw(Exception("fail"))
     )
     with caplog.at_level("WARNING"):
         with pytest.raises(RuntimeError) as exc:
@@ -374,9 +374,9 @@ def test_base_agent_handle_message_error_branches(monkeypatch):
     monkeypatch.setattr(agent, "system_prompt", None)
     # Patch get_message_embedding to raise RuntimeError
     monkeypatch.setattr(
-        agent,
-        "get_message_embedding",
-        lambda text: (_ for _ in ()).throw(RuntimeError("fail embedding")),
+        agent
+        "get_message_embedding"
+        lambda text: (_ for _ in ()).throw(RuntimeError("fail embedding"))
     )
 
     # Patch fetch_thread_history to raise AttributeError

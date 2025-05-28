@@ -24,12 +24,12 @@ from libcst.metadata import PositionProvider, QualifiedNameProvider, ScopeProvid
 
 # Agent classes to target (ensure these match the exact class names)
 AGENT_CLASSES: Set[str] = {
-    "ArchitectAgent",
-    "TherapistAgent",
-    "MetricsAgent",
+    "ArchitectAgent"
+    "TherapistAgent"
+    "MetricsAgent"
     "UxDesignerAgent",  # Assuming 'Ux' not 'UX' based on previous interaction
-    "PingAgent",
-    "EchoAgent",
+    "PingAgent"
+    "EchoAgent"
 }
 
 # Path to the orchestrator module, relative to repo root, using OS-specific separators
@@ -73,7 +73,7 @@ class ImportRemover(cst.CSTTransformer):
             return updated_node
 
         if isinstance(updated_node.names, cst.ImportStar):
-            # If we removed specific agent classes that were later imported via '*',
+            # If we removed specific agent classes that were later imported via '*'
             # this import * might become risky. For now, don't touch it.
             # A more advanced check could see if any AGENT_CLASSES were in this module.
             return updated_node
@@ -105,9 +105,9 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
     @staticmethod
     def add_args(parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "--apply",
-            action="store_true",
-            help="Apply changes to files.",
+            "--apply"
+            action="store_true"
+            help="Apply changes to files."
         )
         # The 'paths' argument is implicitly handled by run_codemod or the calling script
 
@@ -120,7 +120,7 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
         self.transformed_agent_classes_current_file: Set[str] = set()
 
         # Determine the root directory for relative path calculations
-        # This assumes the script is run with paths relative to some common root,
+        # This assumes the script is run with paths relative to some common root
         # or paths are absolute. LibCST's context.filename is usually relative.
         self.repo_root: Path = context.scratch.get("repo_root", Path.cwd())
 
@@ -249,15 +249,15 @@ def main() -> None:
     )
     AgentInstantiationCodemod.add_args(parser)  # Adds --apply
     parser.add_argument(
-        "paths",
-        nargs="+",
-        help="Paths to Python files or directories to scan.",
+        "paths"
+        nargs="+"
+        help="Paths to Python files or directories to scan."
     )
     parser.add_argument(
-        "--repo-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Root of the repository for relative path calculations in warnings. Defaults to CWD.",
+        "--repo-root"
+        type=Path
+        default=Path.cwd()
+        help="Root of the repository for relative path calculations in warnings. Defaults to CWD."
     )
 
     args = parser.parse_args()
@@ -287,13 +287,13 @@ def main() -> None:
         try:
             input_tree = cst.parse_module(source_code)
             context = CodemodContext(
-                args=args,
+                args=args
                 filename=str(
                     file_path_obj.relative_to(args.repo_root)
                     if file_path_obj.is_absolute()
                     and args.repo_root in file_path_obj.parents
                     else file_path_obj
-                ),
+                )
             )
             # Pass repo_root via context.args for the codemod to use
             context.args.repo_root = args.repo_root

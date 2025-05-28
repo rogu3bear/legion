@@ -35,7 +35,7 @@ class DoctorAgent(BaseAgent):
             pass
         if redis is not None:
             try:
-                port = int(os.getenv("REDIS_PORT", 7810))
+                port = int(os.getenv("REDIS_PORT", 7600))
                 self.redis = redis.Redis(host="localhost", port=port, decode_responses=True)
             except Exception:  # pragma: no cover - redis unavailable
                 self.redis = None
@@ -47,9 +47,9 @@ class DoctorAgent(BaseAgent):
 
     def _log_diagnosis(self, symptoms: Dict[str, str], diagnosis: Dict[str, str]) -> None:
         entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "symptoms": symptoms,
-            "diagnosis": diagnosis,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+            "symptoms": symptoms
+            "diagnosis": diagnosis
         }
         if self.redis:
             try:
@@ -80,8 +80,8 @@ class DoctorAgent(BaseAgent):
     def suggest_remedy(self, diagnosis: Dict[str, str]) -> List[str]:
         """Map a diagnosis to a list of remedies."""
         mapping = {
-            "High CPU Usage": ["Scale service", "Optimize code"],
-            "Memory Leak": ["Restart process", "Check logs"],
-            "Unknown": ["Gather more diagnostics"],
+            "High CPU Usage": ["Scale service", "Optimize code"]
+            "Memory Leak": ["Restart process", "Check logs"]
+            "Unknown": ["Gather more diagnostics"]
         }
         return mapping.get(diagnosis.get("issue"), ["No remedy found"])

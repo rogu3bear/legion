@@ -11,14 +11,14 @@ def list_models():
 
 def _completion_helper(model, prompt, image=None):
     data = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "model": model
+        "messages": [{"role": "user", "content": prompt}]
     }
     if image:
         # Vision models use OpenAI's image input format
         data["messages"][0]["content"] = [
-            {"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": image}},
+            {"type": "text", "text": prompt}
+            {"type": "image_url", "image_url": {"url": image}}
         ]
     resp = requests.post(f"{LMSTUDIO_API}/chat/completions", json=data)
     resp.raise_for_status()

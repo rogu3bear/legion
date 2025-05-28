@@ -84,7 +84,7 @@ def setup_di_container(state_manager_instance, mock_llm_client_instance):
     else:
         # If it wasn't there before, remove our mock or re-register factory if that's desired
         # For simplicity, we can try to remove it. DIContainer needs a .unregister or .pop method.
-        # Since it doesn't have one, we might need to rely on container.clear() if used between test modules,
+        # Since it doesn't have one, we might need to rely on container.clear() if used between test modules
         # or re-register the default factory if we know it.
         # For now, let's assume if it wasn't there, it means the default factory should be active.
         # The default factory is registered at the end of di_container.py
@@ -118,10 +118,10 @@ def minimal_agent_config(tmp_path):
     echo_config_file = config_dir / "echo.yaml"
 
     echo_config_content = {
-        "name": "echo",
+        "name": "echo"
         "class": "EchoAgent",  # Ensure this matches a key in CLASS_MAP or is auto-discoverable
-        "prompt": "You are an echo agent.",
-        "channel_id": "test_channel_echo",
+        "prompt": "You are an echo agent."
+        "channel_id": "test_channel_echo"
     }
     with open(echo_config_file, "w") as f:
         yaml.dump({"agents": [echo_config_content]}, f)
@@ -146,10 +146,10 @@ async def orchestrator(
     orch = Orchestrator()
 
     echo_config = {
-        "name": "echo",
-        "class": "EchoAgent",
-        "prompt": "You are an echo agent.",
-        "channel_id": "123456789",
+        "name": "echo"
+        "class": "EchoAgent"
+        "prompt": "You are an echo agent."
+        "channel_id": "123456789"
     }
     orch.config = {"echo": echo_config}  # Override loaded configs for simplicity
     orch.agent_channel_ids = {
@@ -158,9 +158,9 @@ async def orchestrator(
 
     if "echo" not in orch.agents:  # Manually add if not loaded by simplified config
         echo_agent = EchoAgent(
-            name="echo",
-            config=echo_config,
-            orchestrator_ref=orch,
+            name="echo"
+            config=echo_config
+            orchestrator_ref=orch
             llm_client=container.get(
                 ILLMClient
             ),  # LLM client already mocked by setup_di_container

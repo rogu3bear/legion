@@ -19,13 +19,13 @@ def setup_logging(log_level: str = "INFO") -> None:
     class JsonFormatter(logging.Formatter):
         def format(self, record: logging.LogRecord) -> str:
             log_data: Dict[str, Any] = {
-                "timestamp": self.formatTime(record, self.datefmt),
-                "level": record.levelname,
-                "name": record.name,
-                "message": record.getMessage(),
-                "filename": record.filename,
-                "funcName": record.funcName,
-                "lineno": record.lineno,
+                "timestamp": self.formatTime(record, self.datefmt)
+                "level": record.levelname
+                "name": record.name
+                "message": record.getMessage()
+                "filename": record.filename
+                "funcName": record.funcName
+                "lineno": record.lineno
             }
             if record.exc_info:
                 log_data["exception"] = self.formatException(record.exc_info)

@@ -16,16 +16,16 @@ def get_user(db: Session, user_id: int) -> Optional[User]:
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     """Fetches a user by their email address."""
     return cast(
-        Optional[User],
-        db.execute(select(User).filter(User.email == email)).scalar_one_or_none(),
+        Optional[User]
+        db.execute(select(User).filter(User.email == email)).scalar_one_or_none()
     )
 
 
 def get_user_by_username(db: Session, username: str) -> Optional[User]:
     """Fetches a user by their username."""
     return cast(
-        Optional[User],
-        db.execute(select(User).filter(User.username == username)).scalar_one_or_none(),
+        Optional[User]
+        db.execute(select(User).filter(User.username == username)).scalar_one_or_none()
     )
 
 
@@ -40,11 +40,11 @@ def create_user(db: Session, user: UserCreate) -> User:
     """Creates a new user in the database."""
     password_hash = get_password_hash(user.password)
     db_user = User(
-        username=user.username,
-        email=user.email,
-        password_hash=password_hash,
-        is_active=user.is_active,
-        is_superuser=user.is_superuser,
+        username=user.username
+        email=user.email
+        password_hash=password_hash
+        is_active=user.is_active
+        is_superuser=user.is_superuser
     )
     db.add(db_user)
     db.commit()

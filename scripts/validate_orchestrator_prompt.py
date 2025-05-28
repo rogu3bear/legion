@@ -44,7 +44,7 @@ with open(template_path, "r", encoding="utf-8") as f:
 
 # Build chat messages
 messages = [
-    {"role": "system", "content": system_prompt},
+    {"role": "system", "content": system_prompt}
     {"role": "user", "content": "Plan a health check for the entire system."}
 ]
 
@@ -53,8 +53,8 @@ print(f"Sending request to LLM at {API_BASE}...")
 try:
     response = client.chat.completions.create(
         model="local-model", # Model name doesn't matter for LM Studio, but it's required by the API
-        messages=messages,
-        temperature=0.2,
+        messages=messages
+        temperature=0.2
     )
     # Extract and print the assistant's reply
     assistant_msg = response.choices[0].message.content

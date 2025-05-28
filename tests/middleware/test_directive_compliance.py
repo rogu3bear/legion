@@ -5,12 +5,12 @@ from unittest.mock import patch
 from tests.middleware.orchestrator_stub import orchestrator_stub
 sys.modules.setdefault('legion.orchestrator', orchestrator_stub)
 
-from middleware.src.middleware.directive_compliance import DirectiveCompliance
+from legion.middleware.directive_compliance import DirectiveCompliance
 
 
 class DirectiveComplianceTests(unittest.TestCase):
     def setUp(self):
-        self.patch_feed = patch('middleware.src.middleware.directive_compliance.post_agent_feed')
+        self.patch_feed = patch('legion.utils.agent_feed.post_agent_feed')
         self.mock_feed = self.patch_feed.start()
         self.dc = DirectiveCompliance()
 

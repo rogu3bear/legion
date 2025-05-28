@@ -10,10 +10,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from legion.utils.discord_bridge import (
-    send_discord_message,
-    send_discord_action,
-    send_discord_embed,
-    MessageType,
+    send_discord_message
+    send_discord_action
+    send_discord_embed
+    MessageType
     create_orchestrator_callback
 )
 
@@ -28,27 +28,27 @@ async def test_basic_messaging():
 
     # Test action message
     success = await send_discord_action({
-        "type": "test_action",
-        "source": "test_discord_integration.py",
-        "status": "operational",
+        "type": "test_action"
+        "source": "test_discord_integration.py"
+        "status": "operational"
         "timestamp": "2025-01-24T06:00:00Z"
     })
     print(f"Action message sent: {success}")
 
     # Test different message types
     for msg_type, description in [
-        (MessageType.INFO, "This is an informational message"),
-        (MessageType.SUCCESS, "This is a success message"),
-        (MessageType.WARNING, "This is a warning message"),
+        (MessageType.INFO, "This is an informational message")
+        (MessageType.SUCCESS, "This is a success message")
+        (MessageType.WARNING, "This is a warning message")
         (MessageType.ERROR, "This is an error message (test only)")
     ]:
         success = await send_discord_embed(
-            "TestBot",
-            description,
-            msg_type,
+            "TestBot"
+            description
+            msg_type
             fields=[
-                ("Message Type", msg_type.value),
-                ("Test Status", "Active"),
+                ("Message Type", msg_type.value)
+                ("Test Status", "Active")
                 ("Timestamp", "2025-01-24")
             ]
         )
@@ -62,27 +62,27 @@ async def test_agent_simulation():
 
     # Simulate metrics agent report
     await send_discord_embed(
-        "MetricsAgent",
-        "System metrics report generated",
-        MessageType.SUCCESS,
+        "MetricsAgent"
+        "System metrics report generated"
+        MessageType.SUCCESS
         fields=[
-            ("CPU Usage", "45%"),
-            ("Memory Usage", "2.1 GB"),
-            ("Active Agents", "5"),
-            ("Messages Processed", "127"),
+            ("CPU Usage", "45%")
+            ("Memory Usage", "2.1 GB")
+            ("Active Agents", "5")
+            ("Messages Processed", "127")
             ("Uptime", "4h 23m")
         ]
     )
 
     # Simulate architect agent status
     await send_discord_embed(
-        "ArchitectAgent",
-        "Codebase review completed",
-        MessageType.INFO,
+        "ArchitectAgent"
+        "Codebase review completed"
+        MessageType.INFO
         fields=[
-            ("Files Analyzed", "42"),
-            ("Issues Found", "3"),
-            ("Suggestions", "7"),
+            ("Files Analyzed", "42")
+            ("Issues Found", "3")
+            ("Suggestions", "7")
             ("Code Quality", "Good")
         ]
     )
@@ -90,13 +90,13 @@ async def test_agent_simulation():
 
     # Simulate error scenario
     await send_discord_embed(
-        "TherapistAgent",
-        "Validation check failed",
-        MessageType.ERROR,
+        "TherapistAgent"
+        "Validation check failed"
+        MessageType.ERROR
         fields=[
-            ("Error Code", "VAL_001"),
-            ("Affected Component", "Message Processor"),
-            ("Retry Attempt", "3/3"),
+            ("Error Code", "VAL_001")
+            ("Affected Component", "Message Processor")
+            ("Retry Attempt", "3/3")
             ("Action Required", "Manual Review")
         ]
     )
@@ -111,9 +111,9 @@ async def test_orchestrator_integration():
 
     # Simulate orchestrator messages
     test_messages = [
-        ("doctor_agent", "Completed health assessment of agent cluster"),
-        ("researcher_agent", "Finished data collection and analysis"),
-        ("ping_agent", "Network connectivity verified across all nodes"),
+        ("doctor_agent", "Completed health assessment of agent cluster")
+        ("researcher_agent", "Finished data collection and analysis")
+        ("ping_agent", "Network connectivity verified across all nodes")
         ("echo_agent", "Message relay system functioning normally")
     ]
 

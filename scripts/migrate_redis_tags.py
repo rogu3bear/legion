@@ -27,7 +27,7 @@ class FakeRedis:
 
 
 def get_client():
-    port = int(os.getenv("REDIS_PORT", 7810))
+    port = int(os.getenv("REDIS_PORT", 7600))
     if redis is None:
         return FakeRedis()
     return redis.Redis(host="localhost", port=port, decode_responses=True)

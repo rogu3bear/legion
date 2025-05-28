@@ -15,6 +15,7 @@ on:
       - '.github/workflows/interface_ci.yaml'
       - 'pyproject.toml'
       - 'requirements.txt'
+  workflow_dispatch: # Enable manual triggering for CI debugging
 
 jobs:
   lint_and_test:

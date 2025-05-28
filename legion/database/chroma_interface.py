@@ -9,7 +9,7 @@ def query_context(query_text: str) -> dict | None:
     print(f"[ChromaDB Placeholder] Querying context for: {query_text}")
     if "agent directive example" in query_text:
         return {
-            "source": "chroma_placeholder",
-            "data": "Relevant context for agent directive example.",
+            "source": "chroma_placeholder"
+            "data": "Relevant context for agent directive example."
         }
     return None

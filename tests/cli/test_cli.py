@@ -11,8 +11,8 @@ class FakeOrchestrator:
     def __init__(self, *args, **kwargs):  # accept any params from cli.main()
         # Simulate loaded config
         self.config = {
-            "architect": {"class": "ArchitectAgent"},
-            "echo": {"class": "EchoAgent"},
+            "architect": {"class": "ArchitectAgent"}
+            "echo": {"class": "EchoAgent"}
         }
         # Simulate port allocations
         self.port_allocator = MagicMock()
@@ -49,11 +49,11 @@ def test_list_agents(capsys):
 
 
 @pytest.mark.parametrize(
-    "key,msg",
+    "key,msg"
     [
-        ("architect", None),
-        ("echo", "hello"),
-    ],
+        ("architect", None)
+        ("echo", "hello")
+    ]
 )
 def test_run_agent_success(capsys, key, msg):
     args = ["run-agent", key] + (["-m", msg] if msg else [])

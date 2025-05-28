@@ -17,8 +17,8 @@ def mock_bot():
     bot.orchestrator = MagicMock(spec=Orchestrator)
     bot.orchestrator.agent_channel_ids = {"TestAgent": 123, "OtherAgent": 456}
     bot.orchestrator._agent_objects = {
-        "TestAgent": MagicMock(),
-        "OtherAgent": MagicMock(),
+        "TestAgent": MagicMock()
+        "OtherAgent": MagicMock()
     }
     bot.add_cog = AsyncMock()  # Mock add_cog as it's called during setup
     return bot
@@ -46,8 +46,8 @@ def mock_interaction():
         spec=Orchestrator
     )  # Ensure client has orchestrator
     interaction.client.orchestrator.agent_channel_ids = {
-        "TestAgent": 123,
-        "OtherAgent": 456,
+        "TestAgent": 123
+        "OtherAgent": 456
     }
     return interaction
 

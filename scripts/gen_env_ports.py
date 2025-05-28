@@ -19,10 +19,10 @@ import re
 
 # Prefixes to remove from the keys
 PREFIXES_TO_STRIP = [
-    "services_",
-    "agents_",
-    "core_services_",
-    "middleware_",
+    "services_"
+    "agents_"
+    "core_services_"
+    "middleware_"
     "orchestrator_", # if orchestrator_zmq_rep_port should become zmq_rep_port
 ]
 

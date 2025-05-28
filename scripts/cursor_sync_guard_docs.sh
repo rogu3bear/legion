@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Cursor automation: Sync main, run guards, capture docs overview, comment on latest merged PR
-# Note: requires gh CLI and docker compose
+# Note: requires gh CLI and native development environment
 
 set -euo pipefail
 
@@ -21,13 +21,13 @@ fi
 git checkout main
 git pull --ff-only origin main
 
-# Rebuild containers
+# Start native services
 
-docker compose down
-if ! docker compose up --build -d; then
-  echo "Docker build failed" >&2
+echo "Starting native development environment..."
+if ! make dev; then
+  echo "Native service startup failed" >&2
   if [[ -n "$LAST_PR" && $(command -v gh) ]]; then
-    gh pr comment "$LAST_PR" --repo "$REPO" --body "Cursor verification build failed"
+    gh pr comment "$LAST_PR" --repo "$REPO" --body "Cursor verification: native service startup failed"
   fi
   exit 1
 fi
@@ -58,7 +58,6 @@ if [[ -n "$LAST_PR" && $(command -v gh) ]]; then
   gh pr comment "$LAST_PR" --repo "$REPO" --body "Cursor verification finish
 
 **Port-sanity:** $STATUS_PORT
-\
 \`\`\`
 $PORT_OUT
 \`\`\`

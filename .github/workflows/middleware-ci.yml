@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+      - name: Install Redis for testing
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
       - name: Install middleware deps
         run: |
           cd middleware
@@ -26,22 +30,41 @@ jobs:
           if command -v pytest >/dev/null; then
             pytest -q
           else
-            echo "\u26a0 Pytest not installed; skipping tests"
+            echo "⚠ Pytest not installed; skipping tests"
           fi
-      - name: Start middleware service
+      - name: Setup environment and start middleware service natively
         run: |
           cd middleware
+          # Generate ports configuration
           scripts/gen_ports_env.sh
-          docker-compose up -d --build
+          # Start Redis on background if not running
+          sudo service redis-server start || redis-server --port 6379 --daemonize yes
+          # Start middleware service in background using uvicorn/python directly
+          source .env && python -m uvicorn app:app --host 0.0.0.0 --port ${SERVICE_PORT:-7777} &
+          MIDDLEWARE_PID=$!
+          echo "SERVICE_PID=$MIDDLEWARE_PID" >> $GITHUB_ENV
       - name: Wait for health
         run: |
           sleep 5
-          curl -f http://localhost:$SERVICE_PORT/health
+          cd middleware
+          source .env
+          curl -f http://localhost:${SERVICE_PORT:-7777}/health
       - name: Invoke sample
         run: |
-          curl -X POST -H "Authorization: Bearer $API_TOKEN" -H "Content-Type: application/json" \
+          cd middleware
+          source .env
+          curl -X POST -H "Authorization: Bearer ${API_TOKEN:-test-token}" -H "Content-Type: application/json" \
             -d '{"data": {"agent_name":"test","interaction_id":"1","role":"user","tokens":1,"embedding":[0.1,0.2],"timestamp":"2025-01-01T00:00:00Z","tags":[]}}' \
-            http://localhost:$SERVICE_PORT/invoke
+            http://localhost:${SERVICE_PORT:-7777}/invoke
       - name: Fetch context
         run: |
-          curl -f http://localhost:$SERVICE_PORT/context/test/1
+          cd middleware
+          source .env
+          curl -f http://localhost:${SERVICE_PORT:-7777}/context/test/1
+      - name: Cleanup
+        if: always()
+        run: |
+          # Stop middleware service
+          if [ ! -z "$SERVICE_PID" ]; then
+            kill $SERVICE_PID || true
+          fi

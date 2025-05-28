@@ -48,8 +48,8 @@ async def lmstudio_echo(request: Request) -> JSONResponse:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                LMSTUDIO_COMPLETION_ENDPOINT,
-                json=payload,
+                LMSTUDIO_COMPLETION_ENDPOINT
+                json=payload
                 headers=request.headers.raw,  # Forward original headers if necessary, be cautious with sensitive ones
                 timeout=60.0,  # Set a reasonable timeout
             )
@@ -80,8 +80,8 @@ async def lmstudio_echo(request: Request) -> JSONResponse:
             return JSONResponse(
                 content=e.response.json()
                 if e.response.content
-                else {"detail": e.response.text},
-                status_code=e.response.status_code,
+                else {"detail": e.response.text}
+                status_code=e.response.status_code
             )
         except Exception as e:
             logger.error(

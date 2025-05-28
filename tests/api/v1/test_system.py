@@ -9,29 +9,29 @@ async def test_get_system_logs(
     client: TestClient, normal_user_token_headers: dict, mocker
 ):
     mock_response_payload = {
-        "status": "success",
+        "status": "success"
         "logs": [
             {
-                "timestamp": "2023-10-01T10:00:00Z",
-                "level": "INFO",
-                "message": "Orchestrator started.",
-            },
+                "timestamp": "2023-10-01T10:00:00Z"
+                "level": "INFO"
+                "message": "Orchestrator started."
+            }
             {
-                "timestamp": "2023-10-01T10:01:00Z",
-                "level": "INFO",
-                "message": "Agent initialized: architect_agent",
-            },
-        ],
+                "timestamp": "2023-10-01T10:01:00Z"
+                "level": "INFO"
+                "message": "Agent initialized: architect_agent"
+            }
+        ]
     }
     # Mock the new send_request function
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value={"response": mock_response_payload},
+        "interface.api.v1.endpoints.system.send_request"
+        return_value={"response": mock_response_payload}
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/logs",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/logs"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 200
@@ -49,20 +49,20 @@ async def test_get_system_status(
     client: TestClient, normal_user_token_headers: dict, mocker
 ):
     mock_response_payload = {
-        "status": "success",
-        "orchestrator_status": "running",
-        "pid": 12345,
-        "active_agents": ["architect", "researcher"],
+        "status": "success"
+        "orchestrator_status": "running"
+        "pid": 12345
+        "active_agents": ["architect", "researcher"]
     }
     # Mock the new send_request function
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value={"response": mock_response_payload},
+        "interface.api.v1.endpoints.system.send_request"
+        return_value={"response": mock_response_payload}
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/status",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/status"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 200
@@ -78,22 +78,22 @@ async def test_get_system_metrics(
     client: TestClient, normal_user_token_headers: dict, mocker
 ):
     mock_response_payload = {
-        "status": "success",
+        "status": "success"
         "metrics": {
-            "cpu_usage": 45.5,
-            "memory_usage_mb": 1024,
-            "active_connections": 50,
-        },
+            "cpu_usage": 45.5
+            "memory_usage_mb": 1024
+            "active_connections": 50
+        }
     }
     # Mock the new send_request function
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value={"response": mock_response_payload},
+        "interface.api.v1.endpoints.system.send_request"
+        return_value={"response": mock_response_payload}
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/metrics",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/metrics"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 200
@@ -115,8 +115,8 @@ async def test_get_system_status_timeout(
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/status",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/status"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 504  # Gateway Timeout
@@ -135,13 +135,13 @@ async def test_get_system_status_error(
     }
     # Mock send_request to return an error response from orchestrator
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value=mock_error_response,
+        "interface.api.v1.endpoints.system.send_request"
+        return_value=mock_error_response
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/status",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/status"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 502  # Bad Gateway
@@ -162,22 +162,22 @@ async def test_get_memory_stats_success(
 ):
     """Test successful retrieval of memory stats."""
     mock_response_payload = {
-        "status": "success",
+        "status": "success"
         "memory_stats": {
-            "vector_db_size_gb": 1.5,
-            "sql_db_size_mb": 250,
-            "total_documents": 10000,
-            "total_tasks_logged": 500,
-        },
+            "vector_db_size_gb": 1.5
+            "sql_db_size_mb": 250
+            "total_documents": 10000
+            "total_tasks_logged": 500
+        }
     }
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value={"response": mock_response_payload},
+        "interface.api.v1.endpoints.system.send_request"
+        return_value={"response": mock_response_payload}
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/memory/stats",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/memory/stats"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 200
@@ -197,8 +197,8 @@ async def test_get_memory_stats_timeout(
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/memory/stats",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/memory/stats"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 504  # Gateway Timeout
@@ -217,13 +217,13 @@ async def test_get_memory_stats_orchestrator_error(
         "response": {"status": "error", "detail": "Memory subsystem unavailable"}
     }
     mock_send = mocker.patch(
-        "interface.api.v1.endpoints.system.send_request",
-        return_value=mock_error_response,
+        "interface.api.v1.endpoints.system.send_request"
+        return_value=mock_error_response
     )
 
     response = client.get(
-        f"{settings.API_V1_STR}/system/memory/stats",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/system/memory/stats"
+        headers=normal_user_token_headers
     )
 
     assert response.status_code == 502  # Bad Gateway

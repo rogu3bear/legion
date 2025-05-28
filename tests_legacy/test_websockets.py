@@ -48,7 +48,7 @@ async def test_websocket_multiple_connections(client: TestClient):
             assert len(manager.active_connections) >= 1
             pass  # websocket1 still connected
         # websocket1 disconnects here
-        # NOTE: Depending on test setup (if manager is shared across tests),
+        # NOTE: Depending on test setup (if manager is shared across tests)
         # this might not be exactly 0 if other tests ran concurrently.
         # assert len(manager.active_connections) == 0
     except Exception as e:

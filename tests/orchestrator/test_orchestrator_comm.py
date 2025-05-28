@@ -8,8 +8,8 @@ import pytest
 
 # Load orchestrator module from file path to avoid package clashes
 spec = importlib.util.spec_from_file_location(
-    "legion.orchestrator",
-    Path(__file__).resolve().parents[2] / "legion" / "orchestrator.py",
+    "legion.orchestrator"
+    Path(__file__).resolve().parents[2] / "legion" / "orchestrator.py"
 )
 orch_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(orch_mod)
@@ -54,9 +54,9 @@ def test_agent_comm_router_valid_target(monkeypatch, orch):
     bus = MagicMock()
     monkeypatch.setattr(orch, "bus", bus)
     monkeypatch.setattr(
-        orch_mod,
-        "agent_registry",
-        {"echo": {"channel_in": "agent.echo.in"}},
+        orch_mod
+        "agent_registry"
+        {"echo": {"channel_in": "agent.echo.in"}}
     )
 
     orch.agent_comm_router({"target": "echo", "payload": "hi"})

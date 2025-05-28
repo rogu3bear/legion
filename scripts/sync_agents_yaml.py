@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Scans Python agent modules in legion/agents/python/
-and intelligently merges them with legion/configs/agents.yaml,
+and intelligently merges them with legion/configs/agents.yaml
 preserving existing configurations and comments where possible.
 
 Requires: ruamel.yaml (pip install ruamel.yaml)
@@ -71,15 +71,15 @@ def get_default_agent_config(agent_key: str, class_name: str) -> CommentedMap:
     """Returns a default configuration structure for a new agent."""
     return CommentedMap(
         {
-            "name": agent_key,
-            "class": class_name,
-            "prompt": f"You are the {agent_key} agent. Your responsibility is to ...",
-            "user_prompt": "{event_content}",
-            "channel_id": DEFAULT_CHANNEL_ID,
-            "llm_model": DEFAULT_LLM_MODEL,
-            "temperature": 0.7,
-            "max_tokens": 1024,
-            "memory_top_k": 5,
+            "name": agent_key
+            "class": class_name
+            "prompt": f"You are the {agent_key} agent. Your responsibility is to ..."
+            "user_prompt": "{event_content}"
+            "channel_id": DEFAULT_CHANNEL_ID
+            "llm_model": DEFAULT_LLM_MODEL
+            "temperature": 0.7
+            "max_tokens": 1024
+            "memory_top_k": 5
         }
     )
 

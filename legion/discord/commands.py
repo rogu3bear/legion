@@ -24,8 +24,8 @@ async def _safe_send(
     channel: Union[
         Messageable, GuildChannel, PrivateChannel, "Thread", Any
     ],  # Ensure Thread is quoted and Any is present
-    *args: Any,
-    **kwargs: Any,
+    *args: Any
+    **kwargs: Any
 ) -> Optional["Message"]:
     """Send a message only if the channel supports .send()"""
     if isinstance(channel, Messageable):
@@ -44,23 +44,23 @@ class LegionCommandCog(commands.Cog):
 
     @commands.hybrid_command(name="config", description="Update agent config.")
     async def config_agent(
-        self,
-        ctx: commands.Context[Any],
-        agent_name: str,
-        model: str,
-        temperature: float,
-        max_tokens: int,
+        self
+        ctx: commands.Context[Any]
+        agent_name: str
+        model: str
+        temperature: float
+        max_tokens: int
     ) -> None:
         """/config agent agent_name model temperature max_tokens"""
         await self._config_agent_impl(ctx, agent_name, model, temperature, max_tokens)
 
     async def _config_agent_impl(
-        self,
-        ctx: commands.Context[Any],
-        agent_name: str,
-        model: str,
-        temperature: float,
-        max_tokens: int,
+        self
+        ctx: commands.Context[Any]
+        agent_name: str
+        model: str
+        temperature: float
+        max_tokens: int
     ) -> None:
         """Business logic for config_agent command."""
         assert self.orchestrator is not None, "Orchestrator not initialized"
@@ -69,7 +69,7 @@ class LegionCommandCog(commands.Cog):
                 agent_name, model, temperature, max_tokens
             )
             embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
-                title="Agent Config Updated",
+                title="Agent Config Updated"
                 color=discord.Color.green(),  # Using qualified name # type: ignore[attr-defined]
             )
             embed.add_field(name="Agent", value=agent_name)
@@ -101,8 +101,8 @@ class LegionCommandCog(commands.Cog):
         try:
             value = self.orchestrator.get_state_key(key)
             embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
-                title=f"State Query: {key}",
-                description=str(value),
+                title=f"State Query: {key}"
+                description=str(value)
                 color=discord.Color.blue(),  # Using qualified name # type: ignore[attr-defined]
             )
             await _safe_send(ctx, embed=embed)
@@ -114,31 +114,31 @@ class LegionCommandCog(commands.Cog):
         name="feedback", description="Submit feedback on a message."
     )
     async def feedback(
-        self,
-        ctx: commands.Context[Any],
-        message_id: str,
-        rating: Literal["good", "borderline", "bad"],
+        self
+        ctx: commands.Context[Any]
+        message_id: str
+        rating: Literal["good", "borderline", "bad"]
     ) -> None:
         """/feedback message_id rating"""
         await self._feedback_impl(ctx, message_id, rating)
 
     async def _feedback_impl(
-        self,
-        ctx: commands.Context[Any],
-        message_id: str,
-        rating: Literal["good", "borderline", "bad"],
+        self
+        ctx: commands.Context[Any]
+        message_id: str
+        rating: Literal["good", "borderline", "bad"]
     ) -> None:
         assert self.orchestrator is not None, "Orchestrator not initialized"
         try:
             feedback_payload = {
-                "type": "user_feedback",
-                "message_id": message_id,
-                "rating": rating,
-                "user": str(ctx.author),
+                "type": "user_feedback"
+                "message_id": message_id
+                "rating": rating
+                "user": str(ctx.author)
             }
             self.orchestrator.submit_feedback(feedback_payload)
             embed = discord.Embed(  # Using qualified name # type: ignore[attr-defined]
-                title="Feedback Received",
+                title="Feedback Received"
                 color=discord.Color.purple(),  # Using qualified name # type: ignore[attr-defined]
             )
             embed.add_field(name="Message ID", value=message_id)

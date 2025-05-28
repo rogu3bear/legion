@@ -14,8 +14,8 @@ router = APIRouter()
     "/access-token", response_model=schemas.Token, summary="Obtain Access Token"
 )
 def login_access_token(
-    db: Session = Depends(dependencies.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(dependencies.get_db)
+    form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Dict[str, str]:
     """
     Authenticate user and return access token.

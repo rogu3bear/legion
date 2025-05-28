@@ -9,8 +9,8 @@ from interface import crud
 from interface.api.v1 import schemas
 from interface.core.config import settings
 from tests.utils import (
-    random_email,
-    random_lower_string,
+    random_email
+    random_lower_string
 )
 
 
@@ -130,9 +130,9 @@ def test_update_user_preferences(
 
     update_data = {"theme": "light", "notifications_enabled": False}
     r = client.put(
-        f"{settings.API_V1_STR}/auth/me/preferences",
-        headers=normal_user_token_headers,
-        json=update_data,
+        f"{settings.API_V1_STR}/auth/me/preferences"
+        headers=normal_user_token_headers
+        json=update_data
     )
     assert r.status_code == 200
     updated_preferences = r.json()

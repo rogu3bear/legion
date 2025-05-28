@@ -50,8 +50,8 @@ class ArchitectAgent(BaseAgent):
 
         # Build messages for LLM
         messages = [
-            {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": f"Repository structure:\n{files}"},
+            {"role": "system", "content": self.SYSTEM_PROMPT}
+            {"role": "user", "content": f"Repository structure:\n{files}"}
         ]
 
         if pr_diff:
@@ -61,11 +61,11 @@ class ArchitectAgent(BaseAgent):
 
         # Call LLM with specific parameters from config
         response = self.call_llm(
-            thread_id="review",
-            messages=messages,
-            model=self.config.get("model"),
-            temperature=self.config.get("review_temperature", 0.7),
-            max_tokens=self.config.get("review_max_tokens", 2000),
+            thread_id="review"
+            messages=messages
+            model=self.config.get("model")
+            temperature=self.config.get("review_temperature", 0.7)
+            max_tokens=self.config.get("review_max_tokens", 2000)
         )
 
         # Post response to Discord

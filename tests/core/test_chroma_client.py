@@ -23,9 +23,9 @@ def test_create_embedding_invokes_openai(monkeypatch):
 
     monkeypatch.setenv("OPENAI_EMBEDDING_MODEL", "dummy-model")
     monkeypatch.setattr(
-        openai.Embedding,
-        "create",
-        lambda model, input_arg: fake_create(model, input_text=input_arg),
+        openai.Embedding
+        "create"
+        lambda model, input_arg: fake_create(model, input_text=input_arg)
     )
 
     client = ChromaClient()
@@ -85,9 +85,9 @@ def test_store_embedding_invalid_inputs():
 def test_retrieve_similar_embeddings_filters_threshold():
     # Prepare dummy result: two items with distances .1 and .5
     dummy_result = {
-        "ids": [["id1", "id2"]],
-        "embeddings": [[[0.1], [0.2]]],
-        "distances": [[0.1, 0.5]],
+        "ids": [["id1", "id2"]]
+        "embeddings": [[[0.1], [0.2]]]
+        "distances": [[0.1, 0.5]]
     }
     client = ChromaClient()
     client.collection = DummyCollection(dummy_result)

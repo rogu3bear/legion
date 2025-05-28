@@ -39,7 +39,7 @@ class MetricsAgent(BaseAgent):
         if redis is None:
             return None
         try:
-            port = int(os.getenv("REDIS_PORT", 7810))
+            port = int(os.getenv("REDIS_PORT", 7600))
             return redis.Redis(host="localhost", port=port, decode_responses=True)
         except Exception:
             return None
@@ -150,11 +150,11 @@ class MetricsAgent(BaseAgent):
         # Use the new Discord bridge for better formatting
         try:
             await self.send_success_notification(
-                "Usage Metrics Report",
+                "Usage Metrics Report"
                 {
-                    "Total Messages": len(all_messages),
-                    "Active Channels": len(channels),
-                    "Avg per Channel": f"{avg_per_channel:.2f}",
+                    "Total Messages": len(all_messages)
+                    "Active Channels": len(channels)
+                    "Avg per Channel": f"{avg_per_channel:.2f}"
                     "Top Agent": report_lines[0] if report_lines else "None"
                 }
             )
@@ -170,20 +170,20 @@ class MetricsAgent(BaseAgent):
     @therapist_guard("directive")
     async def handle_report(self):
         return await self.handle_message(
-            content="Please generate a metrics report for the system.",
-            author=self.name,
-            timestamp=None,
+            content="Please generate a metrics report for the system."
+            author=self.name
+            timestamp=None
         )
 
     def get_agent_channels(self):
         # Get all agent channel IDs from env
         channel_ids = [
-            os.getenv("GENERAL_CHANNEL_ID"),
-            os.getenv("AGENT_FEED_CHANNEL_ID"),
-            os.getenv("ARCHITECT_CHANNEL_ID"),
-            os.getenv("METRICS_CHANNEL_ID"),
-            os.getenv("THERAPIST_CHANNEL_ID"),
-            os.getenv("DESIGN_CHANNEL_ID"),
+            os.getenv("GENERAL_CHANNEL_ID")
+            os.getenv("AGENT_FEED_CHANNEL_ID")
+            os.getenv("ARCHITECT_CHANNEL_ID")
+            os.getenv("METRICS_CHANNEL_ID")
+            os.getenv("THERAPIST_CHANNEL_ID")
+            os.getenv("DESIGN_CHANNEL_ID")
         ]
         ids = [int(cid) for cid in channel_ids if cid and cid.isdigit()]
         return [
@@ -242,91 +242,91 @@ class MetricsAgent(BaseAgent):
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass
 
-    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
-        self,
+    async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord(
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, and post to discord
         pass
 
     async def analyze_feedback_and_retrieve_memories_and_report_and_post_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report_and_post_to_discord_and_handle_report(
-        self,
+        self
     ):
         # Implement the logic to analyze feedback, retrieve memories, report, post, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, handle report, post to discord, and handle report
         pass

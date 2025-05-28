@@ -6,14 +6,14 @@ import subprocess
 from pathlib import Path
 
 DEPRECATED = [
-    "schema.sql",
-    "localhost:8000",
-    "task_log.jsonl",
+    "schema.sql"
+    "localhost:8000"
+    "task_log.jsonl"
 ]
 
 # Exclude common non-doc directories
 EXCLUDE_DIRS = {
-    ".venv", ".mypy_cache", ".git", "node_modules", "__pycache__",
+    ".venv", ".mypy_cache", ".git", "node_modules", "__pycache__"
     ".pytest_cache", "dist", "build", ".tox", "venv"
 }
 
@@ -38,9 +38,9 @@ def check_links() -> None:
     try:
         # Try to run lychee for link checking
         result = subprocess.run(
-            ["lychee", "--offline", "docs"],
-            capture_output=True,
-            text=True,
+            ["lychee", "--offline", "docs"]
+            capture_output=True
+            text=True
             timeout=30
         )
         if result.returncode == 0:
