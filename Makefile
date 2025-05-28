@@ -1,5 +1,5 @@
 # Legion Makefile
-.PHONY: dev lint test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv
+.PHONY: dev lint test deploy logs clean test-agents test-core test-discord test-integration test-interface docs_refresh venv lint-env
 
 venv:
 	@echo "Activating virtual environment..."
@@ -50,3 +50,7 @@ clean:
 docs_refresh:
 	@echo "Updating port map in docs..."
 	python3 scripts/doc_ports.py
+
+lint-env:
+	@echo "Checking env shim configuration..."
+	@./scripts/lint_env.sh
