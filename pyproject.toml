@@ -144,5 +144,35 @@ asyncio_mode = "auto"
 skips = ["B101"] # assert_used - common in tests
 # exclude_dirs = ["tests", ".venv", "venv"]
 
+[project]
+name = "legion"
+version = "0.1.0"
+description = "Legion Multi-Agent System"
+authors = [{name = "Legion Team"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "discord.py>=2.0.0,<3.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.22.0",
+    "openai>=1.0.0,<2.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "PyYAML>=6.0,<7.0",
+    "requests>=2.20.0,<3.0.0",
+    "alembic>=1.10.0",
+    "SQLAlchemy>=2.0.0",
+    "numpy>=1.20.0,<2.0.0",
+    "chromadb>=0.4.0,<0.5.0",
+    "httpx>=0.25.0,<0.28.0",
+    "types-python-jose>=3.3.0",
+    "types-passlib>=1.7.0",
+    "bandit>=1.7.0",
+]
+
 [project.scripts]
 legion = "legion.cli:main"
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
