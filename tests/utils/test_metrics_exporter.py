@@ -64,9 +64,6 @@ def test_start_metrics_server_custom_port(prometheus_multiproc_fixture):
 
 @patch("prometheus_client.start_http_server")
 def test_start_metrics_server_default_port(mock_start_http_server):
-    port_to_use = get_port("test_metrics_server")
-    if port_to_use is None:  # Fallback if not in config
-        port_to_use = 9100  # Default for tests
-
-    start_metrics_server(port=port_to_use)
-    mock_start_http_server.assert_called_once_with(port_to_use)
+    start_metrics_server()
+    expected_port = get_port("metrics") or 7606
+    mock_start_http_server.assert_called_once_with(expected_port)

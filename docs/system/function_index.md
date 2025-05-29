@@ -438,7 +438,7 @@
 | memory/legion_memory.py | LegionAgentMemory | save_document | (self, name, content) | Saves a versioned document for the agent. |
 | memory/legion_memory.py | LegionAgentMemory | set | (self, key, value) | Sets a value in memory and saves. |
 | memory/legion_memory.py | LegionAgentMemory | store_memories | (cls, agent_name, snippets, base_dir) | Upserts the given snippets into the agent's vector store. Retries once on [...] |
-| metrics/exporter.py | - | start_metrics_server | (port) | Start Prometheus metrics HTTP server on the specified port. |
+| metrics/exporter.py | - | start_metrics_server | (port=None) | Start Prometheus metrics HTTP server on the specified port. |
 | middleware/src/main.py | - | attach_context | (request, call_next) | Needs Documentation |
 | middleware/src/main.py | - | get_context | (agent_name, interaction_id) | Needs Documentation |
 | middleware/src/main.py | - | health | () | Needs Documentation |

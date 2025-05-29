@@ -79,7 +79,7 @@ LEGION_PORT_MAP: Dict[str, int] = {
     "orchestrator_rest": 7803
     "interface_api": 7804
     "middleware": 7805
-    "metrics": 7806
+    "metrics": 7606
     "researcher_api": 7807
     "zmq_pub": 7808
     "zmq_sub": 7809

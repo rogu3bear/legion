@@ -86,7 +86,7 @@ legion_agent_uptime{agent="orchestrator"} 1020
 - OpenTelemetry Collector – https://github.com/open-telemetry/opentelemetry-collector
 
 ## Detailed Design
-A single MetricsAgent instance runs in a background loop. When Redis is detected it pushes metrics to the `metrics:latest` hash. Each metric is stored with a numeric value and the agent also increments the matching `metrics:<name>:total` counter. When Redis is unavailable the agent writes to a local file under `memory/logs/metrics.jsonl` so the data persists between runs. The exporter process periodically reads the latest metrics and exposes them to Prometheus on port 7806.
+A single MetricsAgent instance runs in a background loop. When Redis is detected it pushes metrics to the `metrics:latest` hash. Each metric is stored with a numeric value and the agent also increments the matching `metrics:<name>:total` counter. When Redis is unavailable the agent writes to a local file under `memory/logs/metrics.jsonl` so the data persists between runs. The exporter process periodically reads the latest metrics and exposes them to Prometheus on port 7606.
 
 The queue depth metrics are gathered via the Legion task queue interface. The agent counts the sorted set length when using Redis and falls back to the in-memory store otherwise. Agent uptime is tracked by recording a `start_time` and computing the difference with `time.monotonic()` each cycle. Error rate is derived from logs: failed tasks increment a `error_count` field that resets daily. Task latency requires storing dispatch timestamps; the agent subtracts start and completion times to produce a histogram bucket in Prometheus.
 

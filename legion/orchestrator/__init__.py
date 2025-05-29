@@ -37,6 +37,7 @@ from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
 from legion.agent_registry import registry as agent_registry
 from legion.agents.therapist import validate as therapist_validate
+from core.decorators import assurance_gate
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
@@ -869,6 +870,7 @@ class Orchestrator:
         """Returns Discord channel ID for an agent."""
         return self.agent_channel_ids.get(agent_name)
 
+    @assurance_gate(0.85)
     async def ask(self, agent_name, prompt, context=None):
         """Sends a prompt to a specific agent and returns its response."""
         try:
@@ -922,6 +924,7 @@ class Orchestrator:
             )
             return f"Error asking agent '{agent_name}': {e}"
 
+    @assurance_gate(0.85)
     async def broadcast(self, prompt):
         """Sends a prompt to all registered agents."""
         responses = {}
@@ -1039,6 +1042,7 @@ class Orchestrator:
             results[name] = self.self_assess(name)
         return results
 
+    @assurance_gate(0.85)
     async def periodic_assessments(self, interval_minutes=10):
         """Periodically triggers self-assessment for all agents."""
         while True:
@@ -1129,6 +1133,7 @@ class Orchestrator:
         with Path(path).open() as f:
             return yaml.safe_load(f)
 
+    @assurance_gate(0.85)
     async def dispatch_message(
         self
         agent_name: str
@@ -2157,6 +2162,7 @@ class Orchestrator:
         """Central router deciding which agent receives a message."""
         pass  # TODO: unify dispatch rules
 
+    @assurance_gate(0.85)
     async def call_directive(
         self, directive_name: str, *, new_thread: bool = False, **kwargs
     ) -> None:

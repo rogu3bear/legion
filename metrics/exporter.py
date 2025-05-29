@@ -5,6 +5,8 @@ Prometheus metrics exporter for Legion.
 
 from prometheus_client import Counter, Histogram, start_http_server
 
+from legion.ports import get_port
+
 # Metrics definitions
 # Count total dispatch calls per agent_key
 dispatch_counter = Counter(
@@ -16,8 +18,10 @@ dispatch_latency = Histogram(
 )
 
 
-def start_metrics_server(port: int = 8000):
+def start_metrics_server(port: int | None = None) -> None:
     """
     Start Prometheus metrics HTTP server on the specified port.
     """
+    if port is None:
+        port = get_port("metrics") or 7606
     start_http_server(port)
