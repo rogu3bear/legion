@@ -19,7 +19,7 @@ class LegionAgentMemory:
     def __init__(self, agent_name: str, base_dir: str = "memory") -> None:
         """Initialize memory for a specific agent."""
         logger.info(
-            "Initializing LegionAgentMemory"
+            "Initializing LegionAgentMemory",
             extra={"agent_name": agent_name, "base_dir": base_dir}
         )
         self.agent_name = agent_name
@@ -41,8 +41,8 @@ class LegionAgentMemory:
         c = conn.cursor()
         c.execute(
             """CREATE TABLE IF NOT EXISTS task_log (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT
-                        agent_name TEXT
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        agent_name TEXT,
                         task_data TEXT
                     )"""
         )
@@ -78,7 +78,7 @@ class LegionAgentMemory:
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute(
-            "INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)"
+            "INSERT INTO task_log (agent_name, task_data) VALUES (?, ?)",
             (self.agent_name, json.dumps(task))
         )
         conn.commit()
@@ -145,10 +145,10 @@ class LegionAgentMemory:
 
     @classmethod
     def retrieve_memories(
-        cls
-        agent_name: str
-        embedding: List[float]
-        top_k: int
+        cls,
+        agent_name: str,
+        embedding: List[float],
+        top_k: int,
         base_dir: str = "memory"
     ) -> List[str]:
         """
