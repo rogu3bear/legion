@@ -153,8 +153,11 @@ class LegionAgentMemory:
     ) -> List[str]:
         """
         Loads or creates the vector index for that agent. Returns up to topK text snippets most similar to the embedding.
-        Returns an empty list if nothing is there.
+        Returns an empty list if ``top_k`` is non-positive or no data exists.
         """
+        if top_k <= 0:
+            return []
+
         path: Path = cls._vector_store_path(agent_name, base_dir)
         if not path.exists():
             return []

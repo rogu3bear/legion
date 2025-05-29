@@ -418,7 +418,7 @@
 | legion/utils/logging.py | JsonFormatter | format | (self, record) | Needs Documentation |
 | legion/utils/port_conflict_checker.py | - | check_ports_available | (port_map, environment) | Checks if ports are available and within the allowed range. |
 | legion/utils/port_conflict_checker.py | - | validate_port_range | (port, environment) | Validates that a port falls within the allowed range for the environment. |
-| memory/legion_memory.py | - | retrieve_memories | (agent_name, embedding, top_k, base_dir) | Needs Documentation |
+| memory/legion_memory.py | - | retrieve_memories | (agent_name, embedding, top_k, base_dir) | Return up to `top_k` similar snippets or empty list. |
 | memory/legion_memory.py | - | store_memories | (agent_name, snippets, base_dir) | Needs Documentation |
 | memory/legion_memory.py | LegionAgentMemory | __init__ | (self, agent_name, base_dir) | Initialize memory for a specific agent. |
 | memory/legion_memory.py | LegionAgentMemory | _cosine_similarity | (vec1, vec2) | Compute cosine similarity between two vectors. |
@@ -433,7 +433,7 @@
 | memory/legion_memory.py | LegionAgentMemory | list_documents | (self) | Lists all documents for the agent. |
 | memory/legion_memory.py | LegionAgentMemory | list_versions | (self, name) | Lists all versions of a document. |
 | memory/legion_memory.py | LegionAgentMemory | log_task | (self, task) | Logs a task to the SQLite DB. |
-| memory/legion_memory.py | LegionAgentMemory | retrieve_memories | (cls, agent_name, embedding, top_k, base_dir) | Loads or creates the vector index for that agent. Returns up to topK text [...] |
+| memory/legion_memory.py | LegionAgentMemory | retrieve_memories | (cls, agent_name, embedding, top_k, base_dir) | Loads or creates the vector index for that agent. Returns up to `top_k` snippets ordered by similarity. |
 | memory/legion_memory.py | LegionAgentMemory | save | (self) | Saves memory data to disk. |
 | memory/legion_memory.py | LegionAgentMemory | save_document | (self, name, content) | Saves a versioned document for the agent. |
 | memory/legion_memory.py | LegionAgentMemory | set | (self, key, value) | Sets a value in memory and saves. |
