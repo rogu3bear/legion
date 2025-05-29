@@ -12,14 +12,14 @@ from interface.crud import crud_agent
 from interface.models.agent import Agent as AgentModel
 from interface.models.user import User
 from interface.schemas.agent import (
-    AgentActionResponse
-    AgentConfigInfo
-    AgentConfigUpdate
-    AgentDispatchPayload
-    AgentDispatchResponse
-    AgentStatusInfo
-    AgentRegisterRequest
-    AgentRegisterResponse
+    AgentActionResponse,
+    AgentConfigInfo,
+    AgentConfigUpdate,
+    AgentDispatchPayload,
+    AgentDispatchResponse,
+    AgentStatusInfo,
+    AgentRegisterRequest,
+    AgentRegisterResponse,
 )
 from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
