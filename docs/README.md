@@ -13,3 +13,4 @@ This directory centralizes architecture and system documentation.
 - [State Schema](system/state_schema.md)
 - [Project Configuration](system/config.md)
 - [Dependencies](system/dependencies.md)
+- [Environment Setup](ENVIRONMENT_SETUP.md)

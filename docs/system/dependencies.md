@@ -30,6 +30,8 @@ uvicorn==0.27.0.post1
 
 Security audit attempted with `pip-audit` (tool unavailable in offline environment).
 
+See [Environment Setup](../ENVIRONMENT_SETUP.md) for instructions on installing required tooling such as `gh`, `pre-commit`, and `pytest`.
+
 ## Node Packages
 Dependencies from `ui/frontend/package.json`:
 
