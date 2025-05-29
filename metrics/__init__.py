@@ -1,1 +1,4 @@
-# metrics exporter package
+# metrics package
+from .app import app
+
+__all__ = ["app"]

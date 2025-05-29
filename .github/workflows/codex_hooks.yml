@@ -1,0 +1,14 @@
+name: Codex Hook Verification
+on:
+  pull_request:
+    types: [opened, closed]
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  log-event:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show event
+        run: |
+          echo "Codex GitHub App hook triggered for ${{ github.event.action }}"

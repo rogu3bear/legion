@@ -1,0 +1,3 @@
+version: 1
+pull_request:
+  comment: true

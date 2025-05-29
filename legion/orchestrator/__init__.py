@@ -37,6 +37,7 @@ from legion.middleware import run_middleware_pipeline
 from legion.ports import get_port  # Added for prometheus port replacement
 from legion.agent_registry import registry as agent_registry
 from legion.agents.therapist import validate as therapist_validate
+from legion.core.assurance import assurance_gate
 
 # Import the new structured logging setup
 from legion.utils.logging import setup_legion_logging
@@ -1850,6 +1851,7 @@ class Orchestrator:
             "vector_db_status": "unknown"
         }
 
+    @assurance_gate(0.85)
     def create_new_task(self, payload: dict) -> Optional[uuid.UUID]:
         """
         Validates a task payload using the middleware pipeline and then, if valid
@@ -1931,6 +1933,7 @@ class Orchestrator:
 
         return new_task_id
 
+    @assurance_gate(0.85)
     def get_task_details(self, task_id: uuid.UUID) -> Optional[dict]:
         # TODO: Fetch task details from StateManager or task queue
         logger.info(f"Placeholder: Fetching task details for {task_id}")
@@ -1942,6 +1945,7 @@ class Orchestrator:
             "title": "Dummy Task"
         }  # Dummy response
 
+    @assurance_gate(0.85)
     def get_task_list(self, filters: dict) -> (list, int):
         # TODO: Fetch task list from StateManager with filters
         logger.info(f"Placeholder: Listing tasks with filters: {filters}")
@@ -1954,6 +1958,7 @@ class Orchestrator:
         }
         return [dummy_task], 1  # Dummy response
 
+    @assurance_gate(0.85)
     def request_task_cancellation(self, task_id: uuid.UUID) -> bool:
         # TODO: Send cancellation request (e.g., update status, signal worker)
         logger.info(f"Placeholder: Requesting cancellation for task {task_id}")
@@ -1962,6 +1967,7 @@ class Orchestrator:
         return True  # Dummy response
 
     # --- Placeholder Agent Lifecycle Methods ---
+    @assurance_gate(0.85)
     def start_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Start the specified agent."""
         if agent_name not in self.agents:
@@ -1970,6 +1976,7 @@ class Orchestrator:
         # TODO: Implement actual agent start logic (e.g., process creation, state update)
         return True, f"Agent '{agent_name}' started successfully (Placeholder)."
 
+    @assurance_gate(0.85)
     def stop_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Stop the specified agent."""
         if agent_name not in self.agents:
@@ -1978,6 +1985,7 @@ class Orchestrator:
         # TODO: Implement actual agent stop logic (e.g., signal process, state update)
         return True, f"Agent '{agent_name}' stopped successfully (Placeholder)."
 
+    @assurance_gate(0.85)
     def restart_agent(self, agent_name: str) -> tuple[bool, str]:
         """Placeholder: Restart the specified agent."""
         if agent_name not in self.agents:
@@ -1992,6 +2000,7 @@ class Orchestrator:
             return False, f"Failed to start agent during restart: {start_detail}"
         return True, f"Agent '{agent_name}' restarted successfully (Placeholder)."
 
+    @assurance_gate(0.85)
     def register_agent(self, agent_id: str, role: str, capabilities: list[str]) -> str:
         """Register an agent and assign any pending task."""
         token = state_repo.register_agent(agent_id, role, capabilities)
@@ -2017,6 +2026,7 @@ class Orchestrator:
             )
         return token
 
+    @assurance_gate(0.85)
     def load_agent(self, key: str) -> Any:
         """
         Load or return a cached agent instance by its key.
