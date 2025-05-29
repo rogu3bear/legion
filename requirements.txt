@@ -13,3 +13,7 @@ httpx>=0.25.0,<0.28.0 # Added for async HTTP requests in API endpoints
 types-python-jose>=3.3.0 # Type stubs for python-jose
 types-passlib>=1.7.0 # Type stubs for passlib
 bandit>=1.7.0 # Security scanning tool used in CI
+
+# CI/CD Dependencies
+pre-commit==3.7.0 # Code quality hooks and automated formatting
+pytest==8.2.1 # Testing framework for automated test runs
