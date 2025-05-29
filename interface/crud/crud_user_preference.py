@@ -10,7 +10,7 @@ from interface import models, schemas
 def get_user_preference(db: Session, user_id: int) -> Optional[models.UserPreference]:
     """Get user preferences by user ID."""
     return cast(
-        Optional[models.UserPreference]
+        Optional[models.UserPreference],
         (
             db.query(models.UserPreference)
             .filter(models.UserPreference.user_id == user_id)
@@ -28,7 +28,7 @@ def create_user_preference(
         # If prefs somehow already exist, update them instead of creating
         # Cast is safe here because db_prefs existence implies update_user_preference will find it and return UserPreference
         return cast(
-            models.UserPreference
+            models.UserPreference,
             update_user_preference(db, user_id=user_id, preferences_update=preferences)
         )
 

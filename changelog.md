@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency injection for `StateManager` and `LLMClient` in `Orchestrator` and `BaseAgent` for improved modularity and testability
 - New tests for custom dependency injection and error handling coverage in agents and orchestrator
 - Stub file `legion/core/utils/indexing.py` for core indexing logic.
-- Echo Nexus log panel with search, filter and streaming results in React UI.
+- Echo Log Index panel with search, filter and streaming results in React UI.
 - Stub file `legion/agents/python/developer.py` for Python Developer Agent.
 - Stub migration script `legion/core/db/migrations/0001_initial.py`.
 - Initial tests with mocks for `legion.core.utils.network.fetch_with_retries` in `tests/core/test_network.py`.
@@ -191,3 +191,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Issues
 - A persistent `mypy` configuration error ('Source file found twice under different module names') is currently bypassed using `--no-verify` for commits. A GitHub issue (#2) has been created to track and resolve this.
+
+## [2024-01-15] - Echo Integration & UI Improvements
+
+### Added
+- Core Echo agent with full logging capabilities
+- PostgreSQL integration for persistent log storage
+- Discord message logging and indexing
+- Agent state tracking and management
+- ZMQ messaging pipeline for real-time communication
+- REST API endpoints for log querying and filtering
+- Echo Log Index panel with search, filter and streaming results in React UI.
+
+### Changed

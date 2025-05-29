@@ -3,7 +3,7 @@ import './App.css'
 import AgentCard from './components/AgentCard.jsx'
 import DirectiveEditor from './components/DirectiveEditor.jsx'
 import PortMapDisplay from './components/PortMapDisplay.jsx'
-import EchoNexus from './components/EchoNexus.tsx'
+import EchoLogIndex from './components/EchoLogIndex.tsx'
 
 function App() {
   // ${PORT_ALLOCATOR_PORTMAP_API:-5001}
@@ -42,7 +42,7 @@ function App() {
     <div style={{ padding: "20px" }}>
       <h1>Legion Agent Management</h1>
       <PortMapDisplay />
-      <EchoNexus />
+      <EchoLogIndex />
       <div className="flex flex-wrap">
         {agents.map(agent => (
           <AgentCard key={agent} agent={agent} onSelect={loadAgent} />

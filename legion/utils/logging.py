@@ -16,12 +16,12 @@ class JsonFormatter(logging.Formatter):
         log_record = {
             "timestamp": datetime.fromtimestamp(
                 record.created, tz=timezone.utc
-            ).isoformat()
-            "level": record.levelname
-            "name": record.name
-            "message": record.getMessage()
-            "pathname": record.pathname
-            "lineno": record.lineno
+            ).isoformat(),
+            "level": record.levelname,
+            "name": record.name,
+            "message": record.getMessage(),
+            "pathname": record.pathname,
+            "lineno": record.lineno,
             "funcName": record.funcName
         }
         if record.exc_info:
@@ -33,29 +33,29 @@ class JsonFormatter(logging.Formatter):
         # to avoid duplication
         for key, value in record.__dict__.items():
             if key not in (
-                "args"
-                "asctime"
-                "created"
-                "exc_info"
-                "exc_text"
-                "filename"
-                "funcName"
-                "id"
-                "levelname"
-                "levelno"
-                "lineno"
-                "module"
-                "msecs"
-                "message"
-                "msg"
-                "name"
-                "pathname"
-                "process"
-                "processName"
-                "relativeCreated"
-                "stack_info"
-                "thread"
-                "threadName"
+                "args",
+                "asctime",
+                "created",
+                "exc_info",
+                "exc_text",
+                "filename",
+                "funcName",
+                "id",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "message",
+                "msg",
+                "name",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "thread",
+                "threadName",
                 "props"
             ) and not key.startswith("_"):
                 log_record[key] = value
@@ -64,8 +64,8 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_legion_logging(
-    log_level_str: str = "INFO"
-    log_to_console: bool = True
+    log_level_str: str = "INFO",
+    log_to_console: bool = True,
     log_file_path: Optional[str] = None
 ):
     """
@@ -109,7 +109,7 @@ def setup_legion_logging(
         except Exception as e:
             # Fallback to console logging if file handler setup fails
             print(
-                f"Error setting up file logger at {log_file_path}: {e}. Logging to console only."
+                f"Error setting up file logger at {log_file_path}: {e}. Logging to console only.",
                 file=sys.stderr
             )
             if not log_to_console:  # If console wasn't primary, ensure it's added now
@@ -126,7 +126,7 @@ def setup_legion_logging(
     # Ensure at least one handler exists
     if not handlers:
         print(
-            "Warning: No log handlers explicitly configured. Defaulting to console output."
+            "Warning: No log handlers explicitly configured. Defaulting to console output.",
             file=sys.stderr
         )
 
@@ -155,11 +155,11 @@ def setup_legion_logging(
     # logging.getLogger("openai").propagate = True # Default is True
 
     logging.info(
-        "Structured JSON logging configured."
+        "Structured JSON logging configured.",
         extra={
             "props": {
-                "log_level": log_level_str
-                "console": log_to_console
+                "log_level": log_level_str,
+                "console": log_to_console,
                 "file": log_file_path
             }
         }
@@ -192,7 +192,7 @@ def _test_logging(log_level="DEBUG"):
 
     # Custom fields in extra
     logger.info(
-        "Message with custom fields"
+        "Message with custom fields",
         extra={"taskName": "Task-123", "user_id": 42, "component": "API"}
     )
 

@@ -325,12 +325,12 @@ def clear_echo_logs(
                     client.delete(key)
         
         return {
-            "cleared_count": cleared_count,
+            "cleared_count": cleared_count
             "filters": {
-                "level": level,
-                "agent_id": agent_id,
+                "level": level
+                "agent_id": agent_id
                 "older_than_hours": older_than_hours
-            },
+            }
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -361,9 +361,9 @@ def _export_events_csv(events: List[Dict[str, Any]]) -> StreamingResponse:
         
         for event in events:
             row = {
-                "timestamp": datetime.fromtimestamp(event.get("timestamp", 0)).isoformat(),
-                "level": event.get("level", ""),
-                "agent_id": event.get("agent_id", ""),
+                "timestamp": datetime.fromtimestamp(event.get("timestamp", 0)).isoformat()
+                "level": event.get("level", "")
+                "agent_id": event.get("agent_id", "")
                 "message": event.get("message", "")
             }
             

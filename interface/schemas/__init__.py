@@ -2,10 +2,10 @@
 
 # Expose commonly used schemas directly
 from .agent import (
-    AgentActionResponse
-    AgentConfigInfo
-    AgentDispatchPayload
-    AgentDispatchResponse
+    AgentActionResponse,
+    AgentConfigInfo,
+    AgentDispatchPayload,
+    AgentDispatchResponse,
     AgentStatusInfo
 )
 from .memory import DocumentResponse, MemorySearchResponse

@@ -14,7 +14,7 @@ class AgentStatusInfo(BaseModel):
         ..., description="Type or class of the agent (e.g., 'ArchitectAgent')."
     )
     status: str = Field(
-        ...
+        ...,
         description="Current operational status (e.g., 'ONLINE', 'OFFLINE', 'BUSY', 'ERROR')."
     )
     is_active: bool = Field(
@@ -185,7 +185,7 @@ class AgentActionResponse(BaseModel):
         ..., description="The name of the agent the action was performed on."
     )
     action: str = Field(
-        ...
+        ...,
         description="The action that was requested (e.g., 'start_agent', 'assess_agent')."
     )
     status: str = Field(
@@ -201,7 +201,7 @@ class AgentConfigUpdate(BaseModel):
     """Payload for updating an agent's configuration. Allows partial updates."""
 
     config: Dict[str, Any] = Field(
-        ...
+        ...,
         description="A dictionary containing the configuration key-value pairs to update."
     )
 

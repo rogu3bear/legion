@@ -1,6 +1,46 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Port-sanity check: Abort if ports 7600-7609 are in use
+check_port_range() {
+    local start_port=7600
+    local end_port=7609
+    local occupied_ports=()
+    
+    echo "Checking port range ${start_port}-${end_port}..."
+    
+    for port in $(seq $start_port $end_port); do
+        if nc -z 127.0.0.1 "$port" 2>/dev/null; then
+            occupied_ports+=("$port")
+        fi
+    done
+    
+    if [[ ${#occupied_ports[@]} -gt 0 ]]; then
+        echo "❌ ERROR: The following ports in range 7600-7609 are already in use:"
+        printf "  - Port %s\n" "${occupied_ports[@]}"
+        echo ""
+        echo "💡 Fix tip: Kill processes using these ports with:"
+        echo "   sudo lsof -ti:7600-7609 | xargs kill -9"
+        echo "   Or use: sudo pkill -f 'redis-server.*760[0-9]'"
+        echo ""
+        echo "   Then retry: ./scripts/dev_start.sh"
+        exit 1
+    fi
+    
+    echo "✅ Port range 7600-7609 is clear"
+}
+
+# Check for --check-ports flag
+if [[ "$*" == *"--check-ports"* ]]; then
+    echo "🔍 Running port-sanity check only..."
+    check_port_range
+    echo "✅ Port-sanity check completed successfully"
+    exit 0
+fi
+
+# Run port-sanity check before starting services
+check_port_range
+
 REDIS_PORT=7600
 ORCH_PORT=7603
 UI_PORT=7602

@@ -3,10 +3,10 @@
 Purpose – Single-source reference for every Legion agent, their scope, channel, and system touch-points.
 Owner – Orchestrator & Echo; edited only through PRs tagged [M-agents].
 ID	Agent	Discord Channel	Priority	Scope & Skills	Key Endpoints / Ports	Notes
-00	Orchestrator	#operations 1372374906007720006	🔴 Critical	Task delegation, state repo, error routing, queue mgmt	REST /orchestrator/* → 7603	Reads Echo Nexus™ mirror
+00	Orchestrator	#operations 1372374906007720006	🔴 Critical	Task delegation, state repo, error routing, queue mgmt	REST /orchestrator/* → 7603	Reads Echo Log Index mirror
 01	Echo	#agent-feed 1362902052279291904	🔴 Critical	Full log index, search/filter UI, feed to Therapist	Ingest /echo/ingest → 7605
-Query /echo/logs → 7605	Echo Nexus™ = primary DB
-02	Therapist	#therapist 1363185156759752865	🔴 Critical	Pre-exec validation, agent “health”, escalation checks	gRPC /therapist/validate → 7605	Absorbed Healthcheck
+Query /echo/logs → 7605	Echo Log Index = primary DB
+02	Therapist	#therapist 1363185156759752865	🔴 Critical	Pre-exec validation, agent "health", escalation checks	gRPC /therapist/validate → 7605	Absorbed Healthcheck
 03	Middleware	N/A (internal)	🔴 Critical	Discord event listener, routing, tagging, LLM router	WS bridge → 7605	Writes to Echo & Orchestrator
 04	Metrics	#metrics 1363185079173513358	🟠 High	Usage stats, cost & latency reporting	REST /metrics/* → 7606	Consumes Echo logs
 05	UX Designer	#ui-ux <TBD>	🟡 Medium	UI component hints, CSS adjustments	—	Reads UI telemetry
@@ -30,3 +30,14 @@ Middleware tags + routes ► Orchestrator
 Orchestrator delegates ► Agent
 Agent reply ► Discord + Echo ingest
 Metrics pulls Echo logs for cost/latency
+
+# Agent Configuration Overview
+
+## Agent-Service Port Mapping
+- **UI Backend** (FastAPI) → 7601	
+- **UI Frontend** (React dev server) → 7602  
+- **Orchestrator mgmt**	REST /orchestrator/* → 7603	Reads Echo Log Index mirror
+- **Interface mgmt**	REST /interface/* → 7604	
+- Query /echo/logs → 7605	Echo Log Index = primary DB
+- **Metrics API** → 7606	Prometheus export, health checks
+- **Researcher Agent** → 7607	Direct calls for research tasks

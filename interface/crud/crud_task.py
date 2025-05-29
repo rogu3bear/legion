@@ -4,15 +4,18 @@ Task related CRUD operations for Task Management API.
 
 import logging
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.task import (
-    Task
-    TaskCreate
-    TaskCreatedResponse
-    TaskList
+    Task,
+    TaskCreate,
+    TaskCreatedResponse,
+    TaskList,
+    TaskUpdate
 )
+from sqlalchemy.orm import Session
+from interface.models.task import Task # Assuming model path
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +55,9 @@ def get_task(task_id: uuid.UUID) -> Optional[Task]:
 
 
 def list_tasks(
-    skip: int = 0
-    limit: int = 100
-    agent_id: Optional[str] = None
+    skip: int = 0,
+    limit: int = 100,
+    agent_id: Optional[str] = None,
     status: Optional[str] = None
 ) -> Optional[TaskList]:
     """List tasks with optional filtering by agent_id and status."""
@@ -94,3 +97,45 @@ def cancel_task(task_id: uuid.UUID) -> bool:
             f"Error communicating with orchestrator for cancel_task({task_id}): {e}"
         )
         return False
+
+
+def get_task(db: Session, task_id: int) -> Optional[Task]:
+    # Replace with actual DB query if Task model is available
+    # return db.query(Task).filter(Task.id == task_id).first()
+    print(f"[CRUD-STUB] Getting task {task_id}")
+    return None
+
+
+def get_tasks(db: Session, skip: int = 0, limit: int = 100) -> List[Task]:
+    # Replace with actual DB query
+    print(f"[CRUD-STUB] Getting tasks, skip {skip}, limit {limit}")
+    return []
+
+
+def create_task(db: Session, task: TaskCreate, owner_id: int) -> Task:
+    # Replace with actual DB insertion
+    print(f"[CRUD-STUB] Creating task for owner {owner_id} with data: {task}")
+    new_task = Task() # Create a dummy task
+    # setattr(new_task, 'id', 1) # Example: give it an ID if your model expects it
+    return new_task
+
+
+def update_task(db: Session, task_id: int, task_in: TaskUpdate) -> Optional[Task]:
+    print(f"[CRUD-STUB] Updating task {task_id} with data: {task_in}")
+    # db_task = get_task(db, task_id)
+    # if db_task:
+    #     # update logic
+    #     db.commit()
+    #     db.refresh(db_task)
+    # return db_task
+    return None
+
+
+def delete_task(db: Session, task_id: int) -> Optional[Task]:
+    print(f"[CRUD-STUB] Deleting task {task_id}")
+    # db_task = get_task(db, task_id)
+    # if db_task:
+    #     db.delete(db_task)
+    #     db.commit()
+    # return db_task
+    return None

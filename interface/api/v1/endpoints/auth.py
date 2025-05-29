@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=schemas.Token, summary="Login for Access Token")
 def login_for_access_token(
-    db: Session = Depends(dependencies.get_db)
+    db: Session = Depends(dependencies.get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Dict[str, str]:
     """
@@ -34,8 +34,8 @@ def login_for_access_token(
     )
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED
-            detail="Incorrect username or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
     if not user.is_active:
@@ -61,13 +61,13 @@ def read_users_me(
 
 
 @router.post(
-    "/register"
-    response_model=schemas.User
-    status_code=status.HTTP_201_CREATED
+    "/register",
+    response_model=schemas.User,
+    status_code=status.HTTP_201_CREATED,
     summary="Register New User"
 )
 def register_user(
-    user_in: schemas.UserCreate
+    user_in: schemas.UserCreate,
     db: Session = Depends(dependencies.get_db)
 ) -> schemas.User:
     """
@@ -84,7 +84,7 @@ def register_user(
     user = crud_user.get_user_by_username(db, username=user_in.username)
     if user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
         )
 
@@ -92,7 +92,7 @@ def register_user(
     user = crud_user.get_user_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
 
@@ -130,12 +130,12 @@ def logout(
 
 
 @router.get(
-    "/me/preferences"
-    response_model=schemas.UserPreference
+    "/me/preferences",
+    response_model=schemas.UserPreference,
     summary="Get User Preferences"
 )
 def get_user_preferences(
-    current_user: schemas.User = Depends(dependencies.get_current_user)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
     db: Session = Depends(dependencies.get_db)
 ) -> schemas.UserPreference:
     """
@@ -156,13 +156,13 @@ def get_user_preferences(
 
 
 @router.put(
-    "/me/preferences"
-    response_model=schemas.UserPreference
+    "/me/preferences",
+    response_model=schemas.UserPreference,
     summary="Update User Preferences"
 )
 def update_user_preferences(
     preferences_in: schemas.UserPreferenceUpdate,  # Use an update schema
-    current_user: schemas.User = Depends(dependencies.get_current_user)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
     db: Session = Depends(dependencies.get_db)
 ) -> schemas.UserPreference:
     """
@@ -182,3 +182,9 @@ def update_user_preferences(
 # TODO: Implement /refresh endpoint if using refresh tokens.
 
 # Add endpoints for /refresh etc. later
+
+
+@router.get("/health")
+def auth_health():
+    """Auth health check."""
+    return {"status": "ok"}

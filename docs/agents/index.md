@@ -21,6 +21,23 @@ Ports for these agents are defined in [architecture/ports.md](../architecture/po
 
 The Echo agent records structured events for diagnostics. Each event is stored
 in Redis under the ``echo:events`` list and indexed by level and agent ID.
-Events can be queried via the Nexus API at ``/api/v1/echo/search``.
+Events can be queried via the Echo Log Index API at ``/api/v1/echo/search``.
 Successful writes trigger a short notification to the ``agent-feed`` channel
 using ``scripts/post_agent_feed.sh``.
+
+# Agent Management Documentation
+
+## Echo Agent
+
+The Echo agent is responsible for comprehensive logging and event tracking within the Legion system. It captures all agent interactions, Discord messages, and system events for analysis and debugging.
+
+### Features
+
+- **Real-time Logging**: Captures all agent communications and system events
+- **Discord Integration**: Mirrors important logs to the #agent-feed channel
+- **Search & Filter**: Advanced querying capabilities through the web interface
+- **State Persistence**: Maintains log history in the database
+
+### API Access
+
+Events can be queried via the Echo Log Index API at ``/api/v1/echo/search``.
