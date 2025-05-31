@@ -20,7 +20,7 @@ COLOR_MAP = {
     MessageType.INFO: discord.Color.blue(),
     MessageType.WARNING: discord.Color.gold(),
     MessageType.ERROR: discord.Color.red(),
-    MessageType.SUCCESS: discord.Color.green()
+    MessageType.SUCCESS: discord.Color.green(),
 }
 
 
