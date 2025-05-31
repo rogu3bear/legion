@@ -6,8 +6,8 @@ from sqlalchemy.orm import DeclarativeBase  # New way
 from interface.core.config import settings
 
 engine = create_engine(
-    settings.SQLALCHEMY_DATABASE_URI
-    echo=True
+    settings.SQLALCHEMY_DATABASE_URI,
+    echo=True,
     connect_args={"check_same_thread": False}
     if settings.SQLALCHEMY_DATABASE_URI.startswith("sqlite")
     else {}
