@@ -126,10 +126,10 @@ class Orchestrator:
     """Manages agent lifecycle and communication."""
 
     def __init__(
-        self
-        post_agent_message=None
-        pid_file=None
-        state_manager=None
+        self,
+        post_agent_message=None,
+        pid_file=None,
+        state_manager=None,
         llm_client=None
     ):
         self.port_allocator = unified_port_manager
@@ -277,11 +277,11 @@ class Orchestrator:
         # Add new channels to agent_channel_ids for easy access
         self.agent_channel_ids.update(
             {
-                "bot_commands": BOT_COMMANDS_CHANNEL_ID
-                "agent_logs": AGENT_LOGS_CHANNEL_ID
-                "agent_feedback": AGENT_FEEDBACK_CHANNEL_ID
-                "config_updates": CONFIG_UPDATES_CHANNEL_ID
-                "alerts": ALERTS_CHANNEL_ID
+                "bot_commands": BOT_COMMANDS_CHANNEL_ID,
+                "agent_logs": AGENT_LOGS_CHANNEL_ID,
+                "agent_feedback": AGENT_FEEDBACK_CHANNEL_ID,
+                "config_updates": CONFIG_UPDATES_CHANNEL_ID,
+                "alerts": ALERTS_CHANNEL_ID,
                 "metrics_dash": METRICS_DASH_CHANNEL_ID
             }
         )
@@ -296,7 +296,7 @@ class Orchestrator:
 
                 # Prepare arguments for the specific agent's constructor
                 ctor_kwargs = {
-                    "name": agent_name
+                    "name": agent_name,
                     "config": config
                 }
                 agent_sig = inspect.signature(agent_class.__init__)
@@ -345,7 +345,7 @@ class Orchestrator:
         self.agent_classes = CLASS_MAP
         self.memory = {
             name: LegionAgentMemory(
-                name
+                name,
                 base_dir=self.config.get(name, {}).get("memory_base_dir", "memory")
             )  # Get base_dir from agent's config
             for name in self.agent_classes
@@ -471,8 +471,8 @@ class Orchestrator:
                     sig_name, lambda s=sig_name: handle_signal(s, None)
                 )
             except (
-                ValueError
-                OSError
+                ValueError,
+                OSError,
                 RuntimeError
             ) as e:  # common errors for add_signal_handler
                 # Fallback or log if running in a context where signal handlers can't be set (e.g. not main thread on some OS)
@@ -517,7 +517,7 @@ class Orchestrator:
             except Exception as e:
                 # Log error but don't crash atexit handler
                 logger.error(
-                    f"atexit: Error releasing lock or removing PID file {self._pid_file}: {e}"
+                    f"atexit: Error releasing lock or removing PID file {self._pid_file}: {e}",
                     exc_info=True
                 )
 
@@ -592,7 +592,7 @@ class Orchestrator:
                 )
             except Exception as e:
                 logger.error(
-                    f"Error releasing lock/PID file during async shutdown: {e}"
+                    f"Error releasing lock/PID file during async shutdown: {e}",
                     exc_info=True
                 )
 
@@ -656,7 +656,7 @@ class Orchestrator:
                     logger.info(f"{task_name} successfully cancelled.")
                 elif isinstance(result, Exception):
                     logger.error(
-                        f"Exception in {task_name} during shutdown: {result}"
+                        f"Exception in {task_name} during shutdown: {result}",
                         exc_info=result
                     )
                 else:
@@ -1130,21 +1130,21 @@ class Orchestrator:
             return yaml.safe_load(f)
 
     async def dispatch_message(
-        self
-        agent_name: str
-        content: str
-        author: Optional[str] = None
+        self,
+        agent_name: str,
+        content: str,
+        author: Optional[str] = None,
         timestamp: Optional[str] = None
     ) -> str:
         """Dispatches a message to an agent, processes it, and returns a response."""
         start_time = time.time()
         message_id = str(uuid.uuid4())
         raw_payload = {
-            "id": message_id
-            "agent": agent_name
+            "id": message_id,
+            "agent": agent_name,
             "content": content,  # Original content from the caller
             "directive": content,  # Assuming 'content' is the directive for middleware
-            "author": author or "N/A"
+            "author": author or "N/A",
             "timestamp": timestamp or datetime.datetime.now(UTC).isoformat()
         }
 
