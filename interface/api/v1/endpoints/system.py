@@ -32,17 +32,17 @@ def _call_orchestrator(
     except Exception as e:
         logger.error(
             f"Unexpected error calling send_request for action '{action}': {e}",
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal error communicating with orchestrator."
+            detail="Internal error communicating with orchestrator.",
         ) from e
 
     if response_data is None:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail="No response received from orchestrator or communication failed."
+            detail="No response received from orchestrator or communication failed.",
         )
 
     # Response payload is nested under "response" key in the ZMQ reply
@@ -52,7 +52,7 @@ def _call_orchestrator(
         logger.warning(f"Orchestrator returned error for action '{action}': {detail}")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Orchestrator error: {detail}"
+            detail=f"Orchestrator error: {detail}",
         )
 
     # Return the actual payload nested within the response
@@ -61,7 +61,7 @@ def _call_orchestrator(
 
 @router.get("/status", response_model=Dict[str, Any], summary="Get System Status")
 def get_system_status(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """
     Retrieves the current overall system status from the Legion Orchestrator.
@@ -75,7 +75,7 @@ def get_system_status(
 
 @router.get("/metrics", response_model=Dict[str, Any], summary="Get System Metrics")
 def get_system_metrics(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """
     Retrieves system performance and operational metrics from the Orchestrator.
@@ -90,7 +90,7 @@ def get_system_metrics(
 @router.get("/logs", response_model=Dict[str, Any], summary="Get System Logs")
 def get_system_logs(
     # TODO: Add query parameters for filtering (e.g., level, agent, limit)
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """
     Retrieves recent system logs from the Legion Orchestrator.
@@ -107,7 +107,7 @@ def get_system_logs(
     "/memory/stats", response_model=Dict[str, Any], summary="Get Memory Statistics"
 )
 def get_memory_stats(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """
     Retrieves usage statistics for the Legion memory system via the Orchestrator.

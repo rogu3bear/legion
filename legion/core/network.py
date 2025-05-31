@@ -28,9 +28,9 @@ def placeholder_network(
         resp = requests.get(url, timeout=timeout)
         elapsed = time.time() - start
         return {
-            "ok": resp.status_code == 200
-            "status": resp.status_code
-            "elapsed": elapsed
+            "ok": resp.status_code == 200,
+            "status": resp.status_code,
+            "elapsed": elapsed,
         }
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -43,14 +43,14 @@ def health_check(url: str, timeout: float = 2.0) -> bool:
         resp = requests.get(url, timeout=timeout)
         if resp.status_code == 200:
             logger.info(
-                "Health check successful"
-                extra={"url": url, "status_code": resp.status_code}
+                "Health check successful",
+                extra={"url": url, "status_code": resp.status_code},
             )
             return True
         else:
             logger.warning(
-                "Health check failed"
-                extra={"url": url, "status_code": resp.status_code}
+                "Health check failed",
+                extra={"url": url, "status_code": resp.status_code},
             )
             return False
     except requests.exceptions.RequestException as e:

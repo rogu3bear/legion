@@ -17,7 +17,7 @@ class UxDesignerAgent(BaseAgent):
     @therapist_guard("directive")
     async def handle_critique(self):
         return await self.handle_message(
-            content="Please critique the current user experience and suggest improvements."
-            author=self.name
-            timestamp=None
+            content="Please critique the current user experience and suggest improvements.",
+            author=self.name,
+            timestamp=None,
         )

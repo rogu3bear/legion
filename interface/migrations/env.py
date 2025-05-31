@@ -7,7 +7,7 @@ from pathlib import Path
 
 from alembic import context
 from sqlalchemy import (  # Added for explicit engine creation
-    create_engine
+    create_engine,
 )
 
 # --- Custom Imports for Legion Interface --- START ---
@@ -69,10 +69,10 @@ def run_migrations_offline() -> None:
         "SQLALCHEMY_DATABASE_URI", "sqlite+aiosqlite:///./db/legion_ui.db"
     )
     context.configure(
-        url=url
-        target_metadata=target_metadata
-        literal_binds=True
-        dialect_opts={"paramstyle": "named"}
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
         compare_type=True,  # Added to detect column type changes
     )
 
@@ -84,14 +84,14 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     ensure_db_directory_exists()
     connectable = create_engine(
-        environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///memory/db/legion.db")
-        echo=True
+        environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///memory/db/legion.db"),
+        echo=True,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection
-            target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
             compare_type=True,  # Added to detect column type changes
         )
 

@@ -20,8 +20,8 @@ def main():
 
     # list-agents command
     subparsers.add_parser(
-        "list-agents"
-        help="Print a table of agent keys and class names from agents.yaml."
+        "list-agents",
+        help="Print a table of agent keys and class names from agents.yaml.",
     )
 
     # run-agent command
@@ -101,8 +101,8 @@ def main():
             try:
                 git_rev = (
                     subprocess.check_output(
-                        ["git", "rev-parse", "--short", "HEAD"]
-                        stderr=subprocess.DEVNULL
+                        ["git", "rev-parse", "--short", "HEAD"],
+                        stderr=subprocess.DEVNULL,
                     )
                     .decode()
                     .strip()

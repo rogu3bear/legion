@@ -31,7 +31,7 @@ class TherapistAgent(BaseAgent):
         if redis is None:
             return None
         try:
-            port = int(os.getenv("REDIS_PORT", 7600))
+            port = int(os.getenv("REDIS_PORT", 7810))
             return redis.Redis(host="localhost", port=port, decode_responses=True)
         except Exception:
             return None
@@ -88,12 +88,12 @@ class TherapistAgent(BaseAgent):
         - Reject if content is empty, unrelated, or confidence is low (simulated by context).
         """
         allowed_phrases = [
-            "self-assessment"
-            "well-being"
-            "agent support"
-            "therapy"
-            "stress"
-            "conflict"
+            "self-assessment",
+            "well-being",
+            "agent support",
+            "therapy",
+            "stress",
+            "conflict",
         ]
         if not content or not any(
             phrase in content.lower() for phrase in allowed_phrases

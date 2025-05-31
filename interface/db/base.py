@@ -10,7 +10,7 @@ engine = create_engine(
     echo=True,
     connect_args={"check_same_thread": False}
     if settings.SQLALCHEMY_DATABASE_URI.startswith("sqlite")
-    else {}
+    else {},
 )
 
 

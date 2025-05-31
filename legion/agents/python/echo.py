@@ -38,17 +38,17 @@ class EchoAgent(BaseAgent):
     async def handle_echo(self, message: str) -> str:
         """Echo the provided message and persist a structured log."""
         entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat()
-            "message": message
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "message": message,
         }
         self.log_buffer.append(entry)
         if len(self.log_buffer) >= 10:
             self._flush_buffer()
         # Use BaseAgent's handle_message for consistency
         return await self.handle_message(
-            content=message
-            author=self.name
-            timestamp=None
+            content=message,
+            author=self.name,
+            timestamp=None,
         )
 
     def close(self) -> None:

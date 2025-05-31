@@ -19,7 +19,7 @@ from interface.schemas.agent import (
     AgentDispatchResponse,
     AgentStatusInfo,
     AgentRegisterRequest,
-    AgentRegisterResponse
+    AgentRegisterResponse,
 )
 from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
@@ -33,7 +33,7 @@ router = APIRouter()
 def create_agent_db(
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
-    db: Session = Depends(dependencies.get_db)
+    db: Session = Depends(dependencies.get_db),
 ) -> Dict[str, Any]:
     """Create a new agent in the database (superuser only)."""
     name = agent_data.get("name")
@@ -51,7 +51,7 @@ def create_agent_db(
 def get_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_user),
-    db: Session = Depends(dependencies.get_db)
+    db: Session = Depends(dependencies.get_db),
 ) -> Dict[str, Any]:
     """Retrieve an agent by its ID."""
     db_agent = db.get(AgentModel, agent_id)
@@ -65,7 +65,7 @@ def update_agent_db(
     agent_id: int,
     agent_data: dict = Body(...),
     current_user: User = Depends(dependencies.get_current_active_superuser),
-    db: Session = Depends(dependencies.get_db)
+    db: Session = Depends(dependencies.get_db),
 ) -> Dict[str, Any]:
     """Update an existing agent (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
@@ -83,7 +83,7 @@ def update_agent_db(
         if existing_agent_with_name:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Agent name '{new_name}' already exists."
+                detail=f"Agent name '{new_name}' already exists.",
             )
 
     # Apply updates for provided fields
@@ -103,7 +103,7 @@ def update_agent_db(
         "is_active": db_agent.is_active,
         "config": db_agent.config,
         "created_at": db_agent.created_at,
-        "last_active": db_agent.last_active
+        "last_active": db_agent.last_active,
     }
 
 
@@ -111,7 +111,7 @@ def update_agent_db(
 def delete_agent_db(
     agent_id: int,
     current_user: User = Depends(dependencies.get_current_active_superuser),
-    db: Session = Depends(dependencies.get_db)
+    db: Session = Depends(dependencies.get_db),
 ) -> Dict[str, Any]:
     """Delete an agent by its ID (superuser only)."""
     db_agent = db.get(AgentModel, agent_id)
@@ -125,7 +125,7 @@ def delete_agent_db(
 
 @router.get("/", response_model=List[AgentStatusInfo], summary="List All Agents")
 def list_agents(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> List[AgentStatusInfo]:
     """
     Retrieves a list of all registered agents and their current status.
@@ -146,7 +146,7 @@ def register_agent(payload: AgentConfigInfo) -> Dict[str, Any]:
 @router.get("/{agent_name}", response_model=AgentStatusInfo, summary="Get Agent Status")
 def get_agent_status(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> AgentStatusInfo:
     """
     Retrieves the detailed status for a specific agent.
@@ -161,7 +161,7 @@ def get_agent_status(
     if not agent:
         raise HTTPException(
             status_code=404,
-            detail=f"Agent '{agent_name}' not found or failed to retrieve status."
+            detail=f"Agent '{agent_name}' not found or failed to retrieve status.",
         )
     return agent
 
@@ -169,11 +169,11 @@ def get_agent_status(
 @router.get(
     "/{agent_name}/config",
     response_model=AgentConfigInfo,
-    summary="Get Agent Configuration"
+    summary="Get Agent Configuration",
 )
 def get_agent_configuration(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> AgentConfigInfo:
     """
     Retrieves the current configuration for a specific agent.
@@ -188,7 +188,7 @@ def get_agent_configuration(
     if config is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Config not found for agent '{agent_name}' or failed to retrieve."
+            detail=f"Config not found for agent '{agent_name}' or failed to retrieve.",
         )
     # AgentConfigInfo allows extra fields, suitable for flexible config structures
     return AgentConfigInfo(**config)
@@ -197,12 +197,12 @@ def get_agent_configuration(
 @router.post(
     "/{agent_name}/dispatch",
     response_model=AgentDispatchResponse,
-    summary="Dispatch Message to Agent"
+    summary="Dispatch Message to Agent",
 )
 def dispatch_message_to_agent(
     agent_name: str,
     payload: AgentDispatchPayload,
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> AgentDispatchResponse:
     """
     Sends a message or command to a specific agent via the Orchestrator.
@@ -226,8 +226,8 @@ def dispatch_message_to_agent(
         "originator": {
             "type": "user",
             "id": current_user.id,
-            "username": current_user.username
-        }
+            "username": current_user.username,
+        },
     }
     if payload.tags is not None:
         orchestrator_payload["tags"] = payload.tags
@@ -249,7 +249,7 @@ def dispatch_message_to_agent(
             logger.warning(f"Agent '{agent_name}' not found for dispatch.")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Agent '{agent_name}' not found."
+                detail=f"Agent '{agent_name}' not found.",
             )
         else:
             logger.error(
@@ -257,7 +257,7 @@ def dispatch_message_to_agent(
             )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Invalid response format from orchestrator for agent dispatch."
+                detail="Invalid response format from orchestrator for agent dispatch.",
             )
 
     return AgentDispatchResponse(
@@ -268,11 +268,11 @@ def dispatch_message_to_agent(
 @router.post(
     "/{agent_name}/assess",
     response_model=AgentActionResponse,
-    summary="Trigger Agent Self-Assessment"
+    summary="Trigger Agent Self-Assessment",
 )
 def trigger_agent_assessment(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """
     Triggers a self-assessment process for a specific agent.
@@ -303,7 +303,7 @@ def trigger_agent_assessment(
         logger.warning(f"Agent '{agent_name}' not found for assessment trigger.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Agent '{agent_name}' not found."
+            detail=f"Agent '{agent_name}' not found.",
         )
     elif status_report == "error":
         logger.error(
@@ -311,14 +311,14 @@ def trigger_agent_assessment(
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Orchestrator failed to trigger assessment: {message or 'Unknown error'}"
+            detail=f"Orchestrator failed to trigger assessment: {message or 'Unknown error'}",
         )
 
     return AgentActionResponse(
         agent_name=received_agent_name,
         status=status_report,
         message=message,
-        request_id=request_id
+        request_id=request_id,
     )
 
 
@@ -330,7 +330,7 @@ def trigger_agent_assessment(
 )
 def start_agent(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to start a specific agent.
@@ -348,18 +348,18 @@ def start_agent(
     if response is None:
         raise HTTPException(
             status_code=502,
-            detail="Failed to communicate with orchestrator or process request."
+            detail="Failed to communicate with orchestrator or process request.",
         )
     if response.status == "error":
         if "not found" in (response.detail or "").lower():
             raise HTTPException(
                 status_code=404,
-                detail=response.detail or f"Agent '{agent_name}' not found."
+                detail=response.detail or f"Agent '{agent_name}' not found.",
             )
         else:
             raise HTTPException(
                 status_code=502,
-                detail=response.detail or "Orchestrator failed to start agent."
+                detail=response.detail or "Orchestrator failed to start agent.",
             )
     return response
 
@@ -369,7 +369,7 @@ def start_agent(
 )
 def stop_agent(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to stop a specific agent.
@@ -387,18 +387,18 @@ def stop_agent(
     if response is None:
         raise HTTPException(
             status_code=502,
-            detail="Failed to communicate with orchestrator or process request."
+            detail="Failed to communicate with orchestrator or process request.",
         )
     if response.status == "error":
         if "not found" in (response.detail or "").lower():
             raise HTTPException(
                 status_code=404,
-                detail=response.detail or f"Agent '{agent_name}' not found."
+                detail=response.detail or f"Agent '{agent_name}' not found.",
             )
         else:
             raise HTTPException(
                 status_code=502,
-                detail=response.detail or "Orchestrator failed to stop agent."
+                detail=response.detail or "Orchestrator failed to stop agent.",
             )
     return response
 
@@ -408,7 +408,7 @@ def stop_agent(
 )
 def restart_agent(
     agent_name: str,
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """
     Sends a command to the Orchestrator to restart a specific agent.
@@ -426,18 +426,18 @@ def restart_agent(
     if response is None:
         raise HTTPException(
             status_code=502,
-            detail="Failed to communicate with orchestrator or process request."
+            detail="Failed to communicate with orchestrator or process request.",
         )
     if response.status == "error":
         if "not found" in (response.detail or "").lower():
             raise HTTPException(
                 status_code=404,
-                detail=response.detail or f"Agent '{agent_name}' not found."
+                detail=response.detail or f"Agent '{agent_name}' not found.",
             )
         else:
             raise HTTPException(
                 status_code=502,
-                detail=response.detail or "Orchestrator failed to restart agent."
+                detail=response.detail or "Orchestrator failed to restart agent.",
             )
     return response
 
@@ -445,12 +445,12 @@ def restart_agent(
 @router.put(
     "/{agent_name}/config",
     response_model=AgentActionResponse,
-    summary="Update Agent Configuration"
+    summary="Update Agent Configuration",
 )
 def update_agent_configuration(
     agent_name: str,
     config_data: AgentConfigUpdate,
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """
     Updates the configuration for a specific agent via the Orchestrator.
@@ -470,11 +470,11 @@ def update_agent_configuration(
     # Call the CRUD operation with corrected parameter names
     updated_config_response = crud_agent.update_agent_config(
         agent_name=agent_name,
-        config_in=config_data  # Corrected: agent_name, config_in
+        config_in=config_data,  # Corrected: agent_name, config_in
     )
 
     if updated_config_response is None:
-        # This case implies the agent might not have been found by the orchestrator
+        # This case implies the agent might not have been found by the orchestrator,
         # or another error occurred during the orchestrator call handled within crud_agent.
         logger.warning(
             f"Failed to update config for agent '{agent_name}' via orchestrator (crud returned None)."
@@ -490,7 +490,7 @@ def update_agent_configuration(
             agent_name=agent_name,
             action="update_config",
             status="error",
-            detail=f"Failed to update config for agent '{agent_name}'. Orchestrator did not confirm update or agent not found."
+            detail=f"Failed to update config for agent '{agent_name}'. Orchestrator did not confirm update or agent not found.",
         )
 
     # If crud_agent.update_agent_config was successful, it returns the new config dict.
@@ -501,17 +501,17 @@ def update_agent_configuration(
         action="update_config",
         status="success",  # Assuming success if crud_agent returned a config
         detail=f"Configuration for agent '{agent_name}' update process initiated.",
-        data=updated_config_response  # Include the new config if available
+        data=updated_config_response,  # Include the new config if available
     )
 
 
 @router.post(
     "/reload",
     response_model=AgentActionResponse,
-    summary="Reload All Agent Configurations"
+    summary="Reload All Agent Configurations",
 )
 def reload_all_agents_configs(
-    current_user: User = Depends(dependencies.get_current_active_superuser)
+    current_user: User = Depends(dependencies.get_current_active_superuser),
 ) -> AgentActionResponse:
     """Triggers a reload of all agent configurations via the Orchestrator.
 
@@ -526,19 +526,19 @@ def reload_all_agents_configs(
     if response is None:
         raise HTTPException(
             status_code=502,
-            detail="Failed to communicate with orchestrator or process reload request."
+            detail="Failed to communicate with orchestrator or process reload request.",
         )
     if response.status == "error":
         raise HTTPException(
             status_code=502,
-            detail=response.detail or "Orchestrator failed to reload configurations."
+            detail=response.detail or "Orchestrator failed to reload configurations.",
         )
     return response
 
 
 @router.get("/capabilities", summary="List Agent Capabilities")
 def list_agent_capabilities(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, List[str]]:
     """Return mapping of agents to their capability methods."""
 
@@ -550,7 +550,7 @@ def register_agent(payload: AgentRegisterRequest) -> AgentRegisterResponse:
     """Register an agent and obtain an auth token."""
     command = {
         "action": "register_agent",
-        "payload": payload.model_dump()
+        "payload": payload.model_dump(),
     }
     response = send_orchestrator_request(command)
     if not response or response.get("status") != "success":

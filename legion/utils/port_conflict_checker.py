@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)  # Or your desired log level
 PORT_RANGES = {
     "development": (27000, 28000),
     "production": (31000, 32000),
-    "testing": (29000, 30000)
+    "testing": (29000, 30000),
 }
 
 

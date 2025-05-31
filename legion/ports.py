@@ -54,7 +54,7 @@ def load_runtime_ports(env_file_path: str = ".env.ports") -> Dict[str, int]:
         missing_keys = set(DEFAULT_PORTS.keys()) - set(RUNTIME_PORTS.keys())
         # This should ideally not happen if defaults are always loaded first.
         # However, if a DEFAULT_PORT key somehow doesn't make it into RUNTIME_PORTS
-        # (e.g. different naming convention not handled by the loading logic)
+        # (e.g. different naming convention not handled by the loading logic),
         # this assertion will catch it.
         # For the specified assertion `set(DEFAULT_PORTS) <= set(runtime_ports)`
         # this means that every key in DEFAULT_PORTS must be a key in RUNTIME_PORTS.
@@ -83,7 +83,7 @@ LEGION_PORT_MAP: Dict[str, int] = {
     "researcher_api": 7807,
     "zmq_pub": 7808,
     "zmq_sub": 7809,
-    "redis": 7810
+    "redis": 7810,
 }
 
 

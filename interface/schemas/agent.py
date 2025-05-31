@@ -15,7 +15,7 @@ class AgentStatusInfo(BaseModel):
     )
     status: str = Field(
         ...,
-        description="Current operational status (e.g., 'ONLINE', 'OFFLINE', 'BUSY', 'ERROR')."
+        description="Current operational status (e.g., 'ONLINE', 'OFFLINE', 'BUSY', 'ERROR').",
     )
     is_active: bool = Field(
         ..., description="Indicates if the agent is currently active and processing."
@@ -186,7 +186,7 @@ class AgentActionResponse(BaseModel):
     )
     action: str = Field(
         ...,
-        description="The action that was requested (e.g., 'start_agent', 'assess_agent')."
+        description="The action that was requested (e.g., 'start_agent', 'assess_agent').",
     )
     status: str = Field(
         ..., description="Outcome status of the action ('success' or 'error')."
@@ -202,7 +202,7 @@ class AgentConfigUpdate(BaseModel):
 
     config: Dict[str, Any] = Field(
         ...,
-        description="A dictionary containing the configuration key-value pairs to update."
+        description="A dictionary containing the configuration key-value pairs to update.",
     )
 
 

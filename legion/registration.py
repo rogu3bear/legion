@@ -5,7 +5,6 @@ from __future__ import annotations
 import hmac
 import json
 import logging
-import os
 import secrets
 import time
 from typing import Any, Dict
@@ -19,9 +18,7 @@ except Exception:  # pragma: no cover
 class RegistrationService:
     """Handle agent registration handshake using Redis."""
 
-    def __init__(self, host: str = "localhost", port: int = None, secret: str = "secret") -> None:
-        self.host = host
-        self.port = port if port is not None else int(os.getenv("REDIS_PORT", 7600))
+    def __init__(self, host: str = "localhost", port: int = 7810, secret: str = "secret") -> None:
         self.secret = secret
         if redis is None:
             self.client = None

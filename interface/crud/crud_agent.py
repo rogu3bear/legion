@@ -16,7 +16,7 @@ from interface.schemas.agent import (
     AgentCreate,
     AgentDispatchPayload,  # Added import for dispatch payload
     AgentStatusInfo,
-    AgentUpdate
+    AgentUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -186,7 +186,7 @@ def update_agent_config(
             {
                 "action": "update_agent_config",
                 "agent_name": agent_name,
-                "config": config_in.dict()
+                "config": config_in.dict(),
             }
         )
         if response and response.get("status") == "success" and "config" in response:
@@ -248,7 +248,7 @@ def control_agent_lifecycle(
             agent_name=agent_name,
             action=lifecycle_action,
             status="error",
-            detail="Invalid action"
+            detail="Invalid action",
         )
 
     command = {"action": lifecycle_action, "payload": {"agent_name": agent_name}}
@@ -259,7 +259,7 @@ def control_agent_lifecycle(
             agent_name=agent_name,
             action=lifecycle_action,
             status=response["status"],
-            detail=response.get("detail")
+            detail=response.get("detail"),
         )
     else:
         logger.error(
@@ -269,7 +269,7 @@ def control_agent_lifecycle(
             agent_name=agent_name,
             action=lifecycle_action,
             status="error",
-            detail="Communication error or invalid response from orchestrator"
+            detail="Communication error or invalid response from orchestrator",
         )
 
 
@@ -286,7 +286,7 @@ def reload_agent_configurations() -> Optional[AgentActionResponse]:
             agent_name="all",  # Indicate this affects all agents
             action="reload_configs",
             status=response_data["status"],
-            detail=response_data.get("detail")
+            detail=response_data.get("detail"),
         )
     else:
         logger.error(f"Failed to reload agent configs. Response: {response_data}")
@@ -294,7 +294,7 @@ def reload_agent_configurations() -> Optional[AgentActionResponse]:
             agent_name="all",
             action="reload_configs",
             status="error",
-            detail="Communication error or invalid response from orchestrator"
+            detail="Communication error or invalid response from orchestrator",
         )
 
 

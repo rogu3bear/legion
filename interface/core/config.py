@@ -22,8 +22,8 @@ class Settings(BaseSettings):
 
     # CORS
     BACKEND_CORS_ORIGINS: list = [
-        f"http://localhost:{os.getenv('FRONTEND_PORT', '7602')}"
-        f"http://localhost:{os.getenv('LEGION_API_PORT', '7601')}"
+        f"http://localhost:{os.getenv('UI_FRONTEND_PORT', '7802')}",
+        f"http://localhost:{os.getenv('WEB_API_PORT', '7803')}",
     ]
 
     ORCHESTRATOR_ADDRESS: str = f"tcp://localhost:{get_port('orchestrator')}"

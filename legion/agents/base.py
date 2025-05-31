@@ -29,7 +29,7 @@ AGENT_EMOJIS = {
     "ux_designer_agent": "🎨",
     "therapist_agent": "🗣️",
     "ping_agent": "📶",
-    "echo_agent": "🔁"
+    "echo_agent": "🔁",
 }
 
 
@@ -41,7 +41,7 @@ class BaseAgent:
         name: str,
         config: dict,
         llm_client: "ILLMClient" = None,
-        state_manager: "IStateManager" = None
+        state_manager: "IStateManager" = None,
     ):
         """Initialize the Base Agent with dependency injection for LLM client and state manager."""
         self.name = name
@@ -93,9 +93,9 @@ class BaseAgent:
             if channel_id:
                 # Use the new discord bridge for better formatting
                 success = await send_discord_embed(
-                    self.name
-                    message
-                    msg_type
+                    self.name,
+                    message,
+                    msg_type,
                     channel_id=channel_id
                 )
                 if not success:
@@ -157,9 +157,9 @@ class BaseAgent:
                     fields.append((key.title(), str(value)))
 
             await send_discord_embed(
-                self.name
-                status
-                MessageType.INFO
+                self.name,
+                status,
+                MessageType.INFO,
                 fields=fields
             )
         except Exception as e:
@@ -175,9 +175,9 @@ class BaseAgent:
                 fields.append(("Context", context))
 
             await send_discord_embed(
-                self.name
-                f"Error: {error}"
-                MessageType.ERROR
+                self.name,
+                f"Error: {error}",
+                MessageType.ERROR,
                 fields=fields
             )
         except Exception as e:
@@ -194,9 +194,9 @@ class BaseAgent:
                     fields.append((key.title(), str(value)))
 
             await send_discord_embed(
-                self.name
-                message
-                MessageType.SUCCESS
+                self.name,
+                message,
+                MessageType.SUCCESS,
                 fields=fields
             )
         except Exception as e:
@@ -206,9 +206,9 @@ class BaseAgent:
         """Run a self-assessment and post the result to Discord."""
         logging.info(f"[BaseAgent] {self.name} running self_assess()")
         assessment = await self.handle_message(
-            content="Please self-assess your current state and summarize your next actions."
-            author=self.name
-            timestamp=None
+            content="Please self-assess your current state and summarize your next actions.",
+            author=self.name,
+            timestamp=None,
         )
         await self.post_to_discord(f"[Assessment] {assessment}")
 
@@ -271,10 +271,10 @@ class BaseAgent:
                 message_embedding = self.get_message_embedding(user_query)
                 top_k = self.config.get("memory_top_k", 3)
                 memories = self.mem_retrieve(
-                    message_embedding
-                    top_k
-                    tags=self.config.get("memory_tags")
-                    timestamp=timestamp
+                    message_embedding,
+                    top_k,
+                    tags=self.config.get("memory_tags"),
+                    timestamp=timestamp,
                 )
             except RuntimeError as e:
                 logging.warning(
@@ -304,10 +304,10 @@ class BaseAgent:
                 thread_history = []
             # 4. Build LLM payload using PromptBuilder
             messages = PromptBuilder.build(
-                system_prompt=system_prompt
-                memories=memories
-                thread_history=thread_history
-                user_query=user_query
+                system_prompt=system_prompt,
+                memories=memories,
+                thread_history=thread_history,
+                user_query=user_query,
             )
             # 5. Call LLM with per-agent overrides (model, temperature)
             override_kwargs: Dict[str, Any] = {}
@@ -326,10 +326,10 @@ class BaseAgent:
                     ):
                         self.orchestrator.state.log_task(
                             {
-                                "type": "llm_latency"
-                                "agent": self.name
-                                "latency": end_time - start_time
-                                "timestamp": datetime.now(timezone.utc).isoformat()
+                                "type": "llm_latency",
+                                "agent": self.name,
+                                "latency": end_time - start_time,
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
                             }
                         )
                 except AttributeError as e:
@@ -401,11 +401,11 @@ class BaseAgent:
                 reply_embedding = self.get_message_embedding(reply)
                 self.mem_store(
                     [
-                        {"text": user_query, "embedding": message_embedding}
-                        {"text": reply, "embedding": reply_embedding}
-                    ]
-                    tags=self.config.get("memory_tags")
-                    timestamp=timestamp
+                        {"text": user_query, "embedding": message_embedding},
+                        {"text": reply, "embedding": reply_embedding},
+                    ],
+                    tags=self.config.get("memory_tags"),
+                    timestamp=timestamp,
                 )
             except RuntimeError as e:
                 logging.error(
@@ -418,8 +418,8 @@ class BaseAgent:
             return reply
         except Exception as e:
             logging.error(
-                f"[{self.name}] Unhandled exception in handle_message: {e}"
-                exc_info=True
+                f"[{self.name}] Unhandled exception in handle_message: {e}",
+                exc_info=True,
             )
             # Fallback generic error handling
             try:
@@ -437,8 +437,8 @@ class BaseAgent:
             )
         try:
             response = openai.Embedding.create(
-                input=[text]
-                model=model
+                input=[text],
+                model=model,
             )
             if (hasattr(response, "data") and response.data) or (
                 isinstance(response, dict) and "data" in response and response["data"]
@@ -513,10 +513,10 @@ class BaseAgent:
                 ):
                     self.orchestrator.state.log_task(
                         {
-                            "type": "llm_latency"
-                            "agent": self.name
-                            "latency": end_time - start_time
-                            "timestamp": datetime.now(timezone.utc).isoformat()
+                            "type": "llm_latency",
+                            "agent": self.name,
+                            "latency": end_time - start_time,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
                         }
                     )
             except AttributeError as e:
@@ -593,12 +593,12 @@ class BaseAgent:
         logging.info(f"[BaseAgent] Stopped self-assessment loop for {self.name}.")
 
     def mem_retrieve(
-        self
-        embedding: List[float]
-        top_k: int
-        tags: Optional[List[str]] = None
-        timestamp: Optional[Any] = None
-        base_dir: Optional[str] = None
+        self,
+        embedding: List[float],
+        top_k: int,
+        tags: Optional[List[str]] = None,
+        timestamp: Optional[Any] = None,
+        base_dir: Optional[str] = None,
     ) -> List[str]:
         """Helper to retrieve vector memories with optional tags and timestamp."""
         bd = base_dir or self.config.get("memory_base_dir", "memory")
@@ -607,11 +607,11 @@ class BaseAgent:
         )
 
     def mem_store(
-        self
-        snippets: List[Dict[str, Any]]
-        tags: Optional[List[str]] = None
-        timestamp: Optional[Any] = None
-        base_dir: Optional[str] = None
+        self,
+        snippets: List[Dict[str, Any]],
+        tags: Optional[List[str]] = None,
+        timestamp: Optional[Any] = None,
+        base_dir: Optional[str] = None,
     ) -> None:
         """Helper to store vector memories with optional tags, timestamp; deduplicates by text."""
         bd = base_dir or self.config.get("memory_base_dir", "memory")
@@ -648,11 +648,11 @@ class BaseAgent:
     ):
         """Store a message in the agent's memory."""
         message: Dict[str, Any] = {
-            "id": message_id
-            "role": "user"
-            "content": payload
-            "timestamp": datetime.now(timezone.utc).isoformat()
-            "metadata": metadata or {"source": "direct_message", "agent": self.name}
+            "id": message_id,
+            "role": "user",
+            "content": payload,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metadata": metadata or {"source": "direct_message", "agent": self.name},
         }
         # Store user message (will be deduplicated)
         await self.memory.store_memory(

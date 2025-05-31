@@ -29,11 +29,11 @@ logger = logging.getLogger(__name__)
 
 class LLMClient:
     def __init__(
-        self
-        api_key: Optional[str] = None
-        model: Optional[str] = None
-        api_base: Optional[str] = None
-        **default_kwargs: Any
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        api_base: Optional[str] = None,
+        **default_kwargs: Any,
     ):
         """
         Initialize the LLM client with optional API key, model, base URL, and default parameters.
@@ -47,12 +47,12 @@ class LLMClient:
         self.default_kwargs = default_kwargs or {}
 
     def generate(
-        self
-        agent_name: str
-        thread_id: str
-        dynamic_rules: Dict[str, Any]
-        history: List[Dict[str, str]]
-        **override_kwargs: Any
+        self,
+        agent_name: str,
+        thread_id: str,
+        dynamic_rules: Dict[str, Any],
+        history: List[Dict[str, str]],
+        **override_kwargs: Any,
     ) -> str:
         """
         Generate a completion using dynamic rules and history.
@@ -87,14 +87,14 @@ class LLMClient:
         # Use the explicit /v1/chat/completions endpoint
         print(f"DEBUG: Calling /v1/chat/completions with model={params['model']}")
         response = openai.ChatCompletion.create(
-            model=params["model"]
-            messages=params["messages"]
-            max_tokens=params["max_tokens"]
+            model=params["model"],
+            messages=params["messages"],
+            max_tokens=params["max_tokens"],
             **{
                 k: v
                 for k, v in params.items()
                 if k not in ("model", "messages", "max_tokens")
-            }
+            },
         )
         # Extract and return the assistant reply
         try:

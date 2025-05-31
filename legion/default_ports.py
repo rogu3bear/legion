@@ -10,5 +10,5 @@ DEFAULT_PORTS = {
     "researcher_api": 7807,
     "zmq_pub": 7808,
     "zmq_sub": 7809,
-    "redis": 7810
+    "redis": 7810,
 }

@@ -10,7 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
 # Standard library imports
 import asyncio
 import json
-import os # No longer needed for os.path
+# import os # No longer needed for os.path
 
 # Third-party imports
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -44,7 +44,6 @@ from interface.api.v1.endpoints import (  # noqa: E402
     lmstudio_proxy_router,
     queue_router,
     metrics_router,
-    middleware_router
 )
 
 # Router guards - ensure all routers are properly initialized
@@ -60,7 +59,6 @@ assert isinstance(memory_router, APIRouter), f"memory_router is {type(memory_rou
 assert isinstance(lmstudio_proxy_router, APIRouter), f"lmstudio_proxy_router is {type(lmstudio_proxy_router)}, expected APIRouter"
 assert isinstance(echo_router, APIRouter), f"echo_router is {type(echo_router)}, expected APIRouter"
 assert isinstance(metrics_router, APIRouter), f"metrics_router is {type(metrics_router)}, expected APIRouter"
-assert isinstance(middleware_router, APIRouter), f"middleware_router is {type(middleware_router)}, expected APIRouter"
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(login_router, prefix="/api/v1/login", tags=["login"])
@@ -73,7 +71,6 @@ app.include_router(memory_router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(lmstudio_proxy_router, prefix="/api/v1/lmstudio", tags=["lmstudio"])
 app.include_router(echo_router, prefix="/api/v1/echo", tags=["echo"])
 app.include_router(metrics_router, prefix="/api/v1/metrics", tags=["metrics"])
-app.include_router(middleware_router, prefix="/api/v1/middleware", tags=["middleware"])
 
 # WebSocket connections manager (simple list for now)
 active_connections: list[WebSocket] = []
@@ -96,7 +93,7 @@ def on_startup():
 
     if redis is not None:
         try:
-            r = redis.Redis(host="localhost", port=int(os.getenv("REDIS_PORT", 7600)), decode_responses=True)
+            r = redis.Redis(host="localhost", port=7810, decode_responses=True)
             recovered = restore_agent_state_from_redis(r)
             logger.info(
                 "Recovered %d agent(s) from Redis", len(recovered)
@@ -164,7 +161,7 @@ async def send_to_all(message: str):
         f"Broadcasting message to {len(active_connections)} clients",
         extra={
             "message_content": message[:50] + "..." if len(message) > 50 else message
-        }
+        },
     )
     disconnected_clients = []
     for connection in active_connections:

@@ -29,12 +29,12 @@ class StateManager:
             self._save_state(
                 {
                     "config": {
-                        "confidence_threshold": 0.5
-                        "max_history": 100
-                        "assessment_interval": 600
-                    }
-                    "metrics": {}
-                    "agent_states": {}
+                        "confidence_threshold": 0.5,
+                        "max_history": 100,
+                        "assessment_interval": 600,
+                    },
+                    "metrics": {},
+                    "agent_states": {},
                 }
             )
 
@@ -120,25 +120,25 @@ def save_agent_state_to_redis(redis_conn: Any) -> None:
         agents = session.query(Agent).filter(Agent.is_active.is_(True)).all()
         for agent in agents:
             data = {
-                "id": agent.id
-                "name": agent.name
-                "description": agent.description
-                "model": agent.model
-                "temperature": agent.temperature
-                "max_tokens": agent.max_tokens
-                "is_active": agent.is_active
-                "config": agent.config
+                "id": agent.id,
+                "name": agent.name,
+                "description": agent.description,
+                "model": agent.model,
+                "temperature": agent.temperature,
+                "max_tokens": agent.max_tokens,
+                "is_active": agent.is_active,
+                "config": agent.config,
                 "created_at": agent.created_at.isoformat()
                 if agent.created_at
-                else None
+                else None,
                 "last_active": agent.last_active.isoformat()
                 if agent.last_active
-                else None
+                else None,
             }
             redis_conn.set(
-                f"legion:agents:{agent.id}"
-                json.dumps(data)
-                ex=86400
+                f"legion:agents:{agent.id}",
+                json.dumps(data),
+                ex=86400,
             )
     finally:
         session.close()

@@ -14,7 +14,7 @@ class Orchestrator:
 
     _agents: ClassVar[dict[str, BaseAgent]] = {}
     _registry: ClassVar[dict[str, type[BaseAgent]]] = {
-        "metrics": MetricsAgent
+        "metrics": MetricsAgent,
     }
 
     @classmethod

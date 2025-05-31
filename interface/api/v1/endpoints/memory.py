@@ -9,8 +9,8 @@ from interface import dependencies
 from interface.api.v1.endpoints.system import _call_orchestrator
 from interface.models.user import User
 from interface.schemas.memory import (
-    DocumentResponse
-    MemorySearchResultItem
+    DocumentResponse,
+    MemorySearchResultItem,
 )
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("/documents", response_model=List[str], summary="List Memory Documents")
 def list_memory_documents(
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Any:
     """
     Retrieves a list of document names stored in the Legion Memory system.
@@ -38,26 +38,26 @@ def list_memory_documents(
             "Orchestrator response for memory_list_documents missing 'documents' key."
         )
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
-            detail="Invalid response format from orchestrator."
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Invalid response format from orchestrator.",
         )
 
     return documents
 
 
 @router.get(
-    "/documents/{doc_name:path}"
-    response_model=DocumentResponse
-    summary="Get Memory Document"
+    "/documents/{doc_name:path}",
+    response_model=DocumentResponse,
+    summary="Get Memory Document",
 )
 def get_memory_document(
     doc_name: str = Path(
         ..., description="The full path/name of the document to retrieve."
-    )
+    ),
     version: Optional[str] = Query(
         None, description="Optional specific version of the document to retrieve."
-    )
-    current_user: User = Depends(dependencies.get_current_active_user)
+    ),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Any:
     """
     Retrieves a specific document (optionally a specific version) from the Legion Memory system.
@@ -90,16 +90,16 @@ def get_memory_document(
                 f"Document '{doc_name}' (Version: {version}) not found in memory."
             )
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
-                detail=f"Document '{doc_name}' not found."
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Document '{doc_name}' not found.",
             )
         else:
             logger.error(
                 f"Orchestrator response for memory_get_document ('{doc_name}') missing 'content' key."
             )
             raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY
-                detail="Invalid response format from orchestrator."
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Invalid response format from orchestrator.",
             )
 
     return DocumentResponse(
@@ -108,19 +108,19 @@ def get_memory_document(
 
 
 @router.get(
-    "/agents/{agent_name}/search"
-    response_model=List[MemorySearchResultItem]
-    summary="Search Agent Memory"
+    "/agents/{agent_name}/search",
+    response_model=List[MemorySearchResultItem],
+    summary="Search Agent Memory",
 )
 def search_agent_memory(
     agent_name: str = Path(
         ..., description="The name of the agent whose memory to search."
-    )
-    query: str = Query(..., description="The text query to search for.")
+    ),
+    query: str = Query(..., description="The text query to search for."),
     top_k: Optional[int] = Query(
         5, description="The maximum number of results to return.", ge=1, le=50
-    )
-    current_user: User = Depends(dependencies.get_current_active_user)
+    ),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Any:
     """
     Performs a semantic search within the vector memory of a specific agent.
@@ -148,16 +148,16 @@ def search_agent_memory(
         if response_payload.get("status") == "not_found":
             logger.warning(f"Agent '{agent_name}' not found for memory search.")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
-                detail=f"Agent '{agent_name}' not found for memory search."
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Agent '{agent_name}' not found for memory search.",
             )
         else:
             logger.error(
                 f"Orchestrator response for memory_search_agent ('{agent_name}') missing 'results' key."
             )
             raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY
-                detail="Invalid response format from orchestrator for memory search."
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Invalid response format from orchestrator for memory search.",
             )
 
     # Assuming results are already in the correct format (e.g., List[MemorySearchResultItem])
@@ -166,16 +166,16 @@ def search_agent_memory(
 
 
 @router.get(
-    "/search"
-    response_model=List[MemorySearchResultItem]
-    summary="Search Global Memory"
+    "/search",
+    response_model=List[MemorySearchResultItem],
+    summary="Search Global Memory",
 )
 def search_global_memory(
-    query: str = Query(..., description="The text query to search for.")
+    query: str = Query(..., description="The text query to search for."),
     top_k: Optional[int] = Query(
         5, description="The maximum number of results to return.", ge=1, le=50
-    )
-    current_user: User = Depends(dependencies.get_current_active_user)
+    ),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Any:
     """
     Performs a semantic search across all agent memories (if supported by the orchestrator).
@@ -204,8 +204,8 @@ def search_global_memory(
             "Orchestrator response for memory_search_global missing 'results' key."
         )
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
-            detail="Invalid response format from orchestrator for global memory search."
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Invalid response format from orchestrator for global memory search.",
         )
 
     # Assuming results are in the correct format (List[MemorySearchResultItem])

@@ -13,9 +13,9 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Task])
 def list_tasks(
-    status: Optional[TaskStatus] = Query(None)
-    owner: Optional[str] = Query(None)
-    tag: Optional[str] = Query(None)
+    status: Optional[TaskStatus] = Query(None),
+    owner: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
 ) -> List[Task]:
     """Return tasks filtered by optional query parameters."""
     tasks = state_repository.list_tasks(status=status, owner=owner, tag=tag)

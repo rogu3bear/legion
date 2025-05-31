@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 @router.post(
-    "/"
-    response_model=TaskCreatedResponse
-    status_code=status.HTTP_201_CREATED
-    summary="Submit New Task"
+    "/",
+    response_model=TaskCreatedResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit New Task",
 )
 def post_task(
-    task_in: TaskCreate
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_in: TaskCreate,
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> TaskCreatedResponse:
     """
     Submits a new task to the Legion Orchestrator for processing.
@@ -39,25 +39,25 @@ def post_task(
     result = create_task(task_in)
     if not result:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
-            detail="Failed to create task in orchestrator"
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to create task in orchestrator",
         )
     return result
 
 
 @router.get("/", response_model=List[Task], summary="List Tasks")
 def read_tasks(
-    skip: int = Query(0, description="Number of tasks to skip.", ge=0)
+    skip: int = Query(0, description="Number of tasks to skip.", ge=0),
     limit: int = Query(
         100, description="Maximum number of tasks to return.", ge=1, le=200
-    )
+    ),
     agent: Optional[str] = Query(
         None, description="Filter tasks by assigned agent name."
-    )
+    ),
     task_status: Optional[str] = Query(
         None, description="Filter tasks by status (e.g., pending, completed, failed)."
-    )
-    current_user: User = Depends(dependencies.get_current_active_user)
+    ),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> List[Task]:
     """
     Retrieves a list of tasks from the Orchestrator, with optional filtering and pagination.
@@ -75,16 +75,16 @@ def read_tasks(
     result = list_tasks(skip=skip, limit=limit, agent_id=agent, status=task_status)
     if result is None or result.tasks is None:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
-            detail="Failed to retrieve tasks from orchestrator"
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to retrieve tasks from orchestrator",
         )
     return result.tasks
 
 
 @router.get("/{task_id}", response_model=Task, summary="Get Task Details")
 def read_task(
-    task_id: uuid.UUID = Path(..., description="The UUID of the task to retrieve.")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_id: uuid.UUID = Path(..., description="The UUID of the task to retrieve."),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Task:
     """
     Retrieves the details and current status of a specific task by its UUID.
@@ -97,8 +97,8 @@ def read_task(
     task = get_task(task_id)
     if task is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND
-            detail="Task not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
         )
     return task
 
@@ -107,8 +107,8 @@ def read_task(
     "/{task_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Cancel Task"
 )
 def delete_task(
-    task_id: uuid.UUID = Path(..., description="The UUID of the task to cancel.")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_id: uuid.UUID = Path(..., description="The UUID of the task to cancel."),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Response:
     """
     Requests the cancellation of an existing task by its UUID.
@@ -123,8 +123,8 @@ def delete_task(
     success = cancel_task(task_id)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
-            detail="Failed to cancel task in orchestrator"
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to cancel task in orchestrator",
         )
     # No content to return on successful deletion
     return Response(status_code=status.HTTP_204_NO_CONTENT)

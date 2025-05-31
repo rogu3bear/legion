@@ -6,7 +6,7 @@ from .agent import (
     AgentConfigInfo,
     AgentDispatchPayload,
     AgentDispatchResponse,
-    AgentStatusInfo
+    AgentStatusInfo,
 )
 from .memory import DocumentResponse, MemorySearchResponse
 from .task import Task, TaskCreate, TaskCreatedResponse, TaskList, TaskUpdate

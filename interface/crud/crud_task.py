@@ -11,7 +11,7 @@ from interface.schemas.task import (
     Task,
     TaskCreate,
     TaskCreatedResponse,
-    TaskList
+    TaskList,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def list_tasks(
     skip: int = 0,
     limit: int = 100,
     agent_id: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
 ) -> Optional[TaskList]:
     """List tasks with optional filtering by agent_id and status."""
     try:

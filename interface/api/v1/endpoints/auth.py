@@ -17,8 +17,8 @@ router = APIRouter()
 
 @router.post("/login", response_model=schemas.Token, summary="Login for Access Token")
 def login_for_access_token(
-    db: Session = Depends(dependencies.get_db)
-    form_data: OAuth2PasswordRequestForm = Depends()
+    db: Session = Depends(dependencies.get_db),
+    form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Dict[str, str]:
     """
     Authenticates a user using username and password (OAuth2 password flow).
@@ -34,9 +34,9 @@ def login_for_access_token(
     )
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED
-            detail="Incorrect username or password"
-            headers={"WWW-Authenticate": "Bearer"}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -50,7 +50,7 @@ def login_for_access_token(
 
 @router.get("/me", response_model=schemas.User, summary="Get Current User")
 def read_users_me(
-    current_user: schemas.User = Depends(dependencies.get_current_user)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
 ) -> schemas.User:
     """
     Retrieves the details of the currently authenticated user.
@@ -61,14 +61,14 @@ def read_users_me(
 
 
 @router.post(
-    "/register"
-    response_model=schemas.User
-    status_code=status.HTTP_201_CREATED
-    summary="Register New User"
+    "/register",
+    response_model=schemas.User,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register New User",
 )
 def register_user(
-    user_in: schemas.UserCreate
-    db: Session = Depends(dependencies.get_db)
+    user_in: schemas.UserCreate,
+    db: Session = Depends(dependencies.get_db),
 ) -> schemas.User:
     """
     Registers a new user in the system.
@@ -84,16 +84,16 @@ def register_user(
     user = crud_user.get_user_by_username(db, username=user_in.username)
     if user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-            detail="Username already registered"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered",
         )
 
     # Check if email already exists
     user = crud_user.get_user_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-            detail="Email already registered"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
         )
 
     # Create new user
@@ -130,13 +130,13 @@ def logout(
 
 
 @router.get(
-    "/me/preferences"
-    response_model=schemas.UserPreference
-    summary="Get User Preferences"
+    "/me/preferences",
+    response_model=schemas.UserPreference,
+    summary="Get User Preferences",
 )
 def get_user_preferences(
-    current_user: schemas.User = Depends(dependencies.get_current_user)
-    db: Session = Depends(dependencies.get_db)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ) -> schemas.UserPreference:
     """
     Retrieves the preferences for the currently authenticated user.
@@ -156,14 +156,14 @@ def get_user_preferences(
 
 
 @router.put(
-    "/me/preferences"
-    response_model=schemas.UserPreference
-    summary="Update User Preferences"
+    "/me/preferences",
+    response_model=schemas.UserPreference,
+    summary="Update User Preferences",
 )
 def update_user_preferences(
     preferences_in: schemas.UserPreferenceUpdate,  # Use an update schema
-    current_user: schemas.User = Depends(dependencies.get_current_user)
-    db: Session = Depends(dependencies.get_db)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ) -> schemas.UserPreference:
     """
     Updates the preferences for the currently authenticated user.

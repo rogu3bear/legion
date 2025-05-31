@@ -142,10 +142,10 @@ class IEchoAgent(ABC):
 
 # Mapping for validation
 AGENT_CONTRACTS = {
-    "architect_agent": IArchitectAgent
-    "metrics_agent": IMetricsAgent
-    "therapist_agent": ITherapistAgent
-    "echo_agent": IEchoAgent
+    "architect_agent": IArchitectAgent,
+    "metrics_agent": IMetricsAgent,
+    "therapist_agent": ITherapistAgent,
+    "echo_agent": IEchoAgent,
 }
 
 

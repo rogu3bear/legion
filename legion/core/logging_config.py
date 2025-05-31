@@ -25,7 +25,7 @@ def setup_logging(log_level: str = "INFO") -> None:
                 "message": record.getMessage(),
                 "filename": record.filename,
                 "funcName": record.funcName,
-                "lineno": record.lineno
+                "lineno": record.lineno,
             }
             if record.exc_info:
                 log_data["exception"] = self.formatException(record.exc_info)
