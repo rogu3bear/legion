@@ -39,6 +39,15 @@ Current development focus is on completing the web interface backend according t
    make dev
    ```
 
+   **Port Failsafe**: Legion now enforces fixed ports and prevents port "creeping":
+   ```bash
+   # Clean any stale processes before starting
+   make clean-ports
+
+   # Services will fail fast if ports are busy
+   ./scripts/dev_start.sh
+   ```
+
 4. Lint and Test
    ```bash
    make lint
@@ -66,12 +75,14 @@ make test
 This executes `scripts/selftest_handshake.py` and prints `[HANDSHAKE TEST] PASS` on success.
 
 ### Development Ports
-| Service | Env Var | Default |
-|---------|---------|---------|
-| Orchestrator | PORT_ALLOCATOR_ORCHESTRATOR | 27000 |
-| Web UI | PORT_ALLOCATOR_WEB_UI | 27001 |
-| Redis | PORT_ALLOCATOR_REDIS | 27040 |
-| Postgres | PORT_ALLOCATOR_POSTGRES | 27050 |
+| Service | Env Var | Default | Fixed Port |
+|---------|---------|---------|------------|
+| Redis | PORT_ALLOCATOR_REDIS | 27040 | 7600 |
+| Interface API | PORT_ALLOCATOR_WEB_UI | 27001 | 7603 |
+| Frontend Dev | - | - | 5173 |
+| Orchestrator | PORT_ALLOCATOR_ORCHESTRATOR | 27000 | 7604 |
+
+**Port Failsafe**: Use `make clean-ports` to kill stale processes. Scripts now enforce fixed ports and fail fast if ports are busy.
 
 ## Documentation
 For comprehensive documentation, see:

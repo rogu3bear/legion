@@ -47,6 +47,13 @@ clean:
 	@echo "Cleaning logs..."
 	rm -rf scripts/logs/*
 
+clean-ports:
+	@echo "Cleaning up ports and killing stale processes..."
+	./scripts/port_failsafe.sh 7600 --kill && \
+	./scripts/port_failsafe.sh 7603 --kill && \
+	./scripts/port_failsafe.sh 5173 --kill
+	@echo "✅ All ports cleaned!"
+
 docs_refresh:
 	@echo "Updating port map in docs..."
 	python3 scripts/doc_ports.py
