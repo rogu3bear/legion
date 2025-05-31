@@ -24,11 +24,11 @@ logging.getLogger("openai").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 AGENT_EMOJIS = {
-    "architect_agent": "🏗️"
-    "metrics_agent": "📊"
-    "ux_designer_agent": "🎨"
-    "therapist_agent": "🗣️"
-    "ping_agent": "📶"
+    "architect_agent": "🏗️",
+    "metrics_agent": "📊",
+    "ux_designer_agent": "🎨",
+    "therapist_agent": "🗣️",
+    "ping_agent": "📶",
     "echo_agent": "🔁"
 }
 
@@ -37,10 +37,10 @@ class BaseAgent:
     """Base class for all Legion agents, providing shared logic and interfaces."""
 
     def __init__(
-        self
-        name: str
-        config: dict
-        llm_client: "ILLMClient" = None
+        self,
+        name: str,
+        config: dict,
+        llm_client: "ILLMClient" = None,
         state_manager: "IStateManager" = None
     ):
         """Initialize the Base Agent with dependency injection for LLM client and state manager."""
