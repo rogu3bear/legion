@@ -25,11 +25,11 @@ import zmq.asyncio
 import legion.ports as unified_port_manager
 from integration.discord.cogs.ux_feed import render_feed_item
 from legion.agents.python import (
-    ArchitectAgent
-    EchoAgent
-    MetricsAgent
-    PingAgent
-    TherapistAgent
+    ArchitectAgent,
+    EchoAgent,
+    MetricsAgent,
+    PingAgent,
+    TherapistAgent,
     UxDesignerAgent
 )
 from legion.core.di_container import ILLMClient, IStateManager, container
@@ -80,30 +80,30 @@ ALERTS_CHANNEL_ID = int(os.getenv("ALERTS_CHANNEL_ID", "0"))
 METRICS_DASH_CHANNEL_ID = int(os.getenv("METRICS_DASH_CHANNEL_ID", "0"))
 
 CHANNEL_ID_MAP = {
-    "general_agent": GENERAL_CHANNEL_ID
-    "agent_feed_agent": AGENT_FEED_CHANNEL_ID
-    "architect_agent": ARCHITECT_CHANNEL_ID
-    "metrics_agent": METRICS_CHANNEL_ID
-    "therapist_agent": THERAPIST_CHANNEL_ID
-    "ux_designer_agent": DESIGN_CHANNEL_ID
-    "ping_agent": GENERAL_CHANNEL_ID
-    "echo_agent": GENERAL_CHANNEL_ID
+    "general_agent": GENERAL_CHANNEL_ID,
+    "agent_feed_agent": AGENT_FEED_CHANNEL_ID,
+    "architect_agent": ARCHITECT_CHANNEL_ID,
+    "metrics_agent": METRICS_CHANNEL_ID,
+    "therapist_agent": THERAPIST_CHANNEL_ID,
+    "ux_designer_agent": DESIGN_CHANNEL_ID,
+    "ping_agent": GENERAL_CHANNEL_ID,
+    "echo_agent": GENERAL_CHANNEL_ID,
     # New channels
-    "bot_commands": BOT_COMMANDS_CHANNEL_ID
-    "agent_logs": AGENT_LOGS_CHANNEL_ID
-    "agent_feedback": AGENT_FEEDBACK_CHANNEL_ID
-    "config_updates": CONFIG_UPDATES_CHANNEL_ID
-    "alerts": ALERTS_CHANNEL_ID
+    "bot_commands": BOT_COMMANDS_CHANNEL_ID,
+    "agent_logs": AGENT_LOGS_CHANNEL_ID,
+    "agent_feedback": AGENT_FEEDBACK_CHANNEL_ID,
+    "config_updates": CONFIG_UPDATES_CHANNEL_ID,
+    "alerts": ALERTS_CHANNEL_ID,
     "metrics_dash": METRICS_DASH_CHANNEL_ID
 }
 
 # Map agent names to their classes
 CLASS_MAP = {
-    "ArchitectAgent": ArchitectAgent
-    "MetricsAgent": MetricsAgent
-    "UxDesignerAgent": UxDesignerAgent
-    "TherapistAgent": TherapistAgent
-    "PingAgent": PingAgent
+    "ArchitectAgent": ArchitectAgent,
+    "MetricsAgent": MetricsAgent,
+    "UxDesignerAgent": UxDesignerAgent,
+    "TherapistAgent": TherapistAgent,
+    "PingAgent": PingAgent,
     "EchoAgent": EchoAgent
 }
 
