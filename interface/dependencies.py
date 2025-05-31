@@ -41,8 +41,8 @@ def get_current_user(
 ) -> User:
     """Dependency to get the current user from the JWT token."""
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED
-        detail="Could not validate credentials"
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"}
     )
     try:
@@ -96,7 +96,7 @@ def require_role(required_role: UserRole) -> Callable[[User], User]:
         # this logic needs expansion.
         if current_user.role != required_role.value:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"User does not have the required '{required_role.value}' role"
             )
         return current_user
