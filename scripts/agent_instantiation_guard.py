@@ -105,8 +105,8 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
     @staticmethod
     def add_args(parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "--apply"
-            action="store_true"
+            "--apply",
+            action="store_true",
             help="Apply changes to files."
         )
         # The 'paths' argument is implicitly handled by run_codemod or the calling script
@@ -249,14 +249,14 @@ def main() -> None:
     )
     AgentInstantiationCodemod.add_args(parser)  # Adds --apply
     parser.add_argument(
-        "paths"
-        nargs="+"
+        "paths",
+        nargs="+",
         help="Paths to Python files or directories to scan."
     )
     parser.add_argument(
-        "--repo-root"
-        type=Path
-        default=Path.cwd()
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
         help="Root of the repository for relative path calculations in warnings. Defaults to CWD."
     )
 
@@ -287,7 +287,7 @@ def main() -> None:
         try:
             input_tree = cst.parse_module(source_code)
             context = CodemodContext(
-                args=args
+                args=args,
                 filename=str(
                     file_path_obj.relative_to(args.repo_root)
                     if file_path_obj.is_absolute()

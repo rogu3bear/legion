@@ -54,11 +54,11 @@ class StateRepo:
         challenge = secrets.token_hex(16)
         token = str(uuid.uuid4())
         data = {
-            "id": agent_id
-            "role": role
-            "caps": json.dumps(caps)
-            "challenge": challenge
-            "token": token
+            "id": agent_id,
+            "role": role,
+            "caps": json.dumps(caps),
+            "challenge": challenge,
+            "token": token,
             "ts": int(time.time())
         }
         self.r.hset(f"handshake:{agent_id}", mapping=data)
@@ -74,10 +74,10 @@ class StateRepo:
         if not hmac.compare_digest(signed_challenge, expected):
             raise ValueError("unauthorized")
         agent_data = {
-            "id": record["id"]
-            "role": record["role"]
-            "caps": record["caps"]
-            "token": record["token"]
+            "id": record["id"],
+            "role": record["role"],
+            "caps": record["caps"],
+            "token": record["token"],
             "ts": record["ts"]
         }
         self.r.hset(f"agents:{agent_id}", mapping=agent_data)
@@ -87,10 +87,10 @@ class StateRepo:
     def register_agent(self, agent_id: str, role: str, caps: list[str]) -> str:
         token = str(uuid.uuid4())
         data = {
-            "id": agent_id
-            "role": role
-            "caps": json.dumps(caps)
-            "token": token
+            "id": agent_id,
+            "role": role,
+            "caps": json.dumps(caps),
+            "token": token,
             "ts": int(time.time())
         }
         self.r.hset(f"agents:{agent_id}", mapping=data)
