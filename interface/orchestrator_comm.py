@@ -89,7 +89,7 @@ def send_request(
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding errors)
         logger.error(
-            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}"
+            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}",
             exc_info=True
         )
         return None
@@ -102,7 +102,7 @@ def send_request(
             except Exception as e_close:
                 # Log error during close but don't mask original error
                 logger.error(
-                    f"Error closing ZMQ socket for request ID {request_id}: {e_close}"
+                    f"Error closing ZMQ socket for request ID {request_id}: {e_close}",
                     exc_info=True
                 )
 

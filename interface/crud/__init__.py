@@ -14,15 +14,15 @@ Exposes CRUD objects for different models.
 # Re-export explicit CRUD functions rather than aliasing the *module*; this
 # prevents circular-import issues seen in tests expecting `interface.crud.crud_task`.
 from .crud_task import (
-    cancel_task
-    create_task
-    get_task
+    cancel_task,
+    create_task,
+    get_task,
     list_tasks
 )
 
 __all__ = [
-    "cancel_task"
-    "create_task"
-    "get_task"
+    "cancel_task",
+    "create_task",
+    "get_task",
     "list_tasks"
 ]

@@ -17,9 +17,9 @@ class MessageType(Enum):
 
 # Color mapping for different message types
 COLOR_MAP = {
-    MessageType.INFO: discord.Color.blue()
-    MessageType.WARNING: discord.Color.gold()
-    MessageType.ERROR: discord.Color.red()
+    MessageType.INFO: discord.Color.blue(),
+    MessageType.WARNING: discord.Color.gold(),
+    MessageType.ERROR: discord.Color.red(),
     MessageType.SUCCESS: discord.Color.green()
 }
 
@@ -27,9 +27,9 @@ COLOR_MAP = {
 def render_feed_item(agent_name, message, msg_type=MessageType.INFO, fields=None):
     """Creates a Discord embed for an agent message."""
     embed = discord.Embed(
-        title=agent_name
-        description=message
-        color=COLOR_MAP.get(msg_type, discord.Color.default())
+        title=agent_name,
+        description=message,
+        color=COLOR_MAP.get(msg_type, discord.Color.default()),
         timestamp=datetime.now(timezone.utc)
     )
 

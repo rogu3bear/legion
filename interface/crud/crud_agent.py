@@ -11,11 +11,11 @@ from interface.models.agent import Agent  # Updated path
 # Assuming communication layer setup
 from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.agent import (
-    AgentActionResponse
-    AgentConfigUpdate
-    AgentCreate
+    AgentActionResponse,
+    AgentConfigUpdate,
+    AgentCreate,
     AgentDispatchPayload,  # Added import for dispatch payload
-    AgentStatusInfo
+    AgentStatusInfo,
     AgentUpdate
 )
 
@@ -68,8 +68,8 @@ def create_agent(db: Session, agent_in: AgentCreate) -> Agent:  # Removed *
 
 
 def update_agent(
-    db: Session
-    db_agent: Agent
+    db: Session,
+    db_agent: Agent,
     agent_in: AgentUpdate,  # Removed *
 ) -> Agent:
     """Update an agent."""

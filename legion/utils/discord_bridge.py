@@ -44,16 +44,16 @@ class DiscordBridge:
             bool: True if message was sent successfully
         """
         return await self.send_action({
-            "type": "message"
+            "type": "message",
             "content": message
         }, channel_id)
 
     async def send_embed(
-        self
-        agent_name: str
-        message: str
-        msg_type: MessageType = MessageType.INFO
-        fields: Optional[list] = None
+        self,
+        agent_name: str,
+        message: str,
+        msg_type: MessageType = MessageType.INFO,
+        fields: Optional[list] = None,
         channel_id: Optional[int] = None
     ) -> bool:
         """Send a formatted embed message to Discord.
@@ -166,10 +166,10 @@ async def send_discord_action(action: Dict[str, Any], channel_id: Optional[int] 
 
 
 async def send_discord_embed(
-    agent_name: str
-    message: str
-    msg_type: MessageType = MessageType.INFO
-    fields: Optional[list] = None
+    agent_name: str,
+    message: str,
+    msg_type: MessageType = MessageType.INFO,
+    fields: Optional[list] = None,
     channel_id: Optional[int] = None
 ) -> bool:
     """Send a formatted embed to Discord."""
@@ -232,16 +232,16 @@ if __name__ == "__main__":
 
         # Test action
         await send_discord_action({
-            "type": "test"
-            "detail": "bridge operational"
+            "type": "test",
+            "detail": "bridge operational",
             "source": "discord_bridge.py"
         })
 
         # Test embed
         await send_discord_embed(
-            "TestAgent"
-            "This is a test embed message"
-            MessageType.SUCCESS
+            "TestAgent",
+            "This is a test embed message",
+            MessageType.SUCCESS,
             fields=[("Status", "Operational"), ("Version", "1.0.0")]
         )
 
