@@ -31,17 +31,17 @@ def _call_orchestrator(
         response_data = send_request(command)
     except Exception as e:
         logger.error(
-            f"Unexpected error calling send_request for action '{action}': {e}"
+            f"Unexpected error calling send_request for action '{action}': {e}",
             exc_info=True
         )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error communicating with orchestrator."
         ) from e
 
     if response_data is None:
         raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="No response received from orchestrator or communication failed."
         )
 
@@ -51,7 +51,7 @@ def _call_orchestrator(
         detail = response_payload.get("detail", "Unknown orchestrator error")
         logger.warning(f"Orchestrator returned error for action '{action}': {detail}")
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Orchestrator error: {detail}"
         )
 
