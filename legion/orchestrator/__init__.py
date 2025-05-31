@@ -345,7 +345,7 @@ class Orchestrator:
         self.agent_classes = CLASS_MAP
         self.memory = {
             name: LegionAgentMemory(
-                name
+                name,
                 base_dir=self.config.get(name, {}).get("memory_base_dir", "memory")
             )  # Get base_dir from agent's config
             for name in self.agent_classes
@@ -471,8 +471,8 @@ class Orchestrator:
                     sig_name, lambda s=sig_name: handle_signal(s, None)
                 )
             except (
-                ValueError
-                OSError
+                ValueError,
+                OSError,
                 RuntimeError
             ) as e:  # common errors for add_signal_handler
                 # Fallback or log if running in a context where signal handlers can't be set (e.g. not main thread on some OS)
@@ -517,7 +517,7 @@ class Orchestrator:
             except Exception as e:
                 # Log error but don't crash atexit handler
                 logger.error(
-                    f"atexit: Error releasing lock or removing PID file {self._pid_file}: {e}"
+                    f"atexit: Error releasing lock or removing PID file {self._pid_file}: {e}",
                     exc_info=True
                 )
 
