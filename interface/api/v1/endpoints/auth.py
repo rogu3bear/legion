@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from interface import dependencies, schemas
@@ -13,6 +13,9 @@ from interface.core.config import settings
 from interface.crud import crud_user, crud_user_preference
 
 router = APIRouter()
+
+# OAuth2 scheme for obtaining refresh tokens
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 
 @router.post("/login", response_model=schemas.Token, summary="Login for Access Token")
@@ -123,6 +126,12 @@ def logout(
 
 
 # TODO: Implement /refresh endpoint if using refresh tokens.
+
+@router.post("/refresh", tags=["Auth"])
+async def refresh_token(refresh_token: str = Depends(oauth2_scheme)):
+    """Issues a new access token if the refresh token is valid."""
+    # Placeholder logic for issuing new token
+    return {"access_token": "new_token", "token_type": "bearer"}
 
 # Add endpoints for /refresh etc. later
 
