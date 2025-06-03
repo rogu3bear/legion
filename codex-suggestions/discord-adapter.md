@@ -1,3 +1,4 @@
+```
 class DiscordAdapter:
     def __init__(self, token: str):
         """Adapter that integrates a Discord client with Legion's routing logic."""
@@ -17,3 +18,13 @@ class DiscordAdapter:
         """Placeholder for sending messages back to Discord."""
         # TODO: Connect to Discord bot API
         print(f"[DiscordAdapter] Sending to {channel_id}: {content}")
+```
+
+```
+from legion.pipeline.DiscordAdapter import DiscordAdapter
+
+def test_parse_message_stub():
+    adapter = DiscordAdapter(token="dummy")
+    result = adapter.parse_message("!ping")
+    assert result["agent"] == "echo"
+```
