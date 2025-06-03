@@ -38,4 +38,18 @@ def validate_session_data(session_data: Dict[str, Any]) -> bool:
         
     TODO: Implement session-specific validation
     """
-    return isinstance(session_data, dict) and "session_id" in session_data 
+    return isinstance(session_data, dict) and "session_id" in session_data
+
+
+def validate_task(task: dict) -> bool:
+    """Validates a Legion task dictionary for required fields and types.
+
+    Args:
+        task (dict): Task payload received from Orchestrator.
+
+    Returns:
+        bool: True if valid, False otherwise.
+    """
+    # TODO: Replace with schema-based validation
+    required_keys = ["id", "agent", "payload"]
+    return all(key in task for key in required_keys)
