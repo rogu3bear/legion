@@ -105,8 +105,8 @@ class AgentInstantiationCodemod(VisitorBasedCodemodCommand):
     @staticmethod
     def add_args(parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "--apply"
-            action="store_true"
+            "--apply",
+            action="store_true",
             help="Apply changes to files."
         )
         # The 'paths' argument is implicitly handled by run_codemod or the calling script
@@ -249,14 +249,14 @@ def main() -> None:
     )
     AgentInstantiationCodemod.add_args(parser)  # Adds --apply
     parser.add_argument(
-        "paths"
-        nargs="+"
+        "paths",
+        nargs="+",
         help="Paths to Python files or directories to scan."
     )
     parser.add_argument(
-        "--repo-root"
-        type=Path
-        default=Path.cwd()
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
         help="Root of the repository for relative path calculations in warnings. Defaults to CWD."
     )
 
@@ -286,17 +286,22 @@ def main() -> None:
 
         try:
             input_tree = cst.parse_module(source_code)
+
+            # Prepare scratch data for CodemodContext
+            scratch_data = {
+                "apply": args.apply,
+                "repo_root": args.repo_root
+            }
+
             context = CodemodContext(
-                args=args
                 filename=str(
                     file_path_obj.relative_to(args.repo_root)
                     if file_path_obj.is_absolute()
                     and args.repo_root in file_path_obj.parents
                     else file_path_obj
-                )
+                ),
+                scratch=scratch_data  # Pass arguments via scratch
             )
-            # Pass repo_root via context.args for the codemod to use
-            context.args.repo_root = args.repo_root
 
             codemod_instance = AgentInstantiationCodemod(context)
             output_tree = codemod_instance.transform_module(input_tree)
