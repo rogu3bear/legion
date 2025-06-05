@@ -161,7 +161,7 @@ def health_check() -> dict[str, str]:
 async def send_to_all(message: str):
     """Sends a message to all connected WebSocket clients."""
     logger.debug(
-        f"Broadcasting message to {len(active_connections)} clients"
+        f"Broadcasting message to {len(active_connections)} clients",
         extra={
             "message_content": message[:50] + "..." if len(message) > 50 else message
         }
