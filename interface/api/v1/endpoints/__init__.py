@@ -18,17 +18,17 @@ from .middleware import router as middleware_router
 # NOTE: handshake.py uses Flask Blueprint - excluded from FastAPI imports
 
 __all__ = [
-    "agents_router"
-    "auth_router"
-    "lmstudio_proxy_router"
-    "login_router"
-    "memory_router"
-    "system_router"
-    "tasks_router"
-    "task_registry_router"
-    "echo_router"
-    "queue_router"
-    "metrics_router"
-    "agent_router"
-    "middleware_router"
+    "agents_router",
+    "auth_router",
+    "lmstudio_proxy_router",
+    "login_router",
+    "memory_router",
+    "system_router",
+    "tasks_router",
+    "task_registry_router",
+    "echo_router",
+    "queue_router",
+    "metrics_router",
+    "agent_router",
+    "middleware_router",
 ]

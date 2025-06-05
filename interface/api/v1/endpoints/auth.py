@@ -17,8 +17,8 @@ router = APIRouter()
 
 @router.post("/login", response_model=schemas.Token, summary="Login for Access Token")
 def login_for_access_token(
-    db: Session = Depends(dependencies.get_db)
-    form_data: OAuth2PasswordRequestForm = Depends()
+    db: Session = Depends(dependencies.get_db),
+    form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Dict[str, str]:
     """
     Authenticates a user using username and password (OAuth2 password flow).
@@ -67,8 +67,8 @@ def read_users_me(
     summary="Register New User"
 )
 def register_user(
-    user_in: schemas.UserCreate
-    db: Session = Depends(dependencies.get_db)
+    user_in: schemas.UserCreate,
+    db: Session = Depends(dependencies.get_db),
 ) -> schemas.User:
     """
     Registers a new user in the system.
@@ -162,8 +162,8 @@ def get_user_preferences(
 )
 def update_user_preferences(
     preferences_in: schemas.UserPreferenceUpdate,  # Use an update schema
-    current_user: schemas.User = Depends(dependencies.get_current_user)
-    db: Session = Depends(dependencies.get_db)
+    current_user: schemas.User = Depends(dependencies.get_current_user),
+    db: Session = Depends(dependencies.get_db),
 ) -> schemas.UserPreference:
     """
     Updates the preferences for the currently authenticated user.

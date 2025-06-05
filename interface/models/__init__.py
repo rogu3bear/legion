@@ -7,7 +7,7 @@ from .user import User
 from .user_preference import UserPreference
 
 __all__ = [
-    "Agent"
-    "User", 
-    "UserPreference"
-] 
+    "Agent",
+    "User",
+    "UserPreference",
+]

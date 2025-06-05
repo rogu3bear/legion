@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
     summary="Submit New Task"
 )
 def post_task(
-    task_in: TaskCreate
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_in: TaskCreate,
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> TaskCreatedResponse:
     """
     Submits a new task to the Legion Orchestrator for processing.
@@ -47,17 +47,17 @@ def post_task(
 
 @router.get("/", response_model=List[Task], summary="List Tasks")
 def read_tasks(
-    skip: int = Query(0, description="Number of tasks to skip.", ge=0)
+    skip: int = Query(0, description="Number of tasks to skip.", ge=0),
     limit: int = Query(
-        100, description="Maximum number of tasks to return.", ge=1, le=200
+        100, description="Maximum number of tasks to return.", ge=1, le=200,
     )
     agent: Optional[str] = Query(
-        None, description="Filter tasks by assigned agent name."
+        None, description="Filter tasks by assigned agent name.",
     )
     task_status: Optional[str] = Query(
-        None, description="Filter tasks by status (e.g., pending, completed, failed)."
+        None, description="Filter tasks by status (e.g., pending, completed, failed).",
     )
-    current_user: User = Depends(dependencies.get_current_active_user)
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> List[Task]:
     """
     Retrieves a list of tasks from the Orchestrator, with optional filtering and pagination.
@@ -83,8 +83,8 @@ def read_tasks(
 
 @router.get("/{task_id}", response_model=Task, summary="Get Task Details")
 def read_task(
-    task_id: uuid.UUID = Path(..., description="The UUID of the task to retrieve.")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_id: uuid.UUID = Path(..., description="The UUID of the task to retrieve."),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Task:
     """
     Retrieves the details and current status of a specific task by its UUID.
@@ -107,8 +107,8 @@ def read_task(
     "/{task_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Cancel Task"
 )
 def delete_task(
-    task_id: uuid.UUID = Path(..., description="The UUID of the task to cancel.")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    task_id: uuid.UUID = Path(..., description="The UUID of the task to cancel."),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Response:
     """
     Requests the cancellation of an existing task by its UUID.

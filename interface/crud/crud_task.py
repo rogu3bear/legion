@@ -8,10 +8,10 @@ from typing import Any, Dict, Optional
 
 from interface.orchestrator_comm import send_orchestrator_request
 from interface.schemas.task import (
-    Task
-    TaskCreate
-    TaskCreatedResponse
-    TaskList
+    Task,
+    TaskCreate,
+    TaskCreatedResponse,
+    TaskList,
 )
 
 logger = logging.getLogger(__name__)

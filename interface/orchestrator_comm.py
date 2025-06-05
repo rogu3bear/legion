@@ -89,8 +89,8 @@ def send_request(
     except Exception as e:
         # Handle other potential errors (e.g., JSON decoding errors)
         logger.error(
-            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}"
-            exc_info=True
+            f"Unexpected error during ZMQ communication (Request ID: {request_id}): {e}",
+            exc_info=True,
         )
         return None
     finally:

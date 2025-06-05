@@ -41,9 +41,9 @@ def get_current_user(
 ) -> User:
     """Dependency to get the current user from the JWT token."""
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED
-        detail="Could not validate credentials"
-        headers={"WWW-Authenticate": "Bearer"}
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = security.decode_token(token)

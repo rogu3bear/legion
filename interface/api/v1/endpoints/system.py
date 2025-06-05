@@ -31,8 +31,8 @@ def _call_orchestrator(
         response_data = send_request(command)
     except Exception as e:
         logger.error(
-            f"Unexpected error calling send_request for action '{action}': {e}"
-            exc_info=True
+            f"Unexpected error calling send_request for action '{action}': {e}",
+            exc_info=True,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

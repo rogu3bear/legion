@@ -11,15 +11,15 @@ from interface.schemas.task import Task, TaskCreate, TaskCreatedResponse, TaskLi
 
 # Re-export schemas for easier importing in API endpoints
 __all__ = [
-    "AgentActionResponse"
-    "AgentConfigUpdate"
-    "AgentCreate"
-    "AgentStatusInfo"
-    "AgentUpdate"
-    "Task"
-    "TaskCreate"
-    "TaskCreatedResponse"
-    "TaskList"
+    "AgentActionResponse",
+    "AgentConfigUpdate",
+    "AgentCreate",
+    "AgentStatusInfo",
+    "AgentUpdate",
+    "Task",
+    "TaskCreate",
+    "TaskCreatedResponse",
+    "TaskList",
 ]
 
 

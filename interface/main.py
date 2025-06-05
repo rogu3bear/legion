@@ -33,18 +33,18 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 # Include API routers
 from interface.api.v1.endpoints import (  # noqa: E402
-    agents_router
-    auth_router
-    login_router
-    memory_router
-    echo_router
-    system_router
-    task_registry_router
-    tasks_router
-    lmstudio_proxy_router
-    queue_router
-    metrics_router
-    middleware_router
+    agents_router,
+    auth_router,
+    login_router,
+    memory_router,
+    echo_router,
+    system_router,
+    task_registry_router,
+    tasks_router,
+    lmstudio_proxy_router,
+    queue_router,
+    metrics_router,
+    middleware_router,
 )
 
 # Router guards - ensure all routers are properly initialized

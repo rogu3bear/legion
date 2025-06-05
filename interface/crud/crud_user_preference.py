@@ -28,8 +28,8 @@ def create_user_preference(
         # If prefs somehow already exist, update them instead of creating
         # Cast is safe here because db_prefs existence implies update_user_preference will find it and return UserPreference
         return cast(
-            models.UserPreference
-            update_user_preference(db, user_id=user_id, preferences_update=preferences)
+            models.UserPreference,
+            update_user_preference(db, user_id=user_id, preferences_update=preferences),
         )
 
     db_prefs = models.UserPreference(**preferences.model_dump(), user_id=user_id)

@@ -17,8 +17,8 @@ def get_queue_summary() -> dict:
 
 @router.get("/queue/agents/{agent_name}/stats")
 def get_agent_queue_stats(
-    agent_name: str = Path(..., description="Name of the agent")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    agent_name: str = Path(..., description="Name of the agent"),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """Get detailed queue statistics for a specific agent."""
     stats = queue.get_agent_queue_stats(agent_name)
@@ -29,20 +29,20 @@ def get_agent_queue_stats(
 
 @router.get("/queue/agents/{agent_name}/length")
 def get_agent_queue_length(
-    agent_name: str = Path(..., description="Name of the agent")
+    agent_name: str = Path(..., description="Name of the agent"),
 ) -> Dict[str, Any]:
     """Get the number of queued tasks for a specific agent."""
     length = queue.get_agent_queue_length(agent_name)
     return {
-        "agent": agent_name
-        "queue_length": length
+        "agent": agent_name,
+        "queue_length": length,
     }
 
 
 @router.post("/queue/cleanup")
 def cleanup_completed_tasks(
-    max_age_hours: Optional[int] = Query(24, description="Maximum age in hours for completed tasks to keep")
-    current_user: User = Depends(dependencies.get_current_active_user)
+    max_age_hours: Optional[int] = Query(24, description="Maximum age in hours for completed tasks to keep"),
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> Dict[str, Any]:
     """Clean up old completed/failed tasks to prevent memory bloat."""
     if max_age_hours < 1 or max_age_hours > 168:  # 1 hour to 1 week
@@ -50,9 +50,9 @@ def cleanup_completed_tasks(
     
     cleaned_count = queue.cleanup_completed_tasks(max_age_hours)
     return {
-        "cleaned_tasks": cleaned_count
-        "max_age_hours": max_age_hours
-        "message": f"Cleaned up {cleaned_count} old completed/failed tasks"
+        "cleaned_tasks": cleaned_count,
+        "max_age_hours": max_age_hours,
+        "message": f"Cleaned up {cleaned_count} old completed/failed tasks",
     }
 
 
@@ -74,18 +74,18 @@ def get_queue_health() -> Dict[str, Any]:
             health_status = "backlogged"
         
         return {
-            "status": health_status
-            "total_tasks": total_tasks
-            "task_breakdown": summary
+            "status": health_status,
+            "total_tasks": total_tasks,
+            "task_breakdown": summary,
             "metrics": {
-                "queued_ratio": round(queued_ratio, 3)
-                "failed_ratio": round(failed_ratio, 3)
-            }
-            "redis_connected": queue.client is not None
+                "queued_ratio": round(queued_ratio, 3),
+                "failed_ratio": round(failed_ratio, 3),
+            },
+            "redis_connected": queue.client is not None,
         }
     except Exception as e:
         return {
-            "status": "error"
-            "error": str(e)
-            "redis_connected": False
+            "status": "error",
+            "error": str(e),
+            "redis_connected": False,
         }

@@ -12,14 +12,14 @@ from interface.crud import crud_agent
 from interface.models.agent import Agent as AgentModel
 from interface.models.user import User
 from interface.schemas.agent import (
-    AgentActionResponse
-    AgentConfigInfo
-    AgentConfigUpdate
-    AgentDispatchPayload
-    AgentDispatchResponse
-    AgentStatusInfo
-    AgentRegisterRequest
-    AgentRegisterResponse
+    AgentActionResponse,
+    AgentConfigInfo,
+    AgentConfigUpdate,
+    AgentDispatchPayload,
+    AgentDispatchResponse,
+    AgentStatusInfo,
+    AgentRegisterRequest,
+    AgentRegisterResponse,
 )
 from interface.orchestrator_comm import send_orchestrator_request
 from legion.orchestrator.capability_indexer import get_capabilities
@@ -94,16 +94,16 @@ def update_agent_db(
     db.refresh(db_agent)
     # Return all relevant fields from the model after update
     return {
-        "id": db_agent.id
-        "name": db_agent.name
-        "model": db_agent.model
-        "description": db_agent.description
-        "temperature": db_agent.temperature
-        "max_tokens": db_agent.max_tokens
-        "is_active": db_agent.is_active
-        "config": db_agent.config
-        "created_at": db_agent.created_at
-        "last_active": db_agent.last_active
+        "id": db_agent.id,
+        "name": db_agent.name,
+        "model": db_agent.model,
+        "description": db_agent.description,
+        "temperature": db_agent.temperature,
+        "max_tokens": db_agent.max_tokens,
+        "is_active": db_agent.is_active,
+        "config": db_agent.config,
+        "created_at": db_agent.created_at,
+        "last_active": db_agent.last_active,
     }
 
 
