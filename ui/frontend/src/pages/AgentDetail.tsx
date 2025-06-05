@@ -1,45 +1,46 @@
-import { useEffect, useState } from 'react'
-import useSWR from 'swr'
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 interface AgentDetailProps {
-  agentId: string
+  agentId: string;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => {
-  if (!res.ok) throw res
-  return res.json()
-})
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw res;
+    return res.json();
+  });
 
 export default function AgentDetail({ agentId }: AgentDetailProps) {
-  const [meta, setMeta] = useState<any | null>(null)
-  const [input, setInput] = useState('')
+  const [meta, setMeta] = useState<any | null>(null);
+  const [input, setInput] = useState("");
 
   const { data: messages } = useSWR(`/conversations/${agentId}`, fetcher, {
     refreshInterval: 2000,
     fallbackData: [],
-  })
+  });
 
   useEffect(() => {
     fetch(`/agents/${agentId}`)
-      .then(res => (res.ok ? res.json() : Promise.reject(res)))
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
       .then(setMeta)
       .catch(() =>
         setMeta({
           name: agentId,
-          description: 'Placeholder metadata',
+          description: "Placeholder metadata",
         }),
-      )
-  }, [agentId])
+      );
+  }, [agentId]);
 
   const sendMessage = () => {
-    if (!input) return
+    if (!input) return;
     // Placeholder send implementation
-    setInput('')
-  }
+    setInput("");
+  };
 
   const diagnose = () => {
-    fetch(`/therapist/diagnose?agent_id=${agentId}`).catch(() => {})
-  }
+    fetch(`/therapist/diagnose?agent_id=${agentId}`).catch(() => {});
+  };
 
   return (
     <div className="p-4 space-y-4">
@@ -62,7 +63,7 @@ export default function AgentDetail({ agentId }: AgentDetailProps) {
             className="flex-grow border rounded p-2"
             rows={6}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
           />
           <button
             onClick={sendMessage}
@@ -76,10 +77,7 @@ export default function AgentDetail({ agentId }: AgentDetailProps) {
           <div className="flex flex-col space-y-2 overflow-y-auto h-64">
             {messages && messages.length > 0 ? (
               messages.map((m: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="p-2 rounded-2xl bg-gray-100"
-                >
+                <div key={idx} className="p-2 rounded-2xl bg-gray-100">
                   {m.content}
                 </div>
               ))
@@ -90,5 +88,5 @@ export default function AgentDetail({ agentId }: AgentDetailProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
