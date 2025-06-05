@@ -39,8 +39,8 @@ class EchoSearchFilters(BaseModel):
 def send_echo(payload: EchoPayload) -> Dict[str, str]:
     """Proxy a message to the Echo agent via the orchestrator."""
     command_payload = {
-        "agent_name": "echo_agent"
-        "message": payload.message
+        "agent_name": "echo_agent",
+        "message": payload.message,
     }
     response = _call_orchestrator(
         action="dispatch_agent_message", payload=command_payload
@@ -153,18 +153,18 @@ def search_echo(
     next_offset = offset + len(paginated_events) if len(events) > offset + limit else None
     
     return {
-        "events": paginated_events
-        "total": len(events)
-        "returned": len(paginated_events)
-        "offset": offset
-        "next_offset": next_offset
+        "events": paginated_events,
+        "total": len(events),
+        "returned": len(paginated_events),
+        "offset": offset,
+        "next_offset": next_offset,
         "filters_applied": {
-            "query": query
-            "level": level
-            "agent_id": agent_id
-            "start_time": start_time
-            "end_time": end_time
-        }
+            "query": query,
+            "level": level,
+            "agent_id": agent_id,
+            "start_time": start_time,
+            "end_time": end_time,
+        },
     }
 
 

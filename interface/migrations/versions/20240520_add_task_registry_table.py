@@ -12,12 +12,12 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
-        "task_registry"
-        sa.Column("id", sa.String(), primary_key=True)
-        sa.Column("tags", sa.JSON(), nullable=False, server_default="[]")
-        sa.Column("owner", sa.String(), nullable=False)
-        sa.Column("agent", sa.String(), nullable=True)
-        sa.Column("status", sa.String(), nullable=False)
+        "task_registry",
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("tags", sa.JSON(), nullable=False, server_default="[]"),
+        sa.Column("owner", sa.String(), nullable=False),
+        sa.Column("agent", sa.String(), nullable=True),
+        sa.Column("status", sa.String(), nullable=False),
     )
 
 

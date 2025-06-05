@@ -24,8 +24,8 @@ class User(Base):
 
     # Add relationship to UserPreference
     preferences = relationship(
-        "UserPreference"
-        back_populates="user"
-        uselist=False
-        cascade="all, delete-orphan"
+        "UserPreference",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )

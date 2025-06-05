@@ -31,9 +31,9 @@ class MiddlewareTestResponse(BaseModel):
 
 
 @router.get(
-    "/health"
-    response_model=Dict[str, Any]
-    summary="Middleware Health Check"
+    "/health",
+    response_model=Dict[str, Any],
+    summary="Middleware Health Check",
 )
 def middleware_health_check() -> Dict[str, Any]:
     """
@@ -72,13 +72,13 @@ def middleware_health_check() -> Dict[str, Any]:
 
 
 @router.post(
-    "/test"
-    response_model=MiddlewareTestResponse
-    summary="Test Middleware Pipeline"
+    "/test",
+    response_model=MiddlewareTestResponse,
+    summary="Test Middleware Pipeline",
 )
 def test_middleware_pipeline(
-    request: MiddlewareTestRequest
-    current_user: User = Depends(dependencies.get_current_active_user)
+    request: MiddlewareTestRequest,
+    current_user: User = Depends(dependencies.get_current_active_user),
 ) -> MiddlewareTestResponse:
     """
     Test the middleware pipeline with a given request payload.
@@ -136,9 +136,9 @@ def test_middleware_pipeline(
 
 
 @router.get(
-    "/status"
-    response_model=Dict[str, Any]
-    summary="Get Middleware Status"
+    "/status",
+    response_model=Dict[str, Any],
+    summary="Get Middleware Status",
 )
 def get_middleware_status(
     current_user: User = Depends(dependencies.get_current_active_user)
@@ -193,9 +193,9 @@ def get_middleware_status(
 
 
 @router.get(
-    "/config"
-    response_model=Dict[str, Any]
-    summary="Get Middleware Configuration"
+    "/config",
+    response_model=Dict[str, Any],
+    summary="Get Middleware Configuration",
 )
 def get_middleware_config(
     current_user: User = Depends(dependencies.get_current_active_user)
@@ -235,6 +235,6 @@ def get_middleware_config(
     except Exception as e:
         logger.error(f"Error getting middleware config: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-            detail=f"Failed to get middleware configuration: {str(e)}"
-        ) 
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get middleware configuration: {str(e)}",
+        )

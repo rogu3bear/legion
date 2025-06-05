@@ -9,8 +9,8 @@ from interface import dependencies
 from interface.api.v1.endpoints.system import _call_orchestrator
 from interface.models.user import User
 from interface.schemas.memory import (
-    DocumentResponse
-    MemorySearchResultItem
+    DocumentResponse,
+    MemorySearchResultItem,
 )
 
 logger = logging.getLogger(__name__)
