@@ -96,8 +96,8 @@ def require_role(required_role: UserRole) -> Callable[[User], User]:
         # this logic needs expansion.
         if current_user.role != required_role.value:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN
-                detail=f"User does not have the required '{required_role.value}' role"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"User does not have the required '{required_role.value}' role",
             )
         return current_user
 
