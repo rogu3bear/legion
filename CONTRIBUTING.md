@@ -14,7 +14,7 @@
   ```
 - The "Guard direct agent instantiation" hook will run on commit to catch violations.
 - CI also enforces this via the `agent-instantiation-guard` job in `.github/workflows/ci.yml`.
-- Run `pnpm i` in `ui/frontend` to enable ESLint locally.
+- Run `pnpm i` in `interface/frontend` to enable ESLint locally.
 
 ## Test Hygiene
 

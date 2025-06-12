@@ -12,19 +12,19 @@ declare -A pr_titles
 # Read PRs and analyze each one
 while IFS=$'\t' read -r num title branch author updated; do
     echo "Analyzing PR #$num: $title"
-    
+
     # Get file changes for this PR
     files=$(git diff --name-only origin/main...origin/$branch 2>/dev/null | head -50)
     pr_files[$num]="$files"
     pr_titles[$num]="$title"
-    
+
     # Categorize based on file patterns
     if [[ "$files" =~ scripts/|\.env\.ports|legion/orchestrator|legion/middleware ]]; then
         category="A-blocking-core"
-    elif [[ "$files" =~ ui/frontend ]]; then
+    elif [[ "$files" =~ interface/frontend ]]; then
         category="B-feature-ui"
     elif [[ "$files" =~ interface/api ]]; then
-        category="B-feature-api"  
+        category="B-feature-api"
     elif [[ "$files" =~ docs/|README|\.md$ ]]; then
         category="C-docs-chore"
     elif [[ "$files" =~ test|spec ]]; then
@@ -32,12 +32,12 @@ while IFS=$'\t' read -r num title branch author updated; do
     else
         category="D-experimental"
     fi
-    
+
     pr_categories[$num]="$category"
     echo "  → Files: $(echo $files | tr '\n' ' ')"
     echo "  → Category: $category"
     echo ""
-    
+
 done < /tmp/prs.tsv
 
 echo "=== PRIORITY BUCKETS ==="
@@ -54,4 +54,4 @@ for bucket in "A-blocking-core" "B-feature-ui" "B-feature-api" "C-docs-chore" "D
     done
     echo "  Total: $count PRs"
     echo ""
-done 
+done

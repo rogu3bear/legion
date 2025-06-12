@@ -1,4 +1,4 @@
-<!-- File: ui/frontend/README.md -->
+<!-- File: interface/frontend/README.md -->
 
 # React + Vite
 

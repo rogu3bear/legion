@@ -31,10 +31,10 @@ jobs:
           node-version: '18' # Or your preferred LTS version
       - name: Install npm dependencies
         run: |
-          # Assuming package.json is in the root and frontend is in ui/frontend
-          # If package.json for frontend is in ui/frontend, cd there first
-          if [ -f "ui/frontend/package.json" ]; then
-            npm install --prefix ui/frontend
+          # Assuming package.json is in the root and frontend is in interface/frontend
+          # If package.json for frontend is in interface/frontend, cd there first
+          if [ -f "interface/frontend/package.json" ]; then
+            npm install --prefix interface/frontend
           elif [ -f "package.json" ]; then
             npm install
           else
@@ -43,8 +43,8 @@ jobs:
       - name: Lint with ESLint (Frontend)
         run: |
           # Adjust path to ESLint config and source if needed
-          if [ -f "ui/frontend/package.json" ]; then
-            npm run lint --prefix ui/frontend --if-present -- --max-warnings 0
+          if [ -f "interface/frontend/package.json" ]; then
+            npm run lint --prefix interface/frontend --if-present -- --max-warnings 0
           elif [ -f "package.json" ] && grep -q '"lint"' package.json; then # Check if lint script exists
             npm run lint -- --max-warnings 0
           else
@@ -55,12 +55,12 @@ jobs:
           # Adjust path and command if needed
           # This assumes a test script configured for coverage
           MIN_COVERAGE=90
-          if [ -f "ui/frontend/package.json" ]; then
+          if [ -f "interface/frontend/package.json" ]; then
             # Attempt to run, capture output, and check coverage
             # This is a placeholder for actual coverage checking logic
             # You'll need a tool like jest with coverage reporters
-            echo "Attempting npm test --prefix ui/frontend --if-present -- --coverage"
-            # npm test --prefix ui/frontend --if-present -- --coverage
+            echo "Attempting npm test --prefix interface/frontend --if-present -- --coverage"
+            # npm test --prefix interface/frontend --if-present -- --coverage
             # Add actual coverage check here, e.g., parse coverage report
             echo "Coverage check for frontend not fully implemented in CI script yet."
           elif [ -f "package.json" ] && grep -q '"test"' package.json; then

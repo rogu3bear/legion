@@ -7,7 +7,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "vite --config ui/frontend/vite.config.js --host",
+    "dev": "vite --config interface/frontend/vite.config.js --host",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

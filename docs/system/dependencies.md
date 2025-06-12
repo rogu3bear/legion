@@ -31,7 +31,7 @@ uvicorn==0.27.0.post1
 Security audit attempted with `pip-audit` (tool unavailable in offline environment).
 
 ## Node Packages
-Dependencies from `ui/frontend/package.json`:
+Dependencies from `interface/frontend/package.json`:
 
 ```
 react@^19.1.0

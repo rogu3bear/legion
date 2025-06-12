@@ -40,7 +40,7 @@ export PORT="${UI_PORT}"
 uvicorn interface.main:app --port "${ORCH_PORT}" --reload &
 ORCH_PID=$!
 
-npm --prefix ui/frontend run dev &
+npm --prefix interface/frontend run dev &
 UI_PID=$!
 
 wait "${ORCH_PID}" "${UI_PID}"

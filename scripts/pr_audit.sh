@@ -60,9 +60,9 @@ if [[ -f "requirements.txt" ]]; then
 fi
 
 # Install Node deps if frontend changes
-if git diff --name-only origin/main | grep -q "ui/frontend"; then
+if git diff --name-only origin/main | grep -q "interface/frontend"; then
     log "Frontend changes detected - installing npm dependencies..."
-    cd ui/frontend
+    cd interface/frontend
     npm ci > /dev/null 2>&1 || {
         fail_audit "Failed to install npm dependencies"
     }
@@ -133,4 +133,4 @@ pkill -f uvicorn 2>/dev/null || true
 
 echo ""
 log "✅ AUDIT COMPLETE: PASSED"
-echo "PR #$PR_NUM is ready for merge consideration" 
+echo "PR #$PR_NUM is ready for merge consideration"

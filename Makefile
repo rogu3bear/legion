@@ -13,7 +13,7 @@ dev:
 		@echo "Starting backend and frontend..."
 		bash scripts/activate_once.sh && \
 		uvicorn interface.main:app --reload &
-		npm --prefix ui/frontend run dev
+		npm --prefix interface/frontend run dev
 
 lint:
 	@echo "Running linters..."
@@ -24,7 +24,7 @@ lint:
 	echo "\u26a0 flake8 not installed; skipping Python lint"; \
 	fi
 	if command -v npm >/dev/null; then \
-	npm --prefix ui/frontend run lint --if-present -- --max-warnings 0 || true; \
+	npm --prefix interface/frontend run lint --if-present -- --max-warnings 0 || true; \
 	else \
 	echo "\u26a0 ESLint not installed; skipping JS lint"; \
 	fi
